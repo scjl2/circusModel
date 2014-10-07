@@ -1,0 +1,137 @@
+channel a
+Loop = a-> Loop
+
+--SAFELET
+
+--SAFELET TYPES
+datatype SchedulableID = nullSequencerId|sequencerA|sequencerB 
+datatype MissionID = nullMissionId|missionA|missionB
+
+--SAFELET CHANNELS
+channel get_globallyRegistered : Set(SchedulableID)
+channel add_globallyRegistered : Set(SchedulableID)
+channel remove_globallyRegistered : Set(SchedulableID)
+channel get_topLevelSequencer : SchedulableID
+channel set_topLevelSequencer :SchedulableID
+channel end_SafeletFWState
+
+nametype SafeletStateChan = {|get_globallyRegistered, add_globallyRegistered,
+                    remove_globallyRegistered, get_topLevelSequencer, set_topLevelSequencer, end_SafeletFWState|}
+
+channel initializeApplicationCall 
+channel initializeApplicationRet 
+channel start_toplevel_sequencer : SchedulableID 
+channel register : SchedulableID.MissionID
+channel checkSchedulable : MissionID.Bool 
+channel getSequencerCall 
+channel getSequencerRet : SchedulableID
+channel deregister : Set(SchedulableID) 
+channel done_toplevel_sequencer 
+
+
+
+SafeletFW =
+  SafeletFWState({}, nullSequencerId)
+  [| SafeletStateChan |]
+  SafeletFWBehaviour
+
+
+SafeletFWState(globallyRegistered, topLevelSequencer) = 
+(  
+  (
+    get_globallyRegistered!globallyRegistered ->
+    SafeletFWState(globallyRegistered, topLevelSequencer)
+  )
+  []
+  (
+    add_globallyRegistered?schedulablesToAdd ->
+    SafeletFWState(union(globallyRegistered, schedulablesToAdd) , topLevelSequencer)
+  )
+  []
+  (
+    remove_globallyRegistered?schedulablesToRemove ->
+    SafeletFWState(diff(globallyRegistered, schedulablesToRemove) , topLevelSequencer)
+  )
+  []
+  (
+    get_topLevelSequencer!topLevelSequencer ->
+    SafeletFWState(globallyRegistered, topLevelSequencer)
+  )
+  []
+  (
+    set_topLevelSequencer?newTopLevelSequencer ->
+    SafeletFWState(globallyRegistered, newTopLevelSequencer)
+  )
+  []
+  (
+    end_SafeletFWState ->
+    SKIP
+  )
+)
+
+SafeletFWBehaviour=
+   InitializeApplication ;
+   Execute ;
+   end_SafeletFWState -> SKIP
+
+InitializeApplication =
+  initializeApplicationCall ->
+  initializeApplicationRet ->
+  SKIP
+   
+Execute =
+  GetSequencerMeth ;
+  get_topLevelSequencer?topLevelSequencer ->
+  if topLevelSequencer != nullSequencerId then
+  (
+     		 start_toplevel_sequencer.topLevelSequencer -> 
+     		 Methods 
+  ) 
+  else
+    SKIP
+
+GetSequencerMeth =
+  getSequencerCall ->
+  getSequencerRet?sequencer ->
+  set_topLevelSequencer!sequencer ->
+  SKIP
+   
+Methods =
+(
+  (Register ; Methods)
+  []
+  (Deregister ; Methods)
+  []
+  (done_toplevel_sequencer -> SKIP)
+)   
+
+Register =
+  get_globallyRegistered?globallyRegistered ->
+ ( 
+  (
+    register?schedulable:diff(SchedulableID, globallyRegistered)
+                                        ?mission ->
+    (
+    	add_globallyRegistered!{schedulable} ->
+    	checkSchedulable.mission!True -> 
+    	SKIP
+	  )
+  )
+  []
+  (
+    register?schedulable:globallyRegistered?mission ->		
+    checkSchedulable.mission!False -> 
+    SKIP
+  )
+)
+
+Deregister =
+ 
+  deregister?schedulables ->
+  remove_globallyRegistered!schedulables ->  
+  SKIP
+
+
+assert SafeletFW; Loop :[ deadlock free [FD] ]
+assert SafeletFW :[ divergence free ]
+assert SafeletFW :[ deterministic  [FD] ]

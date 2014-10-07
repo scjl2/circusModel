@@ -1,0 +1,405 @@
+channel a
+Loop = a-> Loop
+
+channel circwait : num
+
+--PERIODIC EVENT HANDLER FW
+ 
+--PEH TYPES
+datatype SchedulableID = nullSchedulableId|schedulableA|schedulableB  
+datatype MissionID = nullMissionId|missionA|missionB
+maxNum = 1
+nametype num = {0..maxNum}
+--datatype boolean = True | False
+
+-- PEH Channels
+
+channel get_controllingMission : SchedulableID.MissionID 
+channel set_controllingMission :  SchedulableID.MissionID 
+channel get_applicationTerminating : SchedulableID.Bool
+channel set_applicationTerminating:SchedulableID.Bool
+channel get_period : SchedulableID.num 
+channel set_period : SchedulableID.num 
+channel get_startTime : SchedulableID.num
+channel set_startTime : SchedulableID.num
+channel get_deadline : SchedulableID.num
+channel set_deadline : SchedulableID.num
+channel get_deadlineMissHandler : SchedulableID.SchedulableID
+channel set_deadlineMissHandler : SchedulableID.SchedulableID
+channel get_missedReleases : SchedulableID.num
+channel set_missedReleases : SchedulableID.num
+channel get_periodicTerminating : SchedulableID.Bool
+channel set_periodicTerminating : SchedulableID.Bool 
+channel end_periodicEventHandlerState : SchedulableID
+
+channel activate_schedulables : MissionID
+channel done_toplevel_sequencer 
+channel register:SchedulableID.MissionID
+channel stop_period:SchedulableID
+channel fire:SchedulableID
+channel releaseCall:SchedulableID 
+channel releaseRet:SchedulableID 
+channel release_complete:SchedulableID.num
+channel signalTerminationCall:SchedulableID 
+channel signalTerminationRet:SchedulableID 
+channel done_schedulable:SchedulableID 
+channel cleanupSchedulableCall:SchedulableID 
+channel cleanupSchedulableRet:SchedulableID 
+
+
+
+ nametype ReleaseSync =  {|fire, stop_period |}
+nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
+
+
+ nametype PEHStateSync = {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,get_period,set_period,get_startTime, set_startTime, 
+                          get_deadline, set_deadline, get_deadlineMissHandler, set_deadlineMissHandler, get_missedReleases,set_missedReleases, get_periodicTerminating, set_periodicTerminating, end_periodicEventHandlerState|}
+
+
+
+PeriodicEventHandlerFW(schedulable) =
+  PeriodicEventHandlerBehaviour(schedulable)
+  [|PEHStateSync|]
+  PeriodicEventHandlerState(schedulable, nullMissionId, False, 0, 0, 0, nullSchedulableId, 0, False)
+
+
+PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) =
+(
+  (
+    get_controllingMission.schedulable!controllingMission ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_controllingMission.schedulable?newControllingMission ->
+    PeriodicEventHandlerState(schedulable, newControllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+   )
+  []
+  (
+    get_applicationTerminating.schedulable!applicationTerminating ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_applicationTerminating.schedulable?newApplicationTerminating ->
+    PeriodicEventHandlerState(schedulable, controllingMission, newApplicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    get_period.schedulable!period ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_period.schedulable?newPeriod ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, newPeriod, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    get_startTime.schedulable!startTime ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_startTime.schedulable?newStartTime ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, newStartTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    get_deadline.schedulable!deadline ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_deadline.schedulable?newDeadline -> 
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, newDeadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    get_deadlineMissHandler.schedulable!deadlineMissHandler ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_deadlineMissHandler.schedulable?newDeadlineMissHandler ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, newDeadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    get_missedReleases.schedulable!missedReleases ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_missedReleases.schedulable?newMissedReleases ->
+     PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, newMissedReleases, periodicTerminating)
+  )
+  []
+  (
+    get_periodicTerminating.schedulable!periodicTerminating ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+  )
+  []
+  (
+    set_periodicTerminating.schedulable?newPeriodicTerminating ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, newPeriodicTerminating)
+  )
+  []
+  (
+    end_periodicEventHandlerState.schedulable ->
+    SKIP
+  )
+)
+
+
+
+
+-- State~'\\
+--  p? : JTime \\
+--  s? : JTime \\
+--  d? : JTime \\
+--  h? : SchedulableID
+--\where
+--
+-- period' = p?\\
+--  s? = NULL \implies startTime' = time~(0,0)\\
+--  s? \neq NULL \implies startTime' = s?\\  
+-- d? = NULL \implies deadline' = period'\\
+--  d? \neq NULL \implies deadline' =  d? \\
+-- missedReleases' = 0 \\
+-- deadlineMissHandler' = h? \\
+
+
+
+PeriodicEventHandlerBehaviour(schedulable) =
+    Init(schedulable) ;
+    Start(schedulable) ;
+    get_applicationTerminating.schedulable?applicationTerminating ->
+    (
+      if applicationTerminating == False then  
+           (Execute(schedulable) ; Cleanup(schedulable) ; PeriodicEventHandlerBehaviour(schedulable))
+      else  
+         end_periodicEventHandlerState.schedulable ->
+         SKIP 
+    ) 
+
+
+Init(schedulable) =
+  set_startTime.schedulable?s ->
+  set_period.schedulable?p ->
+  set_deadline.schedulable?d ->
+  set_deadlineMissHandler.schedulable?h ->
+  SKIP
+ 
+
+Start(schedulable) =
+ (
+   Register(schedulable) ;
+   Activate(schedulable)
+ ) 
+ []
+ (
+      activate_schedulables?someMissionID ->
+      Start(schedulable)
+ ) 
+ []
+ (
+    done_toplevel_sequencer ->
+    set_applicationTerminating.schedulable!True ->
+    SKIP
+   )  
+
+Register(schedulable) =
+   register.schedulable?missionID ->
+   set_controllingMission.schedulable!missionID ->
+   SKIP
+
+Activate(schedulable) =
+    get_controllingMission.schedulable?controllingMission -> 
+    activate_schedulables.controllingMission ->
+    SKIP
+
+Execute(schedulable) =
+  get_startTime.schedulable?startTime -> 
+      circwait.startTime ->
+      get_deadlineMissHandler.schedulable?deadlineMissHandler ->
+(
+  ( 
+    (
+      
+      if deadlineMissHandler != nullSchedulableId then
+        RunningWithDeadlineDetection(schedulable) 
+      else 
+        Running(schedulable) 
+        
+    )
+    []
+    (
+      stop_period.schedulable ->
+      signalTerminationRet.schedulable ->
+      SKIP
+    )
+  )  
+    [|  {|stop_period, signalTerminationRet|} |] 
+  SignalTermination(schedulable)
+)
+  
+
+
+Running(schedulable) =
+( 
+  (fire.schedulable -> PeriodicClock(schedulable))
+    [| ReleaseSync |] 
+  Release(schedulable,0)
+)
+
+RunningWithDeadlineDetection(schedulable) =
+(
+  Running(schedulable) 
+    [| {|release_complete, stop_period|} |] 
+  DeadlineClock(schedulable,0) 
+)
+
+PeriodicClock(schedulable) =
+ get_period.schedulable?period -> 
+ (
+  ( 
+    circwait.period ->
+    (  
+      (
+        fire.schedulable ->
+        PeriodicClock(schedulable)
+      )
+      []
+      (
+        stop_period.schedulable ->
+       SKIP 
+      )
+    )
+  )
+  []
+  (
+    stop_period.schedulable ->
+    SKIP 
+  )      
+)
+ 
+
+Release(schedulable, index) =
+get_missedReleases.schedulable?missedReleases ->
+(
+  if missedReleases == 0 then 
+  (
+    fire.schedulable ->
+    releaseCall.schedulable ->
+    SKIP
+  )
+  else 
+  (
+    releaseCall.schedulable ->
+    if missedReleases-1 < 0 then
+      SKIP
+    else
+      set_missedReleases.schedulable!(missedReleases -1) ->
+      SKIP
+  )
+);
+(
+  (
+    releaseRet.schedulable ->
+    release_complete.schedulable.index ->
+    SKIP
+  ) 
+    [| {|releaseRet|} |] 
+  FireCatcher(schedulable) 
+) ;
+(
+  (
+    get_periodicTerminating.schedulable?periodicTerminating:({False}) ->
+    if index + 1 > maxNum then 
+      signalTerminationRet.schedulable ->
+      SKIP 
+    else
+      Release(schedulable, index + 1)
+   )
+  []
+  (
+    --get_periodicTerminating.schedulable?periodicTerminating:(periodicTerminating == True) ->
+    stop_period.schedulable ->
+    signalTerminationRet.schedulable ->
+    SKIP
+  )
+)
+
+FireCatcher(schedulable) = 
+(
+  (
+    fire.schedulable ->
+    get_missedReleases.schedulable?missedReleases ->
+    if missedReleases +1 > maxNum then
+     SKIP
+    else
+      set_missedReleases.schedulable!(missedReleases +1) ->
+      FireCatcher(schedulable)
+  )
+  []
+  (
+    releaseRet.schedulable -> 
+    SKIP
+  )
+)
+
+DeadlineClock(schedulable, index) =
+get_deadline.schedulable?deadline ->  
+get_period.schedulable?period -> 
+(
+  (   
+    (
+        
+        circwait.deadline ->
+        get_deadlineMissHandler.schedulable?deadlineMissHandler -> 
+        fire.deadlineMissHandler ->
+        release_complete.schedulable.index ->
+        SKIP
+      ) 
+      []
+      (
+        release_complete.schedulable.index ->
+        SKIP
+      )
+    )
+    |||
+    (
+      (
+        circwait.period ->
+        if index +1 > maxNum then
+          SKIP
+        else 
+          DeadlineClock(schedulable, index + 1)
+      )       
+    )
+) 
+/\ 
+  (
+    stop_period.schedulable ->
+   -- release_complete.schedulable?index ->
+    SKIP
+  )
+
+SignalTermination(schedulable) =
+  signalTerminationCall.schedulable ->
+  set_periodicTerminating.schedulable!True ->
+  stop_period.schedulable ->
+  signalTerminationRet.schedulable ->
+  done_schedulable.schedulable ->
+  SKIP
+
+Cleanup(schedulable) =
+  cleanupSchedulableCall.schedulable ->
+  cleanupSchedulableRet.schedulable ->
+  SKIP
+
+
+assert PeriodicEventHandlerFW(schedulableA); Loop :[ deadlock free [FD] ]
+assert PeriodicEventHandlerFW(schedulableA) :[ divergence free ]
+assert PeriodicEventHandlerFW(schedulableA) :[ deterministic  [FD] ]

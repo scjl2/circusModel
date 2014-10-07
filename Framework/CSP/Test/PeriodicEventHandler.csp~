@@ -1,0 +1,77 @@
+nametype number = {1..3}
+
+
+channel get_fireCount : number
+channel set_fireCount : number
+channel get_overrun : number
+channel set_overrun : number
+channel leave_dispatch 
+channel releaseCall
+channel releaseRet
+channel circwait : number
+
+
+State(fireCount, overrun) =
+	(
+		get_fireCount!fireCount ->
+		State(fireCount, overrun)
+	)
+	[]
+	(
+		set_fireCount?newFireCount ->
+		State(newFireCount, overrun)
+	)
+	[]
+	(
+		get_overrun!overrun -> 
+		State(fireCount, overrun)
+	)
+	[]
+	(
+		set_overrun?newOverrun ->
+		State(fireCount, overrun)
+	)
+
+
+Execute =
+ 	(
+ 		circwait?startTime ->
+  		Running
+  	)
+  	[]
+	(
+		leave_dispatch ->
+		SKIP
+	)
+
+
+Running =
+	(releaseCall.schedulable -> PeriodicClock)
+		[|  {|releaseCall, releaseRet|}   |] 
+	Release 
+
+PeriodicClock =
+	circwait?period ->
+	set_fireCount!firecount+1 ->
+	PeriodicClock
+	
+
+Release =
+	releaseCall ->
+	releaseRet.runTime ->
+	if fireCount == 0 then 
+	(
+		circwait?(period-(runtime + overrun)) ->
+		SKIP
+	)
+	else 
+	(
+		set_overrun!((runTime + overrun)-period) ->
+		set_fireCount!(fireCount - 1) ->
+		SKIP
+	)
+
+PEH=
+	State
+	[|{| get_overrun, get_fireCount, set_overrun, set_fireCount |}|]
+	Execute
