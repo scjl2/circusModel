@@ -1,3 +1,3 @@
 \begin{zsection}
-  \SECTION ~ AperiodicEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan
+  \SECTION ~ AperiodicEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, AperiodicLongEventHandlerMethChan
 \end{zsection}
