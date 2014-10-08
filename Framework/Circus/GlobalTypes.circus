@@ -25,3 +25,7 @@ ExceptionType ::= interruptedException | illegalMonitorStateException | illegalA
 \begin{zed} 
 maxNanos == 999999
 \end{zed}
+%
+\begin{zed}
+	AperiodicType ::= aperiodic | aperiodicLong
+\end{zed}

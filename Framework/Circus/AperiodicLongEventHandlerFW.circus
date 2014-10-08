@@ -5,7 +5,7 @@
   \end{zsection}
 %
 \begin{circus}
-  \circprocess AperiodicLongEventHandlerFW ~ \circdef ~ schedulable : SchedulableID \circspot ~\circbegin
+  \circprocess AperiodicLongEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; aperiodicType : AperiodicType \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
@@ -62,19 +62,40 @@ Activate ~ \circdef ~ \\
 \begin{circusaction}
 Execute \circdef  \\
 \t1 ( 
-   Ready\\
+	(
+		\circif aperiodicType = aperiodic \circthen \\
+			Ready\\
+		\circelse aperiodicType = aperiodicLong \circthen \\
+			ReadyLong \\
+		\circfi
+	)
    	 \lpar \{pending, data\}  |\lchanset leave\_dispatch \rchanset| \emptyset \rpar\\
   SignalTermination\\
 )
 \end{circusaction}
-%
+%short
 \begin{circusaction}
 Ready \circdef \\
+\t1 (
+	fire.schedulable \then\\ 
+	releaseCall~.~schedulable \then\\ 
+	Release
+    )\\
+\t1 \extchoice\\
+\t1 (
+	leave\_dispatch~.~schedulable \then\\
+	\Skip
+    )
+\end{circusaction}
+%long
+\begin{circusaction}
+ReadyLong \circdef \\
 \t1 (	
 	fireLong~.~schedulable~?~longData \then\\ 
 	data := longData \circseq \\
 	releaseLongCall~.~schedulable~.~data \then\\ 
-	Release)\\
+	ReleaseLong 
+     )\\
 \t1 \extchoice\\
 \t1 (
 	leave\_dispatch~.~schedulable \then\\
@@ -92,14 +113,41 @@ SignalTermination \circdef \\
 		\Skip 
 	)
 \end{circusaction}
-%
+%short
 \begin{circusaction}
 Release \circdef \\	
+\t1 ( 
+		fire.schedulable \then\\ 
+		pending := \true \circseq\\ 
+		Release
+	)\\
+\t1	\extchoice\\
+\t1	(
+		releaseRet.schedulable \then \\
+		\circif pending = \true \circthen\\
+\t2		( 
+			pending := \false \circseq \\ 
+			releaseCall.schedulable \then\\ 
+			Release
+		)\\
+		\circelse pending = \false \circthen\\
+\t2			 Ready\\
+		\circfi
+\t1	)\\
+\t1	 \extchoice\\
+\t1	(
+		leave\_dispatch.schedulable \then \\
+		\Skip
+	)\\
+\end{circusaction}
+%long
+\begin{circusaction}
+ReleaseLong \circdef \\	
 \t1 ( 
 		fireLong.schedulable~?~longData \then\\ 
 		data := longData \circseq \\
 		pending := \true \circseq\\ 
-		Release
+		ReleaseLong
 	)\\
 \t1		\extchoice\\
 \t1	(
@@ -108,10 +156,10 @@ Release \circdef \\
 \t2		( 
 			pending := \false \circseq \\ 
 			releaseLongCall.schedulable.data \then\\ 
-			Release
+			ReleaseLong
 		)\\
 		\circelse pending = \false \circthen\\
-\t2			 Ready\\
+\t2			 ReadyLong \\
 		\circfi
 \t1	)\\
 \t1	 \extchoice\\
