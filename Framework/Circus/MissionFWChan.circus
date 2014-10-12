@@ -18,7 +18,7 @@
 \end{circus}
 %
 \begin{circus}
-  \circchannel ~ end\_mission\_fw
+  \circchannel ~ end\_mission\_fw : MissionID 
   \also
   \circchannel ~ end\_mission\_app : MissionID
 \end{circus}
