@@ -17,6 +17,9 @@
 %\includecomment{parser} %show comments
 \excludecomment{parser}  %do not show comments
 
+%\includecomment{plumbing} %show comments
+\excludecomment{plumbing}  %do not show comments
+
 \usepackage{soul}
 %\usepackage{wasysym}
 
@@ -25,6 +28,7 @@
 
 
 \begin{document}
+\begin{plumbing}
 \section{GlobalTypes}
 \input{GlobalTypes.circus}
 
@@ -88,6 +92,7 @@
 \subsection{ManagedThreadMethChan}
 \input{ManagedThreadMethChan.circus}
 \newpage
+\end{plumbing}
 
 \section{Object}
 \input{Object-Print.circus}
