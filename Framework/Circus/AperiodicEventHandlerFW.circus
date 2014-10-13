@@ -1,0 +1,190 @@
+\begin{zsection}
+  \SECTION ~ AperiodicEventHandlerFW ~ \parents ~ MissionChan, SchedulableChan, SchedulableId, \\
+  \t1 MissionId, MissionIds, TopLevelMissionSequencerChan,\\
+  \t1 SafeletMethChan, FrameworkChan, AperiodicEventHandlerChan
+  \end{zsection}
+%
+\begin{circus}
+  \circprocess AperiodicEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; aperiodicType : AperiodicType \circspot ~\circbegin
+\end{circus}
+%
+\begin{schema}{\circstateignore State}
+  controllingMission : MissionID\\
+  applicationTerminating : \boolean \\
+  pending : \boolean \\
+  data : \num \\
+\end{schema}
+%
+\begin{parser}
+\begin{circusaction}
+\circstate State
+\end{circusaction}
+\end{parser}
+%
+\begin{schema}{Init}
+  State~'\\
+\where
+  controllingMission' = nullMissionId\\
+  applicationTerminating' = \false \\
+  pending' = \false
+\end{schema}
+%
+\begin{circusaction}
+Start \circdef\\
+\t1  (
+   	Register \circseq \\
+   	Activate
+  )  \\
+\t1  \extchoice\\
+\t1  (
+  	activate\_schedulables?someMissionID \then \\
+  	Start
+  ) \\
+\t1  \extchoice \\
+\t1  ( 
+	done\_toplevel\_sequencer \then \\
+	applicationTerminating := \true \\
+     )
+\end{circusaction}
+%
+\begin{circusaction}
+Register \circdef \\
+\t1    register~.~schedulable~?~missionID \then \\
+\t1    controllingMission := missionID 
+\end{circusaction}
+%  
+\begin{circusaction}
+Activate ~ \circdef ~ \\
+\t1    activate\_schedulables~.~controllingMission \then \\
+\t1    \Skip
+\end{circusaction}
+%
+\begin{circusaction}
+Execute \circdef  \\
+\t1 ( 
+	(
+		\circif aperiodicType = aperiodic \circthen \\
+			Ready\\
+		\circelse aperiodicType = aperiodicLong \circthen \\
+			ReadyLong \\
+		\circfi
+	)
+   	 \lpar \{pending, data\}  |\lchanset leave\_dispatch \rchanset| \emptyset \rpar\\
+  SignalTermination\\
+)
+\end{circusaction}
+%short
+\begin{circusaction}
+Ready \circdef \\
+\t1 (
+	fire.schedulable \then\\ 
+	releaseCall~.~schedulable \then\\ 
+	Release
+    )\\
+\t1 \extchoice\\
+\t1 (
+	leave\_dispatch~.~schedulable \then\\
+	\Skip
+    )
+\end{circusaction}
+%long
+\begin{circusaction}
+ReadyLong \circdef \\
+\t1 (	
+	fireLong~.~schedulable~?~longData \then\\ 
+	data := longData \circseq \\
+	releaseLongCall~.~schedulable~.~data \then\\ 
+	ReleaseLong 
+     )\\
+\t1 \extchoice\\
+\t1 (
+	leave\_dispatch~.~schedulable \then\\
+	\Skip
+     )
+\end{circusaction}
+%
+\begin{circusaction}
+SignalTermination \circdef \\
+\t1	( 
+		signalTerminationCall~.~schedulable \then\\
+		leave\_dispatch~.~schedulable \then\\
+		signalTerminationRet~.~schedulable \then\\
+		done\_schedulable~.~schedulable \then\\
+		\Skip 
+	)
+\end{circusaction}
+%short
+\begin{circusaction}
+Release \circdef \\	
+\t1 ( 
+		fire.schedulable \then\\ 
+		pending := \true \circseq\\ 
+		Release
+	)\\
+\t1	\extchoice\\
+\t1	(
+		releaseRet.schedulable \then \\
+		\circif pending = \true \circthen\\
+\t2		( 
+			pending := \false \circseq \\ 
+			releaseCall.schedulable \then\\ 
+			Release
+		)\\
+		\circelse pending = \false \circthen\\
+\t2			 Ready\\
+		\circfi
+\t1	)\\
+\t1	 \extchoice\\
+\t1	(
+		leave\_dispatch.schedulable \then \\
+		\Skip
+	)\\
+\end{circusaction}
+%long
+\begin{circusaction}
+ReleaseLong \circdef \\	
+\t1 ( 
+		fireLong.schedulable~?~longData \then\\ 
+		data := longData \circseq \\
+		pending := \true \circseq\\ 
+		ReleaseLong
+	)\\
+\t1		\extchoice\\
+\t1	(
+		releaseLongRet.schedulable \then \\
+		\circif pending = \true \circthen\\
+\t2		( 
+			pending := \false \circseq \\ 
+			releaseLongCall.schedulable.data \then\\ 
+			ReleaseLong
+		)\\
+		\circelse pending = \false \circthen\\
+\t2			 ReadyLong \\
+		\circfi
+\t1	)\\
+\t1	 \extchoice\\
+\t1	(
+		leave\_dispatch.schedulable \then \\
+		\Skip
+	)\\
+\end{circusaction}
+%
+\begin{circusaction}
+Cleanup \circdef \\
+\t1 cleanupSchedulableCall~.~schedulable \then\\
+\t1 cleanupSchedulableRet~.~schedulable \then \\
+\t1 \Skip  
+\end{circusaction}
+%
+\begin{circusaction}
+\circspot ( \circmu X \circspot (  \lschexpract Init \rschexpract \circseq Start \circseq\\
+   ( \circif applicationTerminating = \false \circthen \\
+	\t2 (Execute \circseq Cleanup \circseq X)\\
+ \circelse applicationTerminating = \true \circthen \\ 
+ \t2 \Skip\\ 
+\circfi)))
+\end{circusaction}
+%
+\begin{circus}
+  \circend
+\end{circus}
