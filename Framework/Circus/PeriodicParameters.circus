@@ -1,0 +1,31 @@
+\begin{zsection}
+  \SECTION ~ PriorityParameters ~ \parents ~ scj\_prelude, JTime, SchedulableId
+\end{zsection}
+%
+\begin{axdef}
+PriorityParameters == JTime \cross JTime \cross JTime \cross SchedulableID
+\end{axdef}
+%
+\begin{axdef}
+startTimeOf : PriorityParameters \fun JTime 
+\where
+\forall pp: PriorityParameters @ startTimeOf(pp) = pp.1
+\end{axdef}
+%
+\begin{axdef}
+periodOf : PriorityParameters \fun JTime 
+\where
+\forall pp: PriorityParameters @ periodOf(pp) = pp.2
+\end{axdef}
+%
+\begin{axdef}
+deadlineOf : PriorityParameters \fun JTime 
+\where
+\forall pp: PriorityParameters @ deadlineOf(pp) = pp.3
+\end{axdef}
+%
+\begin{axdef}
+missHandlerOf : PriorityParameters \fun SchedulableID 
+\where
+\forall pp: PriorityParameters @ missHandlerOf(pp) = pp.4
+\end{axdef}

@@ -51,7 +51,3 @@ ElementsOf : PriorityQueue \fun \power ThreadID \\
 \t2		elems = \bigcup (\ran \limg \ran pq \rimg) \\
 \t2		@ ElementsOf(pq) = elems )
 \end{axdef}
-
-
-
-

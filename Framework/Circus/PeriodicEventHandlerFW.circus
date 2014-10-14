@@ -1,11 +1,11 @@
 \begin{zsection}
   \SECTION ~ PeriodicEventHandlerFW ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
    \t1 MissionId, MissionIds, TopLevelMissionSequencerChan, PeriodicEventHandlerChan, \\
-   \t1 SafeletMethChan, FrameworkChan
+   \t1 SafeletMethChan, FrameworkChan, PriorityParameters
 \end{zsection}
 %
 \begin{circus}
-  \circprocess PeriodicEventHandlerFW ~ \circdef ~ schedulable : SchedulableID \circspot ~\circbegin
+  \circprocess PeriodicEventHandlerFW ~ \circdef ~ schedulable : SchedulableID ; priorityParameters : PriorityParameters \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
@@ -27,33 +27,21 @@
 \end{circusaction}
 \end{parser}
 %
-\begin{schema}{InitState}
+\begin{schema}{Init}
   State~'\\
-  p? : JTime \\
-  s? : JTime \\
-  d? : JTime \\
-  h? : SchedulableID
 \where
   controllingMission' = nullMissionId\\
   applicationTerminating' = \false \\
   periodicTerminating' = \false \\
-  period' = p?\\
-  s? = NULL \implies startTime' = time~(0,0)\\
-  s? \neq NULL \implies startTime' = s?\\  
-  d? = NULL \implies deadline' = period'\\
-  d? \neq NULL \implies deadline' =  d? \\
+  period' = periodOf(priorityParameters)\\
+  startTimeOf(priorityParameters) = NULL \implies startTime' = time~(0,0)\\
+  startTimeOf(priorityParameters) \neq NULL \implies startTime' = startTimeOf(priorityParameters)\\  
+  deadlineOf(priorityParameters) = NULL \implies deadline' = period'\\
+  deadlineOf(priorityParameters) \neq NULL \implies deadline' =  deadlineOf(priorityParameters) \\
   missedReleases' = 0 \\
-  deadlineMissHandler' = h? \\
+  deadlineMissHandler' = missHandlerOf(priorityParameters) \\
 \end{schema}
 % 
-\begin{circusaction}
-Init \circdef \\
-\t1	get\_initialStartTime~.~schedulable~?~s \then \\
-\t1	get\_initialPeriod~.~schedulable~?~p \then \\
-\t1 	get\_initialDeadlineAndHandler~.~schedulable~?~d~?~h \then \\
-\t1	\lschexpract InitState \rschexpract 
-\end{circusaction}
-%
 \begin{circusaction}
 Start \circdef\\
 \t1 (
@@ -264,7 +252,7 @@ PeriodicTerminatingController \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
-\circspot(\circmu X \circspot( Init \circseq Start \circseq\\
+\circspot(\circmu X \circspot( \lschexpract Init \rschexpract  \circseq Start \circseq\\
 (\circif applicationTerminating = \false \circthen \\ 
 	\t2 (Execute \circseq Cleanup \circseq X)\\
  \circelse applicationTerminating = \true \circthen \\ 

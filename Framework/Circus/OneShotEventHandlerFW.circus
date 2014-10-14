@@ -5,7 +5,7 @@
 \end{zsection}
 %
 \begin{circus}
-  \circprocess OneShotEventHandlerFW ~ \circdef ~ schedulable : SchedulableID \circspot ~\circbegin
+  \circprocess OneShotEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; initialStartTime: JTime \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
@@ -20,21 +20,14 @@
 \end{circusaction}
 \end{parser}
 %
-\begin{schema}{InitState}
- State~'\\ 
- s? : JTime \\
+\begin{schema}{Init}
+ State~'\\  
  \where
   controllingMission' = nullMissionId\\
   applicationTerminating' = \false \\
-  s? = NULL \implies startTime' = time~(0,0)\\
-  s? \neq NULL \implies startTime' = s?\\  
+  initialStartTime = NULL \implies startTime' = time~(0,0)\\
+  initialStartTime \neq NULL \implies startTime' = initialStartTime\\  
 \end{schema}
-%
-\begin{circusaction}
-Init \circdef \\
-\t1	get\_initialStartTime~.~schedulable~?~s \then \\
-\t1	\lschexpract InitState \rschexpract
-\end{circusaction}
 %
 \begin{circusaction}
 Start \circdef\\
@@ -261,7 +254,7 @@ Cleanup \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
-\circspot ( \circmu X \circspot (  Init \circseq Start \circseq\\
+\circspot ( \circmu X \circspot (  \lschexpract Init \rschexpract \circseq Start \circseq\\
 ( \circif applicationTerminating = \false \circthen \\ 
 		\t1 (Execute \circseq Cleanup \circseq X)\\
 	\circelse applicationTerminating = \true \circthen \\ 
