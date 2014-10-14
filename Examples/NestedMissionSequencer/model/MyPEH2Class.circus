@@ -1,0 +1,94 @@
+\begin{zsection}
+  \SECTION ~ MyPEH2Class ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
+   \t1 MissionId, MissionIds, TopLevelMissionSequencerChan, PeriodicEventHandlerChan, \\
+   \t1 SafeletMethChan, FrameworkChan
+\end{zsection}
+%
+\begin{circus}
+  \circclass ~  MyPEH2Class ~\circdef ~ \circbegin 
+\end{circus}
+%
+%public MyPEH(PriorityParameters priority, PeriodicParameters release, StorageParameters storage, Mission m) {
+%			super(priority, release, storage, "mission1--peh");
+%			this.m = m;
+%		}
+%	
+%		public void handleAsyncEvent() {
+%			devices.Console.println("Mission 1: PEH1: " + count);
+%			count++;
+%			if (count == 10) {
+%				m.requestTermination();
+%				devices.Console.println("Mission T");
+%			}
+%		}
+%	}
+\begin{schema}{\circstateignore State}
+	count : \num \\	
+	m : MissionID \\
+	startTime : JTime \\
+	period : JTime \\
+	deadline : JTime \\
+	deadlineMissHandler : SchedulableID \\
+\end{schema}
+%
+\begin{parser}
+\begin{circusaction}
+\circstate State
+\end{circusaction}
+\end{parser}
+%
+\begin{schema}{\circinitial Init}
+	State~' \\
+	mIn? : MissionID \\
+	startTimeIn? : JTime \\
+	periodIn? : JTime \\
+	deadlineIn? : JTime \\
+	deadlineMissHandlerIn? : SchedulableID \\
+\where
+	m' = mIn? \\
+	count' = 0 \\	
+	startTime' =startTimeIn? \\
+	period' = periodIn?\\
+	deadline' = deadlineIn? \\
+	deadlineMissHandler' = deadlineMissHandlerIn? \\
+\end{schema}
+%
+\begin{circusaction}
+\circpublic handleAsyncEvent \circdef \circvar ret : \boolean \circspot \\
+\t1 count := count +1 \circseq \\
+\t1 \circif count = 10 \circthen \\
+\t2 ret:= \true \\			
+\t1 \circelse \lnot (count = 10) \circthen \\
+\t2 ret := \false \\ 	
+\t1 \circfi 
+\end{circusaction}
+%
+\begin{circusaction}
+\circpublic getStartTime \circdef \circvar ret : JTime \circspot \\
+\t1 ret:= startTime 
+\end{circusaction}
+%
+\begin{circusaction}
+\circpublic getdeadline \circdef \circvar ret : JTime \circspot \\
+\t1 ret:= deadline
+\end{circusaction}
+%
+\begin{circusaction}
+\circpublic getPeriod \circdef \circvar ret : JTime \circspot \\
+\t1 ret:= period
+\end{circusaction}
+%
+\begin{circusaction}
+\circpublic getDeadlineMissHandler \circdef \circvar ret : SchedulableID \circspot \\
+\t1 ret:= deadlineMissHandler
+\end{circusaction}
+%
+\begin{parser}
+\begin{circusaction}
+  \circspot \Skip
+\end{circusaction}}
+\end{parser}
+%
+\begin{circus}
+  \circend
+\end{circus}

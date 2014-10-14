@@ -1,0 +1,73 @@
+\begin{zsection}
+  \SECTION ~ NMSThirdSequencerApp~ \parents ~MissionSequencerMethChan, SchedulableChan, TopLevelMissionSequencerChan, MissionId, MissionIds, MissionMethChan, SchedulableId, MissionFWChan, FrameworkChan, NMSThirdMissionSequencerClass
+\end{zsection}
+%
+\begin{circus}
+\circprocess ~  NMSThirdSequencerApp \circdef \circbegin
+\end{circus}
+%
+\begin{schema}{State}
+this : NMSThirdMissionSequencerClass
+\end{schema}
+
+\begin{parser}
+\begin{circusaction}
+\circstate State
+\end{circusaction}
+\end{parser}
+%
+\begin{schema}{Init}
+State~'\\
+\where
+this' = \circnew NMSThirdMissionSequencerClass
+\end{schema}
+
+%public class ThirdMissionSequencer extends MissionSequencer<Mission>{
+%    private Mission myMission;
+%    private int count = 0;
+%    public  ThirdMissionSequencer(PriorityParameters priority, StorageParameters storage) {
+%	super(priority, storage,"3ms");
+%//	super(priority, storage);
+%	myMission = new MyMission3();
+%    }
+
+%    protected Mission getNextMission() {
+%//	return myMission;
+%	if (count == 0) {
+%	    count ++;
+%//	    devices.Console.println("3rd sequencer: has next misison");
+%	    return myMission;
+%	}
+%	else{
+%//	    devices.Console.println("3rd sequencer: has no more misison");
+%	    return null;
+%	}
+%   }
+%}
+\begin{circusaction}
+GetNextMission \circdef \\
+\t1    getNextMissionCall~.~ThirdMissionSequencerID \then \\
+\t1 \left( \begin{array}{l}
+	\circvar ret : MissionID \circspot \\
+	this~.~getNextMission(ret) \circseq \\
+	getNextMissionRet~.~ThirdMissionSequencerID~!~ret \then\\
+	\Skip
+	\end{array} \right)
+\end{circusaction}
+%
+\begin{circusaction}
+Methods \circdef \\
+\t1 \left( \begin{array}{l}
+	GetNextMission \circseq \\
+	Methods
+	\end{array} \right)
+\end{circusaction}
+%
+\begin{circusaction}
+\circspot Methods \circinterrupt \\
+	\t1		(end\_sequencer\_app~.~ThirdMissionSequencerID \then \Skip)
+\end{circusaction}
+%
+\begin{circus}
+  \circend
+\end{circus}

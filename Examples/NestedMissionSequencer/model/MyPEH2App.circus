@@ -1,0 +1,104 @@
+\begin{zsection}
+  \SECTION ~ MyPEH2App ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
+   \t1 MissionId, MissionIds, TopLevelMissionSequencerChan, PeriodicEventHandlerChan, \\
+   \t1 SafeletMethChan, FrameworkChan, MyPEH2Class
+\end{zsection}
+%
+\begin{circus}
+  \circprocess ~  MyPEH2App ~\circdef ~ m : MissionID \circspot \circbegin 
+\end{circus}
+%	private class MyPEH extends PeriodicEventHandler {
+%		int count = 0;
+%		Mission m;
+%
+%		public MyPEH(PriorityParameters priority, PeriodicParameters release, StorageParameters storage, Mission m) {
+%			super(priority, release, storage, "mission2--peh1");
+%			this.m = m;			
+%		}
+%
+%		public void handleAsyncEvent() {
+%			devices.Console.println("Mission 2: PEH1: " + count);
+%			count++;
+%			if (count == 10) {
+%				m.requestTermination();
+%				devices.Console.println("Mission T");
+%			}
+%		}	
+%	}
+\begin{schema}{\circstateignore State}
+	this : MyPEH2Class \\
+\end{schema}
+%
+\begin{parser}
+\begin{circusaction}
+\circstate State
+\end{circusaction}
+\end{parser}
+%
+\begin{schema}{Init}
+	State~'
+\where
+	this' = \circnew MyPEH2Class
+\end{schema}
+%
+\begin{circusaction}
+PeriodicParameters \circdef \\
+\t1 \circvar startTime : JTime ; period: JTime ; deadline : JTime; deadlineMissHandler : SchedulableID \circspot \\
+\t1 this.getStartTime(startTime) \circseq \\
+\t1 this.getdeadline(deadline) \circseq \\
+\t1 this.getPeriod(period) \circseq \\
+\t1 this.getDeadlineMissHandler(deadlineMissHandler)  \circseq \\
+
+\t1	get\_initialStartTime~.~MyPEH2~!~startTime \then \\
+\t1	get\_initialPeriod~.~MyPEH2~!~period \then \\
+\t1 	get\_initialDeadlineAndHandler~.~MyPEH2~!~deadline~!~deadlineMissHandler \then \\
+\t1 \Skip
+\end{circusaction}
+%
+\begin{circusaction}
+Release \circdef \\
+\t1 releaseCall~.~MyPEH2 \then \\
+\t1 \left( \begin{array}{l}
+	\circvar ret : \boolean \circspot \\
+	this.handleAsyncEvent(ret) \circseq \\
+	\circif ret = \false \circthen \\
+	\left( \begin{array}{l}
+		releaseRet~.~MyPEH2 \then \\
+		\Skip\\
+	\end{array} \right) \\
+	\circelse ret = \true \circthen \\
+	\left( \begin{array}{l}
+		requestTermination.m.MyPEH2 \then \\	
+		releaseRet~.~MyPEH2 \then \\
+		\Skip\\
+	\end{array} \right)
+	\circfi
+    \end{array} \right)
+\end{circusaction}
+%
+%
+\begin{circusaction}
+Cleanup \circdef \\
+\t1 cleanupSchedulableCall~.~MyPEH2 \then\\
+\t1 cleanupSchedulableRet~.~MyPEH2 \then \Skip
+\end{circusaction}
+%
+\begin{circusaction}
+Methods \circdef \\
+\t1 \circmu X \circspot \left( \begin{array}{l}
+				PeriodicParameters \\
+				\extchoice \\
+				Release \\
+				\extchoice \\
+				Cleanup
+			  \end{array} \right)
+\end{circusaction}
+%
+\begin{circusaction}
+\circspot ( \lschexpract Init \rschexpract \circseq Methods)  \circinterrupt \\
+		\t1			(end\_periodic\_app~.~MyPEH2 \then \Skip)
+\end{circusaction}		
+%
+\begin{circus}
+  \circend
+\end{circus}
