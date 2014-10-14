@@ -1,7 +1,6 @@
 \begin{zsection}
   \SECTION ~ MissionIds ~ \parents ~ scj\_prelude, MissionId
 \end{zsection}
-\extracircusvspace
 %
 \begin{axdef}
  TopMission1ID  : MissionID\\

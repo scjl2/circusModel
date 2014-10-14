@@ -1,7 +1,7 @@
 \begin{zsection}
   \SECTION ~ MyPEH1App ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
    \t1 MissionId, MissionIds, TopLevelMissionSequencerChan, PeriodicEventHandlerChan, \\
-   \t1 SafeletMethChan, FrameworkChan, MyPEH1Class
+   \t1 SafeletMethChan, FrameworkChan
 \end{zsection}
 %
 \begin{circus}
@@ -23,7 +23,7 @@
 %		}
 %	}
 \begin{schema}{\circstateignore State}
-	this: MyPEH1Class
+	count : \num \\	
 \end{schema}
 %
 \begin{parser}
@@ -35,28 +35,25 @@
 \begin{schema}{Init}
 	State~'
 \where
-	this' = \circnew MyPEH1Class	
+	count' = 0 \\	
 \end{schema}
 %
 \begin{circusaction}
 Release \circdef \\
 \t1 releaseCall~.~MyPEH1 \then \\
-\t1 \left( \begin{array}{l}
-	\circvar ret : \boolean \circspot \\
-	this.handleAsyncEvent(ret) \circseq \\
-	\circif ret = \false \circthen \\
-	\left( \begin{array}{l}
+\t1 count := count +1 \circseq \\
+\t1 \circif count = 10 \circthen \\
+\t2 (
 		releaseRet~.~MyPEH1 \then \\
 		\Skip\\
-	\end{array} \right)\\
-	\circelse ret = \true \circthen \\
-	\left( \begin{array}{l}
+	)
+\t1 \circelse \lnot (count = 10) \circthen \\	
+\t2 (
 		requestTermination.m.MyPEH1 \then \\	
 		releaseRet~.~MyPEH1 \then \\
 		\Skip\\
-	\end{array} \right) \\
-	\circfi
-    \end{array} \right)
+	)
+\t1 \circfi 	 
 \end{circusaction}
 %
 \begin{circusaction}
@@ -67,11 +64,11 @@ Cleanup \circdef \\
 %
 \begin{circusaction}
 Methods \circdef \\
-\t1 \circmu X \circspot \left( \begin{array}{l}
+\t1 \circmu X \circspot ( 
 				Release \\
 				\extchoice \\
 				Cleanup
-			\end{array} \right) \circseq X
+			) \circseq X
 \end{circusaction}
 %
 \begin{circusaction}
