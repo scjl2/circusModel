@@ -37,20 +37,6 @@
 \where
 	this' = \circnew MyPEH1Class	
 \end{schema}
-% or split it?
-\begin{circusaction}
-PeriodicParameters \circdef \\
-\t1 \circvar startTime : JTime ; period: JTime ; deadline : JTime; deadlineMissHandler : SchedulableID \circspot \\
-\t1 this.getStartTime(startTime) \circseq \\
-\t1 this.getdeadline(deadline) \circseq \\
-\t1 this.getPeriod(period) \circseq \\
-\t1 this.getDeadlineMissHandler(deadlineMissHandler)  \circseq \\
-
-\t1	get\_initialStartTime~.~MyPEH1~!~startTime \then \\
-\t1	get\_initialPeriod~.~MyPEH1~!~period \then \\
-\t1 	get\_initialDeadlineAndHandler~.~MyPEH1~!~deadline~!~deadlineMissHandler \then \\
-\t1 \Skip
-\end{circusaction}
 %
 \begin{circusaction}
 Release \circdef \\
@@ -82,8 +68,6 @@ Cleanup \circdef \\
 \begin{circusaction}
 Methods \circdef \\
 \t1 \circmu X \circspot \left( \begin{array}{l}
-				PeriodicParameters \\
-				\extchoice \\
 				Release \\
 				\extchoice \\
 				Cleanup
