@@ -13,7 +13,7 @@ public class MyMission1 extends Mission
 	@Override
 	protected void initialize() 
 	{
-		MyPEH myPEH = new MyPEH(new PriorityParameters(5), new PeriodicParameters(new RelativeTime(Clock.getRealtimeClock()),
+		MyPEH1 myPEH = new MyPEH1(new PriorityParameters(5), new PeriodicParameters(new RelativeTime(Clock.getRealtimeClock()),
 				new RelativeTime(1000, 0, Clock.getRealtimeClock())), MySCJ.storageParameters_Handlers, this);
 		myPEH.register();
 	}

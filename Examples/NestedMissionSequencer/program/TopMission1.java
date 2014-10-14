@@ -7,7 +7,7 @@ public class TopMission1 extends Mission
 	@Override
 	protected void initialize() 
 	{
-		FirstSequencer FirstSeq = new FirstSequencer(new PriorityParameters(5), MySCJ.storageParameters);
+		FirstMissionSequencer FirstSeq = new FirstMissionSequencer(new PriorityParameters(5), MySCJ.storageParameters);
 		FirstSeq.register();
 
 		SecondMissionSequencer SecondSeq = new SecondMissionSequencer(new PriorityParameters(15), MySCJ.storageParameters);
