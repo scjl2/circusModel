@@ -1,12 +1,12 @@
-package myTest;
-
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
 
-public class TopMission1 extends Mission {
+public class TopMission1 extends Mission 
+{
 
 	@Override
-	protected void initialize() {
+	protected void initialize() 
+	{
 		FirstSequencer FirstSeq = new FirstSequencer(new PriorityParameters(5), MySCJ.storageParameters);
 		FirstSeq.register();
 
@@ -18,7 +18,8 @@ public class TopMission1 extends Mission {
 	}
 
 	@Override
-	public long missionMemorySize() {
+	public long missionMemorySize() 
+	{
 		return 60000;
 	}
 

@@ -1,35 +1,31 @@
-package myTest;
-
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
 import javax.safetycritical.MissionSequencer;
 import javax.safetycritical.StorageParameters;
 
-public class MySequencer extends MissionSequencer<Mission> {
-    private Mission[] missionArray;
-    private int count = 0;
+public class MySequencer extends MissionSequencer<Mission> 
+{
+    private Mission myMission;
+    private boolean done = false;
 
-    public MySequencer(PriorityParameters priority, StorageParameters storage) {
-	super(priority, storage,"OM--ms");
-//	super(priority, storage);
-	// initialize missions here
-	missionArray = new Mission[2];
-	missionArray[0] = new TopMission1();
-	// missionArray[2] = new TopMission3();
+    public MySequencer(PriorityParameters priority, StorageParameters storage) 
+    {
+	    super(priority, storage,"OM--ms");
+
+    	myMission = new TopMission1();
     }
 
     @Override
-    protected Mission getNextMission() {
-	if (count == 0) {
-	    count++;
-	    return missionArray[0];
-	}
-//	if (count == 1 || count == 2) {
-//	    count++;
-//	    return missionArray[1];
-//	}
-	
-	return null;
-
+    protected Mission getNextMission() 
+    {
+	    if (done == false) 
+		{
+	   		done = true;
+		    return myMission;
+		}
+		else
+		{
+			return null;
+		}
     }
 }

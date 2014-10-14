@@ -1,26 +1,25 @@
-package myTest;
-
-
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
 import javax.safetycritical.MissionSequencer;
 import javax.safetycritical.Safelet;
 
-public class MyApp implements Safelet<Mission>{
-	
+public class MyApp implements Safelet<Mission>
+{	
 	@Override
-	public MissionSequencer<Mission> getSequencer() {
+	public MissionSequencer<Mission> getSequencer() 
+	{
 		return new MySequencer(new PriorityParameters(15), MySCJ.storageParameters);
 	}
 
 	@Override
-	public long immortalMemorySize() {
+	public long immortalMemorySize() 
+	{
 		return 10000;
 	}
 
 	@Override
-	public void initializeApplication() {
-	    // TODO Auto-generated method stub
+	public void initializeApplication() 
+	{	   
 	    
 	}
 
