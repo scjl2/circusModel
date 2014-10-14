@@ -71,7 +71,7 @@ Release \circdef \\
 		requestTermination.m.MyPEH2 \then \\	
 		releaseRet~.~MyPEH2 \then \\
 		\Skip\\
-	\end{array} \right)
+	\end{array} \right) \\
 	\circfi
     \end{array} \right)
 \end{circusaction}
@@ -91,7 +91,7 @@ Methods \circdef \\
 				Release \\
 				\extchoice \\
 				Cleanup
-			  \end{array} \right)
+			  \end{array} \right) \circseq X
 \end{circusaction}
 %
 \begin{circusaction}

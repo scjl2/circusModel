@@ -42,11 +42,11 @@ CleanupPhase \circdef \\
 %
 \begin{circusaction}
 Methods \circdef \\
-\t1 \left( \begin{array}{l}
+\t1 \circmu X \circspot \left( \begin{array}{l}
 		InitializePhase \\
 		\extchoice \\
 		CleanupPhase
-	\end{array} \right)
+	\end{array} \right) \circseq X
 \end{circusaction}
 %
 \begin{circusaction}
