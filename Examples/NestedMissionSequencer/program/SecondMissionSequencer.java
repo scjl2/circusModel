@@ -1,3 +1,5 @@
+package simpleNestedSequencer;
+
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
 import javax.safetycritical.MissionSequencer;
@@ -17,6 +19,7 @@ public class SecondMissionSequencer extends MissionSequencer<Mission>
     @Override
     protected Mission getNextMission() 
     {
+    	devices.Console.println(getName() + ":getNextMission");
         if (done == false) 
 		{
 	   		done = true;

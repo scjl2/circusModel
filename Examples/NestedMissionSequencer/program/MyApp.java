@@ -1,3 +1,5 @@
+package simpleNestedSequencer;
+
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
 import javax.safetycritical.MissionSequencer;
@@ -17,10 +19,8 @@ public class MyApp implements Safelet<Mission>
 		return 10000;
 	}
 
-	@Override
 	public void initializeApplication() 
-	{	   
-	    
+	{	   	  
+		devices.Console.println("Init Application");
 	}
-
 }

@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ MyPEH1App ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
+  \SECTION ~ MyPEH3App ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
    \t1 MissionId, MissionIds, TopLevelMissionSequencerChan, PeriodicEventHandlerChan, \\
    \t1 SafeletMethChan, FrameworkChan
 \end{zsection}

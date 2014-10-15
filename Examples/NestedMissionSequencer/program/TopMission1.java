@@ -1,3 +1,5 @@
+package simpleNestedSequencer;
+
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
 
@@ -7,6 +9,8 @@ public class TopMission1 extends Mission
 	@Override
 	protected void initialize() 
 	{
+		devices.Console.println("TopMission1" + ":init");
+		
 		FirstMissionSequencer FirstSeq = new FirstMissionSequencer(new PriorityParameters(5), MySCJ.storageParameters);
 		FirstSeq.register();
 

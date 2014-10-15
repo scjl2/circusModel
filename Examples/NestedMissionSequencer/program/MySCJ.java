@@ -1,3 +1,5 @@
+package simpleNestedSequencer;
+
 import javax.safetycritical.Launcher;
 import javax.safetycritical.StorageParameters;
 import javax.scj.util.Const;

@@ -1,13 +1,17 @@
+package simpleNestedSequencer;
+
+import javax.safetycritical.Mission;
 import javax.safetycritical.PeriodicEventHandler;
+import javax.safetycritical.StorageParameters;
 import javax.realtime.PeriodicParameters;
 import javax.realtime.PriorityParameters;
 
-private class MyPEH extends PeriodicEventHandler 
+public class MyPEH2 extends PeriodicEventHandler 
 {
 		int count = 0;
 		Mission m;
 
-		public MyPEH(PriorityParameters priority, PeriodicParameters release, StorageParameters storage, Mission m) 
+		public MyPEH2(PriorityParameters priority, PeriodicParameters release, StorageParameters storage, Mission m) 
 		{
 			super(priority, release, storage, "mission2--peh1");
 			this.m = m;
@@ -17,6 +21,7 @@ private class MyPEH extends PeriodicEventHandler
 		@Override
 		public void handleAsyncEvent() 
 		{
+			devices.Console.println(getName() + ":handleAsyncEvent");
 			count++;
 
 			if (count == 10) 

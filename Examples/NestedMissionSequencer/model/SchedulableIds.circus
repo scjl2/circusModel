@@ -4,7 +4,7 @@
 \extracircusvspace
 %
 \begin{axdef}
- FirstSequencerID  : SchedulableID\\
+ FirstMissionSequencerID  : SchedulableID\\
  SecondMissionSequencerID  : SchedulableID\\   
  ThirdMissionSequencerID  : SchedulableID\\
  MyPEH1  : SchedulableID\\
@@ -12,6 +12,6 @@
  MyPEH3  : SchedulableID\\
 \where
   distinct \langle TopLevelSequencerId, nullSequencerId , nullSchedulableId,\\
-  \t2 FirstSequencerID,SecondMissionSequencerID ,ThirdMissionSequencerID,\\
+  \t2 FirstMissionSequencerID,SecondMissionSequencerID ,ThirdMissionSequencerID,\\
   \t2 MyPEH1,MyPEH2 ,MyPEH3  \rangle
 \end{axdef}
