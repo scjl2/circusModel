@@ -1,17 +1,16 @@
 \begin{zsection}
   \SECTION ~ OneShotEventHandlerFW ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
    \t1 MissionId, MissionIds,TopLevelMissionSequencerChan, OneShotEventHandlerChan,\\
-   \t1 SafeletMethChan, FrameworkChan
+   \t1 SafeletMethChan, FrameworkChan, AperiodicParameters
 \end{zsection}
 %
 \begin{circus}
-  \circprocess OneShotEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; initialStartTime: JTime \circspot ~\circbegin
+  \circprocess OneShotEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; startTime: JTime ; aperiodicParameters : AperiodicParameters \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
   controllingMission : MissionID\\
-  applicationTerminating : \boolean \\
-  startTime : JTime \\
+  applicationTerminating : \boolean \\  
 \end{schema}
 %
 \begin{parser}
@@ -24,9 +23,7 @@
  State~'\\  
  \where
   controllingMission' = nullMissionId\\
-  applicationTerminating' = \false \\
-  initialStartTime = NULL \implies startTime' = time~(0,0)\\
-  initialStartTime \neq NULL \implies startTime' = initialStartTime\\  
+  applicationTerminating' = \false \\  
 \end{schema}
 %
 \begin{circusaction}

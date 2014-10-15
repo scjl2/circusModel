@@ -1,11 +1,11 @@
 \begin{zsection}
   \SECTION ~ AperiodicEventHandlerFW ~ \parents ~ MissionChan, SchedulableChan, SchedulableId, \\
   \t1 MissionId, MissionIds, TopLevelMissionSequencerChan,\\
-  \t1 SafeletMethChan, FrameworkChan, AperiodicEventHandlerChan
+  \t1 SafeletMethChan, FrameworkChan, AperiodicEventHandlerChan, AperiodicParameters
   \end{zsection}
 %
 \begin{circus}
-  \circprocess AperiodicEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; aperiodicType : AperiodicType \circspot ~\circbegin
+  \circprocess AperiodicEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; aperiodicType : AperiodicType ; aperiodicParameters : AperiodicParameters \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
