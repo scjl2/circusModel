@@ -11,6 +11,8 @@
 \begin{schema}{\circstateignore State}
   controllingMission : MissionID\\
   applicationTerminating : \boolean \\  
+  deadline : JTime \\
+  deadlineMissHandler : SchedulableID \\
 \end{schema}
 %
 \begin{parser}
@@ -24,6 +26,8 @@
  \where
   controllingMission' = nullMissionId\\
   applicationTerminating' = \false \\  
+  deadline' = deadlineOf(aperiodicParameters) \\
+  deadlineMissHandler' = missHandlerOf(aperiodicParameters) \\
 \end{schema}
 %
 \begin{circusaction}
@@ -59,25 +63,40 @@ Activate ~ \circdef ~ \\
 \begin{circusaction}
 Execute \circdef  \\
 \t1 (
-	(
 		(
-			( 
-				ScheduleOrWait \\
-					\lpar \emptyset | ReleaseSync | \emptyset \rpar \\
-				Release  
-			) \\
-				\t1   \lpar \emptyset | MethodsSync | \emptyset \rpar\\
-			Methods\\
-		)
-		\lpar \emptyset | \lchanset end\_schedule \rchanset | \emptyset \rpar\\
-	SignalTermination 
-  ) \\
-  \t1   \lpar \emptyset| STCSync | \{startTime\} \rpar\\
-StartTimeController
-)
+			(
+				Run
+					\t1   \lpar \emptyset | MethodsSync | \emptyset \rpar\\
+				Methods\\
+			)
+			\lpar \emptyset | \lchanset end\_schedule \rchanset | \emptyset \rpar\\
+		SignalTermination 
+	  ) \\
+	  	\t1   \lpar \emptyset| STCSync | \{startTime\} \rpar\\
+		StartTimeController
+	)
 \end{circusaction}
-
-
+%
+\begin{circusaction}
+Run \circdef \\
+\t1	\circif deadlineMissHandler = nullSchedulableId \circthen \\
+\t2 	( 
+					ScheduleOrWait \\
+						\lpar \emptyset | ReleaseSync | \emptyset \rpar \\
+					Release  
+	) \\
+\t1 \circelse deadlineMissHandler \neq nullSchedulableId \circthen \\
+\t2 (
+		(
+			ScheduleOrWait \\
+				\lpar \emptyset | ReleaseSync | \emptyset \rpar \\
+			Release  
+		)
+			\lpar \emptyset | DeadlineSync | \emptyset \rpar \\
+			DeadlineClock	
+	)
+\t1 \circfi
+\end{circusaction}
 %
 \begin{circusaction}
 ScheduleOrWait \circdef\\ 
@@ -92,24 +111,54 @@ ScheduleOrWait \circdef\\
 \begin{circusaction}
 Release \circdef \\
 \t1 ( 
-    releaseCall~.~schedulable \then \\
-    releaseRet.schedulable \then  \\  
-    Release
+    		releaseCall~.~schedulable \then \\
+    		releaseRet~.~schedulable \then  \\ 
+	    	rele	ase\_complete~.~schedulable \then \\
+    		Release
 \t1  ) \\
 \t1 \extchoice\\
 \t1 (
 		reschedule\_handler~.~schedulable~?~newStartTime \then \\
 		set\_startTime~.~schedulable~!~newStartTime \then \\
 		Release
-	)\\
+    )\\
 \t1 \extchoice\\
 \t1 (
 		end\_schedule.schedulable \then \\
 		\Skip
-	)
+     )
 \end{circusaction}
 %
+\begin{circusaction}
+DeadlineClock \circdef \\
 
+\t1 releaseCall~.~schedulable \then \\ 
+\t1	(
+		(		
+			(
+				%\circwait valueOf(deadline) \circseq \\
+				fire~.~deadlineMissHandler \then \\				
+				DeadlineClock 
+			) \\
+			\extchoice \\
+			(
+	 			release\_complete~.~schedulable \then \\
+				DeadlineClock 
+			)	
+			\extchoice \\
+			(
+	 			deschedule\_handler~.~schedulable \then \\
+				DeadlineClock 
+			)
+		)
+	)	
+    \circseq%\circinterrupt 
+    (
+    		end\_schedule~.~schedulable \then \\
+    		%release\_complete~.~schedulable \then \\
+	    	\Skip
+    )
+\end{circusaction}
 % 
 \begin{circusaction}
 Scheduled \circdef \\

@@ -7,5 +7,5 @@
   \circchannel releaseRet : SchedulableID  \\
   \circchannel fire : SchedulableID \\
   \circchannel descheduleCall : SchedulableID\\
-\circchannel descheduleRet : SchedulableID \cross \boolean \\
+  \circchannel descheduleRet : SchedulableID \cross \boolean \\
 \end{circus}

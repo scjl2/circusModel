@@ -3,11 +3,5 @@
 \end{zsection}
 %
 \begin{circus}
-  \circchannel get\_initialStartTime : SchedulableID \cross JTime \\
-  \circchannel get\_initialPeriod : SchedulableID \cross JTime \\
-  \circchannel get\_initialDeadlineAndHandler : SchedulableID \cross JTime \cross  SchedulableID
-\end{circus}  
-%
-\begin{circus}
   \circchannel leave\_dispatch : SchedulableID \\
 \end{circus}
