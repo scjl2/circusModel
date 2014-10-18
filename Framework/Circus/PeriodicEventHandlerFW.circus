@@ -1,11 +1,12 @@
 \begin{zsection}
   \SECTION ~ PeriodicEventHandlerFW ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
    \t1 MissionId, MissionIds, TopLevelMissionSequencerChan, PeriodicEventHandlerChan, \\
-   \t1 SafeletMethChan, FrameworkChan, PriorityParameters
+   \t1 SafeletMethChan, FrameworkChan, PeriodicParameters
 \end{zsection}
 %
 \begin{circus}
-  \circprocess PeriodicEventHandlerFW ~ \circdef ~ schedulable : SchedulableID ; priorityParameters : PriorityParameters \circspot ~\circbegin
+  \circprocess PeriodicEventHandlerFW ~ \circdef \\
+  \t1 ~ schedulable : SchedulableID ; periodicParameters : PeriodicParameters \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
@@ -33,13 +34,13 @@
   controllingMission' = nullMissionId\\
   applicationTerminating' = \false \\
   periodicTerminating' = \false \\
-  period' = periodOf(priorityParameters)\\
-  startTimeOf(priorityParameters) = NULL \implies startTime' = time~(0,0)\\
-  startTimeOf(priorityParameters) \neq NULL \implies startTime' = startTimeOf(priorityParameters)\\  
-  deadlineOf(priorityParameters) = NULL \implies deadline' = period'\\
-  deadlineOf(priorityParameters) \neq NULL \implies deadline' =  deadlineOf(priorityParameters) \\
+  period' = periodOf(periodicParameters)\\
+  startTimeOf(periodicParameters) = NULL \implies startTime' = time~(0,0)\\
+  startTimeOf(periodicParameters) \neq NULL \implies startTime' = startTimeOf(periodicParameters)\\  
+  deadlineOf(periodicParameters) = NULL \implies deadline' = period'\\
+  deadlineOf(periodicParameters) \neq NULL \implies deadline' =  deadlineOf(periodicParameters) \\
   missedReleases' = 0 \\
-  deadlineMissHandler' = missHandlerOf(priorityParameters) \\
+  deadlineMissHandler' = missHandlerOf(periodicParameters) \\
 \end{schema}
 % 
 \begin{circusaction}
@@ -86,8 +87,8 @@ Execute \circdef  \\
 	  	 )\\
   		\extchoice\\
   		(
-		 	stop\_period~.~schedulable \then \\
-			 \Skip\\
+		 	end\_releases~.~schedulable \then \\
+			\Skip\\
 		 )
 	)  \\
 \t1  \lpar \{startTime\} |\lchanset stop\_period \rchanset| \emptyset \rpar\\
@@ -129,7 +130,7 @@ PeriodicClock \circdef \\
 	)\\
 	\extchoice \\
 	(
-		stop\_period~.~schedulable \then \\
+		end\_releases~.~schedulable \then \\
 		\Skip \\
 	 )			
   )	
@@ -175,12 +176,12 @@ Release \circdef \circval index : \nat \circspot \\
 )	\circseq \\
 \t1 (
 	(
-		get\_periodicTerminating~.~schedulable~?~periodicTerminating\prefixcolon(periodicTerminating = \false) \then
+		get\_periodicTerminating~.~schedulable~?~periodicTerminating\prefixcolon(periodicTerminating = \false) \then \\
 		Release(index + 1)
 	)
 	\extchoice \\
 	(
-		get\_periodicTerminating~.~schedulable~?~periodicTerminating\prefixcolon(periodicTerminating = \true) \then
+		get\_periodicTerminating~.~schedulable~?~periodicTerminating\prefixcolon(periodicTerminating = \true) \then \\
 		\Skip
 	)
 )
@@ -215,17 +216,17 @@ DeadlineClock \circdef \circval index : \nat \circspot \\
     ) \\
     \circseq%\circinterrupt 
     (
-    	stop\_period~.~schedulable \then \\
-    	release\_complete~.~schedulable~?~index \then \\
-    	\Skip
+    		end\_releases~.~schedulable \then \\
+    		release\_complete~.~schedulable~?~index \then \\
+    		\Skip
     )
 \end{circusaction}
 %
 \begin{circusaction}
 SignalTermination \circdef \\
 \t1	signalTerminationCall~.~schedulable\then\\
-\t1 	set\_periodicTerminating~.~schedulable~!~\true \then
-\t1	stop\_period~.~schedulable \then\\
+\t1 	set\_periodicTerminating~.~schedulable~!~\true \then \\
+\t1	end\_releases~.~schedulable \then\\
 \t1	signalTerminationRet~.~schedulable \then\\
 \t1	done\_schedulable~.~schedulable \then\\
 \t1	\Skip\\
@@ -234,7 +235,8 @@ SignalTermination \circdef \\
 \begin{circusaction}
 Cleanup \circdef \\
 \t1 cleanupSchedulableCall~.~schedulable \then\\
-\t1 cleanupSchedulableRet~.~schedulable \then \Skip
+\t1 cleanupSchedulableRet~.~schedulable \then \\
+\t1 \Skip
 \end{circusaction}
 %
 \begin{circusaction}

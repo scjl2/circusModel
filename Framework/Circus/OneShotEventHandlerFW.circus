@@ -69,7 +69,7 @@ Execute \circdef  \\
 					\t1   \lpar \emptyset | MethodsSync | \emptyset \rpar\\
 				Methods\\
 			)
-			\lpar \emptyset | \lchanset end\_schedule \rchanset | \emptyset \rpar\\
+			\lpar \emptyset | \lchanset end\_releases \rchanset | \emptyset \rpar\\
 		SignalTermination 
 	  ) \\
 	  	\t1   \lpar \emptyset| STCSync | \{startTime\} \rpar\\
@@ -124,7 +124,7 @@ Release \circdef \\
     )\\
 \t1 \extchoice\\
 \t1 (
-		end\_schedule.schedulable \then \\
+		end\_releases.schedulable \then \\
 		\Skip
      )
 \end{circusaction}
@@ -154,7 +154,7 @@ DeadlineClock \circdef \\
 	)	
     \circseq%\circinterrupt 
     (
-    		end\_schedule~.~schedulable \then \\
+    		end\_releases~.~schedulable \then \\
     		%release\_complete~.~schedulable \then \\
 	    	\Skip
     )
@@ -199,7 +199,7 @@ NotScheduled \circdef\\
         )     \\
 \t1    \extchoice\\
 \t1    (
-		end\_schedule~.~schedulable \then \\
+		end\_releases~.~schedulable \then \\
 		\Skip
 	)\\
 \end{circusaction}
@@ -222,7 +222,7 @@ Methods \circdef \\
     ) \\
 \t1 \extchoice\\
 \t1 (
-	end\_schedule~.~schedulable \then \\
+	end\_releases~.~schedulable \then \\
 	\Skip
      )
 \end{circusaction}
@@ -274,7 +274,7 @@ ScheduleNextRelease \circdef \\
 \begin{circusaction}
 SignalTermination \circdef\\
 \t1 signalTerminationCall~.~schedulable \then\\
-\t1 end\_schedule~.~schedulable \then\\
+\t1 end\_releases~.~schedulable \then\\
 \t1 signalTerminationRet~.~schedulable \then\\
 \t1 done\_schedulable~.~schedulable \then\\
 \t1 \Skip

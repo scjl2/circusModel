@@ -3,5 +3,5 @@
 \end{zsection}
 %
 \begin{circus}
-  \circchannel leave\_dispatch : SchedulableID \\
+  \circchannel end\_releases : SchedulableID \\
 \end{circus}

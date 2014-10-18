@@ -13,6 +13,8 @@
   applicationTerminating : \boolean \\
   pending : \boolean \\
   data : \num \\
+  deadline : JTime \\
+  deadlineMissHandler : SchedulableID \\
 \end{schema}
 %
 \begin{parser}
@@ -26,7 +28,9 @@
 \where
   controllingMission' = nullMissionId\\
   applicationTerminating' = \false \\
-  pending' = \false
+  pending' = \false \\
+  deadline' = deadlineOf(aperiodicParameters) \\
+  deadlineMissHandler' = missHandlerOf(aperiodicParameters) \\
 \end{schema}
 %
 \begin{circusaction}
@@ -69,9 +73,35 @@ Execute \circdef  \\
 			ReadyLong \\
 		\circfi
 	)
-   	 \lpar \{pending, data\}  |\lchanset leave\_dispatch \rchanset| \emptyset \rpar\\
+   	 \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar\\
   SignalTermination\\
 )
+\end{circusaction}
+%
+\begin{circusaction}
+DeadlineClock \circdef \\
+
+\t1 releaseCall~.~schedulable \then \\ 
+\t1	(
+		(		
+			(
+				%\circwait valueOf(deadline) \circseq \\
+				fire~.~deadlineMissHandler \then \\				
+				DeadlineClock 
+			) \\
+			\extchoice \\
+			(
+	 			release\_complete~.~schedulable \then \\
+				DeadlineClock 
+			)				
+		)
+	)	
+    \circseq%\circinterrupt 
+    (
+    		end\_releases~.~schedulable \then \\
+    		%release\_complete~.~schedulable \then \\
+	    	\Skip
+    )
 \end{circusaction}
 %short
 \begin{circusaction}
@@ -83,7 +113,7 @@ Ready \circdef \\
     )\\
 \t1 \extchoice\\
 \t1 (
-	leave\_dispatch~.~schedulable \then\\
+	end\_releases~.~schedulable \then\\
 	\Skip
     )
 \end{circusaction}
@@ -98,7 +128,7 @@ ReadyLong \circdef \\
      )\\
 \t1 \extchoice\\
 \t1 (
-	leave\_dispatch~.~schedulable \then\\
+	end\_releases~.~schedulable \then\\
 	\Skip
      )
 \end{circusaction}
@@ -107,7 +137,7 @@ ReadyLong \circdef \\
 SignalTermination \circdef \\
 \t1	( 
 		signalTerminationCall~.~schedulable \then\\
-		leave\_dispatch~.~schedulable \then\\
+		end\_releases~.~schedulable \then\\
 		signalTerminationRet~.~schedulable \then\\
 		done\_schedulable~.~schedulable \then\\
 		\Skip 
@@ -127,6 +157,7 @@ Release \circdef \\
 		\circif pending = \true \circthen\\
 \t2		( 
 			pending := \false \circseq \\ 
+			release\_complete~.~schedulable \then \\
 			releaseCall.schedulable \then\\ 
 			Release
 		)\\
@@ -136,7 +167,7 @@ Release \circdef \\
 \t1	)\\
 \t1	 \extchoice\\
 \t1	(
-		leave\_dispatch.schedulable \then \\
+		end\_releases.schedulable \then \\
 		\Skip
 	)\\
 \end{circusaction}
@@ -155,6 +186,7 @@ ReleaseLong \circdef \\
 		\circif pending = \true \circthen\\
 \t2		( 
 			pending := \false \circseq \\ 
+			release\_complete~.~schedulable \then \\
 			releaseLongCall.schedulable.data \then\\ 
 			ReleaseLong
 		)\\
@@ -164,7 +196,7 @@ ReleaseLong \circdef \\
 \t1	)\\
 \t1	 \extchoice\\
 \t1	(
-		leave\_dispatch.schedulable \then \\
+		end\_releases.schedulable \then \\
 		\Skip
 	)\\
 \end{circusaction}
