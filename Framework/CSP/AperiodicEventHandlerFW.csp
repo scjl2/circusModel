@@ -1,0 +1,361 @@
+channel a
+Loop = a-> Loop
+
+channel circwait : num
+
+--Aperiocidc EVENT HANDLER FW
+ 
+--APEH TYPES
+datatype SchedulableID = nullSchedulableId|schedulableA|schedulableB  
+datatype MissionID = nullMissionId|missionA|missionB
+maxNum = 2
+nametype num = {0..maxNum}
+datatype AperiodicType = aperiodic | aperiodicLong
+
+-- APEH Channels
+channel get_controllingMission : SchedulableID.MissionID 
+channel set_controllingMission :  SchedulableID.MissionID 
+channel get_applicationTerminating : SchedulableID.Bool
+channel set_applicationTerminating : SchedulableID.Bool
+channel get_startTime : SchedulableID.num
+channel set_startTime : SchedulableID.num
+channel get_deadline : SchedulableID.num
+channel set_deadline : SchedulableID.num
+channel get_deadlineMissHandler : SchedulableID.SchedulableID
+channel set_deadlineMissHandler : SchedulableID.SchedulableID
+channel set_pending : SchedulableID . Bool
+channel get_pending : SchedulableID . Bool
+channel set_data : SchedulableID . num
+channel get_data : SchedulableID . num
+channel end_aperiodicEventHandlerState : SchedulableID
+
+
+channel reschedule_handler : SchedulableID.num
+channel deschedule_handler : SchedulableID
+channel getNextReleaseTimeCall : SchedulableID
+channel getNextReleaseTimeRet : SchedulableID.num
+channel descheduleCall : SchedulableID
+channel descheduleRet : SchedulableID.Bool
+channel done_schedulable : SchedulableID 
+
+
+channel activate_schedulables : MissionID
+channel done_toplevel_sequencer 
+channel register:SchedulableID.MissionID
+channel end_releases:SchedulableID
+channel fire:SchedulableID
+channel releaseCall:SchedulableID 
+channel releaseRet:SchedulableID 
+
+channel fireLong : SchedulableID . num
+channel releaseLongCall : SchedulableID . num
+channel releaseLongRet : SchedulableID 
+
+channel release_complete:SchedulableID
+channel signalTerminationCall:SchedulableID 
+channel signalTerminationRet:SchedulableID 
+channel cleanupSchedulableCall:SchedulableID 
+channel cleanupSchedulableRet:SchedulableID 
+
+
+channel scheduleNextRelease : SchedulableID.num 
+
+
+nametype STCSync =  {| get_startTime, set_startTime |}
+nametype MethodsSync =  {|end_releases, reschedule_handler, deschedule_handler|} 
+nametype ReleaseSync = {|releaseCall, reschedule_handler, end_releases|}
+nametype DeadlineSync =  {|releaseCall, end_releases, deschedule_handler, release_complete|}
+nametype APEHStateSync = 
+	{|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
+		get_startTime, set_startTime, get_deadline, set_deadline, get_deadlineMissHandler, set_deadlineMissHandler,
+		get_pending, set_pending, get_data, set_data, end_aperiodicEventHandlerState|}
+
+
+AperiodicEventHandlerFW(schedulable, aperiodicType, deadline, deadlineMissHandler) =
+
+AperiodicEventHandlerState(schedulable, nullMissionId, False, False, 0, deadline, deadlineMissHandler )
+[|APEHStateSync|]
+AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
+
+AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler) =
+(
+	get_controllingMission.schedulable!controllingMission ->
+	AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+)
+[]
+(
+	set_controllingMission.schedulable?newControllingMission ->
+	AperiodicEventHandlerState(schedulable, newControllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+)
+[]
+(
+	get_applicationTerminating.schedulable!applicationTerminating ->
+	AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+)
+[]
+(
+	set_applicationTerminating.schedulable?newApplicationTerminating ->
+	AperiodicEventHandlerState(schedulable, controllingMission, newApplicationTerminating, pending, data, deadline, deadlineMissHandler)
+)
+[]
+ (
+    get_deadline.schedulable!deadline ->
+    AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+      )
+  []
+  (
+    set_deadline.schedulable?newDeadline -> 
+    AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, newDeadline, deadlineMissHandler)
+      )
+  []
+  (
+    get_deadlineMissHandler.schedulable!deadlineMissHandler ->
+    AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+      )
+  []
+  (
+    set_deadlineMissHandler.schedulable?newDeadlineMissHandler ->
+AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, newDeadlineMissHandler)
+     )
+[]
+(
+	set_pending.schedulable?newPending ->
+	AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, newPending, data, deadline, deadlineMissHandler)
+ )
+[]
+(
+	get_pending.schedulable!pending ->
+	AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+
+)
+[]
+(
+	get_data.schedulable!data ->
+	AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+
+)
+[]
+(
+	set_data.schedulable?newData ->
+	AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, newData, deadline, deadlineMissHandler)
+
+)
+
+	[]
+	( end_aperiodicEventHandlerState.schedulable ->
+		SKIP
+	)
+
+
+
+
+
+AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler) =
+	(   Start(schedulable) ;
+		get_applicationTerminating.schedulable?applicationTerminating ->
+   ( if applicationTerminating == False then 
+	 (
+	 	Execute(schedulable,aperiodicType, deadline, deadlineMissHandler) ; 
+	 	Cleanup(schedulable)  ; 
+	 	AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
+	)
+ 	else 
+  		 end_aperiodicEventHandlerState.schedulable ->
+  		 SKIP 
+	))
+
+
+Start(schedulable) =
+  (
+   	Register(schedulable) ; 
+   	Activate(schedulable)
+  )  
+  []
+  (
+  	activate_schedulables?someMissionID -> 
+  	Start(schedulable)
+  ) 
+  [] 
+  ( 
+	done_toplevel_sequencer -> 
+	set_applicationTerminating.schedulable!True ->
+	SKIP
+  )
+
+
+
+Register(schedulable) = 
+    register.schedulable?missionID -> 
+    set_controllingMission.schedulable!missionID->
+    SKIP 
+
+  
+
+Activate(schedulable)  =  
+	get_controllingMission.schedulable?controllingMission ->
+    activate_schedulables.controllingMission -> 
+    SKIP
+
+
+
+Execute(schedulable,aperiodicType, deadline, deadlineMissHandler) =  
+ if deadlineMissHandler != nullSchedulableId then 
+ ( 
+ 	(
+	(
+		if aperiodicType == aperiodic then 
+			Ready(schedulable)
+		else 
+			ReadyLong(schedulable) 		
+	)
+		[| DeadlineSync |]
+    DeadlineClock(schedulable, deadline, deadlineMissHandler)
+    )
+
+   	 [|{| end_releases |}|]
+  SignalTermination(schedulable)
+)
+ else
+ (  	
+	(
+		if aperiodicType == aperiodic then 
+			Ready(schedulable)
+		else 
+			ReadyLong(schedulable) 		
+	)
+   	 [|{| end_releases |}|]
+  SignalTermination(schedulable)
+)	
+
+DeadlineClock(schedulable, deadline, deadlineMissHandler) = 
+(
+ releaseCall.schedulable ->  
+	(
+		(		
+			(
+				circwait.deadline -> 
+				fire.deadlineMissHandler -> 				
+				DeadlineClock(schedulable, deadline, deadlineMissHandler)
+			) 
+			[] 
+			(
+	 			release_complete.schedulable -> 
+				DeadlineClock(schedulable, deadline, deadlineMissHandler)
+			)				
+		)
+	)
+)	
+    /\
+    (
+    		end_releases.schedulable -> 
+    		release_complete.schedulable -> 
+	    	SKIP
+    )
+
+
+Ready(schedulable) = 
+ (
+	fire.schedulable -> 
+	releaseCall.schedulable -> 
+	Release(schedulable)
+ )
+ []
+ (
+	end_releases.schedulable ->
+	SKIP
+ )
+
+
+
+ReadyLong(schedulable) = 
+ (	
+	fireLong.schedulable?data -> 
+	set_data.schedulable!data ->
+	releaseLongCall.schedulable.data -> 
+	ReleaseLong(schedulable) 
+ )
+ []
+ (
+	end_releases.schedulable ->
+	SKIP
+ )
+
+
+
+SignalTermination(schedulable) = 
+	( 
+		signalTerminationCall.schedulable ->
+		end_releases.schedulable ->
+		signalTerminationRet.schedulable ->
+		done_schedulable.schedulable ->
+		SKIP 
+	)
+
+
+Release(schedulable) = 	
+	
+ 	( 
+		fire.schedulable -> 
+		set_pending.schedulable!True ->
+		Release(schedulable)
+	)
+	[]
+	(
+		releaseRet.schedulable -> 
+		get_pending.schedulable?pending ->
+		if pending == True then
+		( 
+			set_pending.schedulable!False ->
+			release_complete.schedulable -> 
+			releaseCall.schedulable -> 
+			Release(schedulable)
+		)
+		else 
+			 Ready(schedulable)		
+	)
+	 []
+	(
+		end_releases.schedulable -> 
+		SKIP
+	)
+
+ReleaseLong(schedulable) = 	
+ ( 
+		fireLong.schedulable?data -> 
+		set_data.schedulable!data ->
+		set_pending.schedulable!True ->
+		ReleaseLong(schedulable)
+	)
+		[]
+	(
+		releaseLongRet.schedulable -> 
+		get_pending.schedulable?pending ->
+		if pending == True then
+		( 
+			set_pending.schedulable!False ->
+			release_complete.schedulable -> 
+			get_data.schedulable?data ->
+			releaseLongCall.schedulable.data -> 
+			ReleaseLong(schedulable)
+		)
+		else 
+			 ReadyLong(schedulable) 
+		
+	)
+	 []
+	(
+		end_releases.schedulable -> 
+		SKIP
+	)
+
+
+
+Cleanup(schedulable) = 
+ cleanupSchedulableCall.schedulable ->
+ cleanupSchedulableRet.schedulable -> 
+ SKIP 
+
+
+ assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
+assert  AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
+assert  AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ]	

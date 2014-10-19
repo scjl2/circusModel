@@ -29,6 +29,8 @@ sed -i 's/\\cross/./g' $1
 #\_
 sed -i 's/\\_/_/g' $1 
 
+#\circchannel
+sed -i 's/\\circchannel/channel/g' $1 
 #channelset
 sed -i 's/\\channelset/nametype/g' $1 
 
@@ -37,6 +39,9 @@ sed -i 's/\\rchanset/|}/g' $1
 
 #lchanset
 sed -i 's/\\lchanset/{|/g' $1 
+
+
+
 
 
 #end{circusaction}
@@ -51,6 +56,8 @@ sed -i 's/\\circif/if/g' $1
 sed -i 's/\\circthen/then/g' $1 
 #else
 sed -i 's/\\circelse/else/g' $1 
+#fi
+sed -i 's/\\circfi//g' $1
 #circdef
 sed -i 's/\\circdef/=/g' $1 
 #~.~

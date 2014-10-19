@@ -4,7 +4,7 @@
 %
 \begin{circus}
 \circchannelset STCSync == \lchanset get\_startTime, set\_startTime \rchanset \\
-\circchannelset MethodsSync == \lchanset end\_schedule, reschedule\_handler, deschedule\_handler \rchanset \\
+\circchannelset MethodsSync == \lchanset end\_releases, reschedule\_handler, deschedule\_handler \rchanset \\
 \circchannelset ReleaseSync == \lchanset releaseCall, reschedule\_handler, end\_schedule \rchanset \\
-\circchannelset DeadlineSync == \lchanset releaseCall, end\_schedule, deschedule\_handler, release\_complete \rchanset \\
+\circchannelset DeadlineSync == \lchanset releaseCall, end\_releases, deschedule\_handler, release\_complete \rchanset \\
 \end{circus}
