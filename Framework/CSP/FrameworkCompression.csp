@@ -43,8 +43,7 @@ SafeletFW =
 SafeletFWBehaviour=
 
    InitializeApplication ;
-   Execute_S ;
-   done_safeletFW -> 
+   Execute_S ;    
    SKIP
 
 InitializeApplication =
@@ -62,7 +61,7 @@ Execute_S =
      		 Methods_S({}, topLevelSequencer) 
   ) 
   else
-    SKIP
+   done_safeletFW -> SKIP
   
   Methods_S(globallyRegistered, sequencerID) = 
   (
@@ -208,42 +207,44 @@ Execute_TLS(sequencer)  =
 ) 
 
 RunMission_TLS(sequencer) = 
- GetNextMission_TLS(sequencer) ; 
- StartMission_TLS(sequencer) ; 
- Continue_TLS(sequencer)
+ GetNextMission_TLS(sequencer) --; 
+-- StartMission_TLS(sequencer) ; 
+-- Continue_TLS(sequencer)
 
 GetNextMission_TLS(sequencer)  =  
   getNextMissionCall.sequencer -> 
   getNextMissionRet.sequencer?next ->
-  set_currentMission.sequencer!next ->
-  SKIP
+  StartMission_TLS(sequencer, next)
 
-StartMission_TLS(sequencer) = 
-  get_currentMission.sequencer?currentMission ->
+StartMission_TLS(sequencer, currentMission) = 
+ -- get_currentMission.sequencer?currentMission ->
   (
     if currentMission != nullMissionId then
     ( 
       start_mission.currentMission.sequencer ->
       done_mission.currentMission?returnedcontinue -> 
-      set_continue.sequencer.returnedcontinue -> 
-      SKIP
+	--  set_continue.sequencer.returnedcontinue -> 
+    --  SKIP
+		Continue_TLS(sequencer,returnedcontinue)
     )
      else 
     ( 
-      set_continue.sequencer!False ->
-      SKIP
+      --set_continue.sequencer!False ->
+      --SKIP
+	 Continue_TLS(sequencer, False)
     ) 
   )    
  
-Continue_TLS(sequencer) = 
-
+Continue_TLS(sequencer, continue) = 
+if continue == True then
   (
-    get_continue.sequencer?continue:({True}) -> 
+ --   get_continue.sequencer?continue:({True}) -> 
     RunMission_TLS(sequencer) 
   )
-  []
+ -- []
+else
   (
-    get_continue.sequencer?continue:( {False}) -> 
+ --   get_continue.sequencer?continue:( {False}) -> 
     SKIP
   )
 
@@ -2032,6 +2033,13 @@ TopLevelMissionSequencers(toplevelSequencerIDs) =
 
 Missions(missions) = ([|{| done_safeletFW, done_toplevel_sequencer |}|] m : missions @ MissionFW(m))
 
+CatchBroadcasts =
+	(done_safeletFW -> SKIP)
+	[]
+	(done_toplevel_sequencer->SKIP)
+	[]
+	(activate_schedulables?m -> CatchBroadcasts)
+
 SchedulableSequencerFWs(schedulableSequencers) =
 if schedulableSequencers != {} then
 (
@@ -2039,7 +2047,7 @@ if schedulableSequencers != {} then
 )
 else
 (
-	done_safeletFW -> SKIP
+	CatchBroadcasts
 )
 
 AperiodicEventHandlerFWs(aperiodicEventHanders) =
@@ -2049,7 +2057,7 @@ if aperiodicEventHanders != {} then
 )
 else
 (
-	done_safeletFW -> SKIP
+	CatchBroadcasts
 )
 
 OneShotEventHandlerFWs(oneShotEventHandlers)=
@@ -2059,7 +2067,7 @@ if oneShotEventHandlers != {} then
 )
 else
 (
-	done_safeletFW -> SKIP
+	CatchBroadcasts
 )
 
 PeriodicEventHandlerFWs(periodicEventHandlers) =
@@ -2069,7 +2077,7 @@ if periodicEventHandlers != {} then
 )
 else
 (
-	done_safeletFW -> SKIP
+	CatchBroadcasts
 )
 
 ManagedThreadFWs(managedThreads) =
@@ -2079,7 +2087,7 @@ if managedThreads != {} then
 )
 else
 (
-	done_safeletFW -> SKIP
+	CatchBroadcasts	
 )
 
 Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)=
