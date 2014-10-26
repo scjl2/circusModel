@@ -434,21 +434,24 @@ Start_M(mission) =
 InitializePhase(mission) =
   initializeCall.mission ->
   (
-    ( 
-      Register_M(mission) ;
-      InitializePhase(mission)
-    ) 
-    []
-    (
-      SetCeilingPriority(mission) ;
-      InitializePhase(mission)
-    ) 
-    []
-    (
-      initializeRet.mission ->
-      SKIP
-    ) 
+    Initialize(mission)
   ) 
+
+Initialize(mission) =
+( 
+  Register_M(mission) ;
+  Initialize(mission)
+) 
+[]
+(
+  SetCeilingPriority(mission) ;
+  Initialize(mission)
+) 
+[]
+(
+  initializeRet.mission ->
+  SKIP
+) 
 
 Register_M(mission) =
 register?s!mission ->
@@ -479,6 +482,13 @@ SetCeilingPriorityException(mission) =
  setCeilingPriority.mission?o?p -> 
  throw.illegalStateException ->
  CHAOS(Events)
+
+MissionPhase(mission) =
+(
+  Execute_M(mission)
+    [|  {|done_schedulables|} |] 
+  MissionExceptions(mission)
+)--\{|done_schedulables|}
 
 Execute_M(mission) =
  ( 
@@ -529,6 +539,8 @@ StopSchedulables(schedulablesToStop) =
         SKIP)
 
 DoneSchedulables(mission) =
+get_activeSchedulables.mission?activeSchedulables ->
+(  
    (
     schedulables_stopped.mission -> 
     SKIP
@@ -536,7 +548,7 @@ DoneSchedulables(mission) =
    []
 
   (
-    get_activeSchedulables.mission?activeSchedulables ->  
+      
     (
     (
       [] schedulable : activeSchedulables @
@@ -544,7 +556,7 @@ DoneSchedulables(mission) =
         remove_activeSchedulables.mission!schedulable ->
         SKIP
     );  
-    
+      get_activeSchedulables.mission?activeSchedulables ->
     if activeSchedulables == {} then    
     (
       schedulables_terminated.mission ->
@@ -554,6 +566,7 @@ DoneSchedulables(mission) =
       DoneSchedulables(mission)
     )
   )
+)
 
 Methods_M(mission) =
  (
@@ -573,13 +586,15 @@ Methods_M(mission) =
     )-- \{| end_mission_terminations |}
 
 RequestTerminationMeth(mission) =
+get_registeredSchedulables.mission?registeredSchedulables ->
+(  
   (
     end_mission_terminations.mission -> 
     SKIP
   )
   []
   (
-    get_registeredSchedulables.mission?registeredSchedulables ->
+    
     (
       [] schedulable: registeredSchedulables @
       requestTermination.mission.schedulable ->
@@ -599,6 +614,7 @@ RequestTerminationMeth(mission) =
       )
     ) 
   )
+)
 
 TerminationPendingMeth(mission) =
 (
@@ -613,14 +629,44 @@ TerminationPendingMeth(mission) =
   TerminationPendingMeth(mission)
 )
 
+MissionExceptions(mission) =
+( 
+  RegisterException(mission) 
+  |||
+  SetCeilingPriorityException(mission) 
+) 
+[]
+(	
+ done_schedulables.mission ->
+  SKIP
+)
+
+
+CleanupPhase(mission) =
+(
+  Cleanup_M(mission)
+    [|  {|cleanupMissionRet|} |] 
+  CleanupExceptions(mission)
+)--\{|cleanupMissionRet|}
+
 Cleanup_M(mission) =
 ( 
-  get_registeredSchedulables.mission?registeredSchedulables ->
-  deregister!registeredSchedulables ->
-  CleanupSchedulables(mission) ;
-  cleanupMissionCall.mission ->
-  cleanupMissionRet.mission?continueSequencer ->
-  Finish_M(mission, continueSequencer)
+	(
+		(	
+			get_registeredSchedulables.mission?registeredSchedulables:(Set(SchedulableID)) ->
+			deregister!registeredSchedulables ->
+			CleanupSchedulables(mission) ;
+			SKIP
+		)
+  		[]
+		(
+			get_registeredSchedulables.mission?registeredSchedulables:({}) ->
+			SKIP
+		)
+	);		
+		cleanupMissionCall.mission ->
+		cleanupMissionRet.mission?continueSequencer ->
+		Finish_M(mission, continueSequencer)
 )
 
 CleanupSchedulables(mission) =
@@ -630,12 +676,7 @@ CleanupSchedulables(mission) =
                 cleanupSchedulableRet.s ->  
                 SKIP
 
-Finish_M(mission, continueSequencer) =
-   end_mission_app.mission ->
-   done_mission.mission!continueSequencer ->
-   SKIP
-
-Exceptions(mission) =
+CleanupExceptions(mission) =
 ( 
   RegisterException(mission) 
   |||
@@ -643,23 +684,16 @@ Exceptions(mission) =
 ) 
 []
 (
-  done_schedulables.mission ->
-  SKIP
+	cleanupMissionRet.mission?c ->
+	SKIP
 )
 
-MissionPhase(mission) =
-(
-  Execute_M(mission)
-    [|  {|done_schedulables|} |] 
-  Exceptions(mission)
-)--\{|done_schedulables|}
+Finish_M(mission, continueSequencer) =
+   end_mission_app.mission ->
+   done_mission.mission!continueSequencer ->
+   SKIP
 
-CleanupPhase(mission) =
-(
-  Cleanup_M(mission)
-    [|  {|done_schedulables|} |] 
-  Exceptions(mission)
-)--\{|done_schedulables|}
+
 
 
 assert MissionFW(missionA); Loop :[ deadlock free [FD] ]
@@ -793,7 +827,7 @@ Start_SMS(sequencer) =
  (
     done_toplevel_sequencer -> 
     set_applicationTerminating.sequencer!True ->
-  SKIP
+    SKIP
   )
  []
  (
@@ -1954,7 +1988,6 @@ ManagedThreadFWBehaviour(schedulable) =
    )
 )
 
-
 Start_MT(schedulable) =
   (
    Register_MT(schedulable) ; 
@@ -1972,11 +2005,8 @@ Start_MT(schedulable) =
     SKIP 
   )
 
-
-
 Register_MT(schedulable) =
   register.schedulable?mID ->
-  checkSchedulable.mID?result ->
   set_controllingMission.schedulable!mID ->
   SKIP
 
@@ -2100,7 +2130,7 @@ Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,
 				    	[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
 					AperiodicEventHandlerFWs(aperiodicEventHanders)
 				)
-		  	  	[|{| done_safeletFW, done_toplevel_sequencer |}|]
+		  	  	[|{|  activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
 				OneShotEventHandlerFWs(oneShotEventHandlers)
 			)
 	    		[|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
@@ -2135,10 +2165,11 @@ Framework(topLeveSequencers,missions,schedulableSequencers,aperiodicEventHanders
   )
 )
 
-SimpleFramework = Framework({TopLevelSequencerId}, {missionA}, {schedulableA}, {(schedulableB, aperiodic, 2, nullSchedulableId)}, {}, {}, {} )
+SimpleFramework = Framework({TopLevelSequencerId}, {missionA}, {}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB} )
 
 transparent diamond, sbisim
 
 assert sbisim(diamond(SimpleFramework)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(SimpleFramework)) :[ divergence free ]
 assert sbisim(diamond(SimpleFramework)) :[ deterministic  [FD] ]
+
