@@ -3,7 +3,7 @@
 datatype SchedulableID = nullSequencerId|nullSchedulableId|
                           schedulableA|schedulableB | 
                           TopLevelSequencerId | FirstMissionSequencerID | SecondMissionSequencerID | ThirdMissionSequencerID |
-          MyPEH1Id  | MyPEH2Id | MyMyPEH3Id
+          MyPEH1Id  | MyPEH2Id | MyPEH3Id
 
 datatype MissionID = nullMissionId|
                       missionA|missionB |  
@@ -43,15 +43,13 @@ channel getSequencerRet : SchedulableID
 
 
 SafeletFW =
- (  
-    SafeletFWBehaviour
-  ) 
+  SafeletFWBehaviour 
 
 SafeletFWBehaviour=
 
-   InitializeApplication ;
-   Execute_S ;    
-   SKIP
+  InitializeApplication ;
+  Execute_S ;    
+  SKIP
 
 InitializeApplication =
   initializeApplicationCall ->
@@ -64,8 +62,8 @@ Execute_S =
   getSequencerRet?topLevelSequencer ->
     if topLevelSequencer != nullSequencerId then
   (
-         start_toplevel_sequencer.topLevelSequencer -> 
-         Methods_S({}, topLevelSequencer) 
+      start_toplevel_sequencer.topLevelSequencer -> 
+      Methods_S({}, topLevelSequencer) 
   ) 
   else
    done_safeletFW -> SKIP
@@ -96,7 +94,6 @@ Execute_S =
   Deregister_S(globallyRegistered, sequencerID) = 
     deregister?schedulables -> 
     Methods_S(diff(globallyRegistered,schedulables), sequencerID) 
-
 
 assert SafeletFW; Loop :[ deadlock free [FD] ]
 assert SafeletFW :[ divergence free ]
@@ -1288,7 +1285,8 @@ nametype ReleaseSync_OSEH = {|releaseCall, reschedule_handler, end_releases|}
 nametype DeadlineSync_OSEH =  {|releaseCall, end_releases, deschedule_handler, release_complete|}
 nametype OSEHStateSync = 
   {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
-        end_oneshotEventHandlerState|}
+  get_startTime, set_startTime,
+  end_oneshotEventHandlerState|}
 
 -- ONE SHOT EVENT HANDLER
 
@@ -1616,8 +1614,12 @@ channel release_complete_PEH : SchedulableID.num
 nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
 
 
- nametype PEHStateSync = {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, 
-                           get_missedReleases,set_missedReleases, get_periodicTerminating, set_periodicTerminating, end_periodicEventHandlerState|}
+ nametype PEHStateSync = {|get_controllingMission, set_controllingMission, 
+                          get_applicationTerminating, set_applicationTerminating, 
+                          get_missedReleases,set_missedReleases, 
+                          get_periodicTerminating, set_periodicTerminating,
+                          get_startTime, set_startTime,
+                          end_periodicEventHandlerState|}
 
 
 
@@ -2191,6 +2193,9 @@ channel get_safelet_done : Bool
 channel set_safelet_done : Bool
 channel end_safelet_app
 
+nametype SafeltAppSync = 
+    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
+
 
 MyApp  = 
 	(
@@ -2244,6 +2249,7 @@ Methods_s =
 channel get_sequencer_done : SchedulableID.Bool
 channel set_sequencer_done : SchedulableID.Bool
 
+nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet, end_sequencer_app|}
 
 MySequencerApp = 
 	(Methods_tlms [|{|get_sequencer_done, set_sequencer_done |}|] DoneController_tlms(False) )/\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
@@ -2289,6 +2295,8 @@ Methods_tlms =
 --TOP LEVEL MISSION: TOP MISSION 1
 
 channel end_mission_fw : MissionID
+
+nametype MissionAppSync = {|initializeCall, initializeRet, register, cleanupMissionCall, cleanupMissionRet, end_mission_app, end_mission_fw |}
 
 TopMission1App = 
 ( 
@@ -2629,7 +2637,7 @@ MyMission3App =
 
 InitializePhase_m3 = 
   initializeCall.MyMission3ID  -> 
-  register!MyMyPEH3Id!MyMission3ID -> 
+  register!MyPEH3Id!MyMission3ID -> 
   initializeRet.MyMission3ID -> 
  SKIP
 
@@ -2649,42 +2657,44 @@ Methods_m3 =
 
 -- PEH: MY PEH 3
 
+nametype PEHAppSync = {|releaseCall, releaseRet, requestTermination, cleanupSchedulableCall, cleanupSchedulableRet, end_periodic_app |}
+
 MyMyPEH3App(m) =  
-(Methods_peh3(m)  [| {|get_count, increment_count |} |] CountController_peh3(0) )   /\ (end_periodic_app.MyMyPEH3Id -> SKIP)
+(Methods_peh3(m)  [| {|get_count, increment_count |} |] CountController_peh3(0) )   /\ (end_periodic_app.MyPEH3Id -> SKIP)
 
 
 CountController_peh3(count) =
 (
-	get_count.MyMyPEH3Id!count ->
+	get_count.MyPEH3Id!count ->
 	CountController_peh3(count)
 )
 []
 (
-	increment_count.MyMyPEH3Id ->
+	increment_count.MyPEH3Id ->
 	CountController_peh3(count +1)
 )
 
 
 Release_peh3(m) = 
- releaseCall.MyMyPEH3Id -> 
- increment_count.MyMyPEH3Id ->
- get_count.MyMyPEH3Id?count ->
+ releaseCall.MyPEH3Id -> 
+ increment_count.MyPEH3Id ->
+ get_count.MyPEH3Id?count ->
  if count == 10 then 
  (
-	releaseRet.MyMyPEH3Id -> 
+	releaseRet.MyPEH3Id -> 
 	SKIP
  )
  else 
  (
-	requestTermination.m.MyMyPEH3Id -> 	
-	releaseRet.MyMyPEH3Id -> 
+	requestTermination.m.MyPEH3Id -> 	
+	releaseRet.MyPEH3Id -> 
 	SKIP
  )
   	 
 
 Cleanup_peh3 = 
- cleanupSchedulableCall.MyMyPEH3Id ->
- cleanupSchedulableRet.MyMyPEH3Id -> SKIP
+ cleanupSchedulableCall.MyPEH3Id ->
+ cleanupSchedulableRet.MyPEH3Id -> SKIP
 
 Methods_peh3(m) = 
 ( 
@@ -2695,26 +2705,51 @@ Methods_peh3(m) =
 
 
 
-nametype SafeltAppSync = {||}
-nametype TopLevelMissionSequencerAppSync = {||}
-nametype PEHAppSync = {||}
+
+
+
+
+
 
   
 Program_Missions = 
-	(MissionFW(TopMission1ID) [| MissionSync |] TopMission1App)
-	|||
-	(MissionFW(MyMission1ID) [| MissionSync |] MyMission1App)
-  |||
-	(MissionFW(MyMission2ID) [| MissionSync|] MyMission2App)
-  |||
-	(MissionFW(MyMission3ID ) [| MissionSync |] MyMission3App)
+(
+  (MissionFW(TopMission1ID) [| MissionAppSync |] TopMission1App)
+	 [|{| done_safeletFW, done_toplevel_sequencer |}|]
+	(
+    (MissionFW(MyMission1ID) [| MissionAppSync |] MyMission1App)
+      [|{| done_safeletFW, done_toplevel_sequencer |}|]
+	  (
+      (MissionFW(MyMission2ID) [| MissionAppSync|] MyMission2App)
+        [|{| done_safeletFW, done_toplevel_sequencer |}|]
+	    (MissionFW(MyMission3ID ) [| MissionAppSync |] MyMission3App)
+    )
+  )
+)
 
 Program_Schedulables =
-	PeriodicEventHandlerFW(MyPEH1Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH1App(MyMission1ID)
-	|||
-	PeriodicEventHandlerFW(MyPEH2Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH2App(MyMission2ID)
-	|||
-	PeriodicEventHandlerFW(MyMyPEH3Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyMyPEH3App(MyMission3ID)
+( 
+  (PeriodicEventHandlerFW(MyPEH1Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH1App(MyMission1ID))
+    [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+  ( 
+    (PeriodicEventHandlerFW(MyPEH2Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH2App(MyMission2ID))
+      [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+  (  
+    (PeriodicEventHandlerFW(MyPEH3Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyMyPEH3App(MyMission3ID))
+      [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+    ( 
+      (SchedulableMissionSequencerFW(FirstMissionSequencerID) [| MissionSequencerAppSync |] FirstMissionSequencerApp)
+        [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+      (
+        (SchedulableMissionSequencerFW(SecondMissionSequencerID) [| MissionSequencerAppSync |] SecondSequencerApp)
+          [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+        (SchedulableMissionSequencerFW(ThirdMissionSequencerID) [| MissionSequencerAppSync |] ThirdMissionSequencerApp)
+      )
+    )
+  )
+)
+)
+
 
 
 Program = 
@@ -2722,7 +2757,7 @@ Program =
     (SafeletFW [| SafeltAppSync |] MyApp)
       [| SafeltSync |]
     (  
-      (TopLevelMissionSequencerFW(TopLevelSequencerId) [| TopLevelMissionSequencerAppSync |] MySequencerApp)
+      (TopLevelMissionSequencerFW(TopLevelSequencerId) [| MissionSequencerAppSync |] MySequencerApp)
         [| TopLevelMissionSequencerSync |]
       ( 
        Program_Missions
@@ -2731,8 +2766,6 @@ Program =
       )
   )
 )
-
-
 
 assert diamond(Program) ; Loop :[ deadlock free [FD] ]
 assert Program :[ divergence free ]
