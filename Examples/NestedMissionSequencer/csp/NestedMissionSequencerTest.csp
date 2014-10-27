@@ -235,7 +235,7 @@ StartMission_TLS(sequencer, currentMission) =
     ( 
       --set_continue.sequencer!False ->
       --SKIP
-   Continue_TLS(sequencer, False)
+      Continue_TLS(sequencer, False)
     ) 
   )    
  
@@ -2249,7 +2249,7 @@ Methods_s =
 channel get_sequencer_done : SchedulableID.Bool
 channel set_sequencer_done : SchedulableID.Bool
 
-nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet, end_sequencer_app|}
+nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet, sequenceTerminationPendingCall, sequenceTerminationPendingRet, end_sequencer_app|}
 
 MySequencerApp = 
 	(Methods_tlms [|{|get_sequencer_done, set_sequencer_done |}|] DoneController_tlms(False) )/\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
@@ -2296,7 +2296,10 @@ Methods_tlms =
 
 channel end_mission_fw : MissionID
 
-nametype MissionAppSync = {|initializeCall, initializeRet, register, cleanupMissionCall, cleanupMissionRet, end_mission_app, end_mission_fw |}
+nametype MissionAppSync = 
+  {|initializeCall, initializeRet, register, setCeilingPriority, terminationPendingCall, terminationPendingRet, 
+  cleanupMissionCall, cleanupMissionRet, 
+  end_mission_app, end_mission_fw |}
 
 TopMission1App = 
 ( 
@@ -2603,7 +2606,7 @@ GetNextMission_ms3 =
 	if done == False then 
     (  
 		set_sequencer_done.ThirdMissionSequencerID!True ->
-		getNextMissionRet.ThirdMissionSequencerID!MyMission1ID ->
+		getNextMissionRet.ThirdMissionSequencerID!MyMission3ID ->
 		SKIP
 	)
 	else
@@ -2751,23 +2754,80 @@ Program_Schedulables =
 )
 
 
+Saflet = 
+   (SafeletFW [| SafeltAppSync |] MyApp) 
+
+TopLevelMissionSequencer =
+  (TopLevelMissionSequencerFW(TopLevelSequencerId) [| MissionSequencerAppSync |] MySequencerApp)
+
+TopLevelMission =
+    (MissionFW(TopMission1ID) [| MissionAppSync |] TopMission1App)
+
+TopLevelSchedulables =
+(  
+  (SchedulableMissionSequencerFW(FirstMissionSequencerID) [| MissionSequencerAppSync |] FirstMissionSequencerApp)
+    [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+  (
+    (SchedulableMissionSequencerFW(SecondMissionSequencerID) [| MissionSequencerAppSync |] SecondSequencerApp)
+     [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+   (SchedulableMissionSequencerFW(ThirdMissionSequencerID) [| MissionSequencerAppSync |] ThirdMissionSequencerApp)
+  )
+)
+
+TierOneMissions =
+(
+  (MissionFW(MyMission1ID) [| MissionAppSync |] MyMission1App)
+    [|{| done_safeletFW, done_toplevel_sequencer |}|]
+  (
+    (MissionFW(MyMission2ID) [| MissionAppSync|] MyMission2App)
+      [|{| done_safeletFW, done_toplevel_sequencer |}|]
+    (MissionFW(MyMission3ID ) [| MissionAppSync |] MyMission3App)
+  )
+) 
+
+TierOneSchedulables =
+(
+  (PeriodicEventHandlerFW(MyPEH1Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH1App(MyMission1ID))
+    [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+  ( 
+    (PeriodicEventHandlerFW(MyPEH2Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH2App(MyMission2ID))
+      [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+    
+    (PeriodicEventHandlerFW(MyPEH3Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyMyPEH3App(MyMission3ID))
+  )
+)
+
+nametype TopLevelMissionSync = {| done_safeletFW, done_toplevel_sequencer,  
+                   signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
+                   cleanupSchedulableCall, cleanupSchedulableRet, register |} 
+
+
 
 Program = 
 (
-    (SafeletFW [| SafeltAppSync |] MyApp)
-      [| SafeltSync |]
-    (  
-      (TopLevelMissionSequencerFW(TopLevelSequencerId) [| MissionSequencerAppSync |] MySequencerApp)
+  Saflet
+    [| SafeltSync |]
+  (
+   
+    (
+      TopLevelMissionSequencer
         [| TopLevelMissionSequencerSync |]
-      ( 
-       Program_Missions
+      TopLevelMission     
+    )
+     [| TopLevelMissionSync |]
+    (
+      TopLevelSchedulables
+      [| {| done_safeletFW, start_mission, done_mission, initializeRet, done_toplevel_sequencer |} |]
+      (
+        TierOneMissions
           [| MissionSync |]
-        Program_Schedulables
+        TierOneSchedulables
       )
-  )
+    )
+ )
 )
+
 
 assert diamond(Program) ; Loop :[ deadlock free [FD] ]
 assert Program :[ divergence free ]
 assert Program :[ deterministic  [FD] ]
-
