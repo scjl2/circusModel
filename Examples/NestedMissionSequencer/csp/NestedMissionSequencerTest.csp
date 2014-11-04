@@ -300,7 +300,7 @@ channel get_missionTerminating : MissionID.Bool
 channel get_registeredSchedulables : MissionID.Set(SchedulableID)
 
 nametype MissionFWStateChan = 
-  {|end_mission_state, set_controllingSequencer, set_applicationTerminating_M, get_applicationTerminating_M, set_missionTerminating, set_activeSchedulables, get_activeSchedulables, add_schedulable, remove_activeSchedulables, get_missionTerminating, get_registeredSchedulables |}
+  {|activate_schedulables, end_mission_state, set_controllingSequencer, set_applicationTerminating_M, get_applicationTerminating_M, set_missionTerminating, set_activeSchedulables, get_activeSchedulables, add_schedulable, remove_activeSchedulables, get_missionTerminating, get_registeredSchedulables |}
 
 channel start_mission : MissionID.SchedulableID
 
@@ -1984,7 +1984,11 @@ ManagedThreadFWBehaviour(schedulable) =
   get_applicationTerminating.schedulable?applicationTerminating ->
     (
     if applicationTerminating == False then 
-      (Execute_MT(schedulable) ; Cleanup_MT(schedulable) ; ManagedThreadFWBehaviour(schedulable) ) 
+      (
+          Execute_MT(schedulable) ; 
+          Cleanup_MT(schedulable) ; 
+          ManagedThreadFWBehaviour(schedulable) 
+      ) 
       else 
     (
       end_managedThreadState.schedulable -> 
