@@ -397,7 +397,7 @@ MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTermi
   []
   (
     end_mission_state.mission -> SKIP
-    )
+  )
 
 MissionFWBehaviour(mission) =
 (
@@ -535,37 +535,44 @@ SignalTermination_M(mission) =
   schedulables_stopped.mission ->
   SKIP
 )
-/\ (schedulables_terminated.mission -> SKIP)
+--/\ (schedulables_terminated.mission -> SKIP)
+[] (schedulables_stopped.mission -> SKIP )
 
 StopSchedulables(schedulablesToStop) =
     (|||  s :  schedulablesToStop @
           signalTerminationCall.s ->
-        signalTerminationRet.s ->
-        SKIP)
+          signalTerminationRet.s ->
+          SKIP)
 
 DoneSchedulables(mission, activeSchedulables) =
 --get_activeSchedulables.mission?activeSchedulables ->
 (  
-  (
-    schedulables_stopped.mission -> 
-    SKIP
-  )
-  []
+  
+ -- []
   (
     (
       (
         [] schedulable : activeSchedulables @
         done_schedulable.schedulable ->  
         remove_activeSchedulables.mission!schedulable ->
-        if diff(activeSchedulables, {schedulable}) == {} then    
-        (
-         schedulables_terminated.mission ->
-          SKIP
-        ) 
-        else 
-          DoneSchedulables(mission, diff(activeSchedulables, {schedulable}))
+        SKIP
       )  
-      --get_activeSchedulables.mission?activeSchedulables ->
+      ;
+       (
+          get_activeSchedulables.mission?activeSchedulables ->
+          (
+            if activeSchedulables == {} then    
+            (
+              schedulables_stopped.mission -> 
+              SKIP
+            ) 
+            else 
+            (
+              DoneSchedulables(mission, activeSchedulables)
+            )
+          )
+        )
+            --get_activeSchedulables.mission?activeSchedulables ->
      -- if activeSchedulables == {} then    
    --   (
    --     schedulables_terminated.mission ->
@@ -2180,6 +2187,14 @@ transparent diamond, sbisim
 assert sbisim(diamond(SimpleFramework)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(SimpleFramework)) :[ divergence free ]
 assert sbisim(diamond(SimpleFramework)) :[ deterministic  [FD] ]
+
+
+MissionAndSchedulables = 
+( 
+    Missions({missionA}) 
+      [| MissionSync |]
+    Schedulables({}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB} )
+)
 
 
 --****************************************************************************************************************************************************************************************************
