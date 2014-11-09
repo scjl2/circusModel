@@ -355,7 +355,7 @@ channel done_mission : MissionID.Bool
 nametype MissionFWCHanSet = union(
   MissionFWStateChan, 
   {|done_safeletFW, done_toplevel_sequencer, initializeCall, initializeRet,
-register, checkSchedulable, throw, setCeilingPriority, done_schedulables, 
+checkSchedulable, throw, setCeilingPriority, done_schedulables, 
 activate_schedulables, stop_schedulables, done_schedulables, schedulables_stopped,
 signalTerminationCall, signalTerminationRet, done_schedulable, end_mission_terminations,
 requestTermination, terminationPendingCall, terminationPendingRet, deregister, 
@@ -763,7 +763,7 @@ channel get_applicationTerminating: SchedulableID.Bool
 nametype ManagedSchedulableFWChanSet = 
   {| done_schedulable,fire,releaseCall,releaseRet, 
   signalTerminationCall,signalTerminationRet,set_applicationTerminating,get_applicationTerminating,
-  cleanupSchedulableCall, cleanupSchedulableRet, activate_schedulables, register |}
+  cleanupSchedulableCall, cleanupSchedulableRet, activate_schedulables |}
 
 
 
@@ -2895,21 +2895,55 @@ nametype MyMission1AppSync =
   end_mission_app |}
 
 
+nametype TopMission1Register = {|register.FirstMissionSequencerID.TopMission1ID, 
+                                  register.SecondMissionSequencerID.TopMission1ID, 
+                                  register.ThirdMissionSequencerID.TopMission1ID |}
+
+nametype MyMission1Register = {| register.MyPEH1Id.MyMission1ID  |}
+
+nametype MyMission2Register = {| register.MyPEH2Id.MyMission2ID  |}
+
+nametype MyMission3Register = {| register.MyPEH3Id.MyMission3ID  |}
+
+
+nametype FirstMissionSequncerRegister = {| register.FirstMissionSequencerID.TopMission1ID |}
+nametype SecondMissionSequncerRegister = {| register.SecondMissionSequencerID.TopMission1ID |}
+nametype ThirdMissionSequncerRegister = {| register.ThirdMissionSequencerID.TopMission1ID |}
+
+
+
 MyApp_Safelet = (SafeletFW [ SafeletFWChanSet || MyAppChanSet ] MyApp)
 MySequencer1 = (TopLevelMissionSequencerFW(TopLevelSequencerId) [ TopLevelMissionSequencerFWChanSet || MySequencerAppChanSet ] MySequencerApp)
-TopMission1 = (MissionFW(TopMission1ID) [ MissionFWCHanSet || TopMission1AppChanSet ] TopMission1App)
+TopMission1 = (MissionFW(TopMission1ID) [ union(MissionFWCHanSet,TopMission1Register ) || TopMission1AppChanSet ] TopMission1App)
+
+
+nametype TopTierChanSet = 
+  Union({SafeletFWChanSet,MyAppChanSet,
+    TopLevelMissionSequencerFWChanSet,MySequencerAppChanSet,
+    MissionFWCHanSet,TopMission1Register,TopMission1AppChanSet })
 
 FirstMissionSequncer =  (SchedulableMissionSequencerFW(FirstMissionSequencerID) [SchedulableMissionSequencerFWChanSet||FirstMissionSequencerAppChanSet] FirstMissionSequencerApp)
-MyMission1 = (MissionFW(MyMission1ID) [MissionFWCHanSet||MyMission1AppChanSet] MyMission1App)
+MyMission1 = (MissionFW(MyMission1ID) [union(MissionFWCHanSet, MyMission1Register) ||MyMission1AppChanSet] MyMission1App)
 MyPEH1 = (PeriodicEventHandlerFW(MyPEH1Id,1, 0, 0, nullSchedulableId) [PEHFWChanSet||MyPEH1AppChanSet] MyPEH1App(MyMission1ID))
 
 SecondMissionSequencer =  (SchedulableMissionSequencerFW(SecondMissionSequencerID) [SchedulableMissionSequencerFWChanSet||SecondMissionSequencerAppChanSet] SecondSequencerApp)
-MyMission2 = (MissionFW(MyMission2ID) [MissionFWCHanSet|| MyMission2AppChanSet] MyMission2App)
+MyMission2 = (MissionFW(MyMission2ID) [union(MissionFWCHanSet,MyMission2Register )|| MyMission2AppChanSet] MyMission2App)
 MyPEH2 = (PeriodicEventHandlerFW(MyPEH2Id,1, 0, 0, nullSchedulableId) [PEHFWChanSet||MyPEH2AppChanSet] MyPEH2App(MyMission2ID))
 
 ThirdMissionSequencer = (SchedulableMissionSequencerFW(ThirdMissionSequencerID) [SchedulableMissionSequencerFWChanSet||ThirdMissionSequencerAppChanSet] ThirdMissionSequencerApp)
-MyMission3 = (MissionFW(MyMission3ID ) [MissionFWCHanSet||MyMission3AppChanSet ] MyMission3App)
+MyMission3 = (MissionFW(MyMission3ID ) [union(MissionFWCHanSet,MyMission3Register )||MyMission3AppChanSet ] MyMission3App)
 MyPEH3 = (PeriodicEventHandlerFW(MyPEH3Id,1, 0, 0, nullSchedulableId) [PEHFWChanSet||MyPEH3AppChanSet] MyMyPEH3App(MyMission3ID))
+
+Tier1ChanSet = 
+  Union({SchedulableMissionSequencerFWChanSet,FirstMissionSequencerAppChanSet,
+        MissionFWCHanSet, MyMission1Register, MyMission1AppChanSet,
+        PEHFWChanSet, MyPEH1AppChanSet,
+        SchedulableMissionSequencerFWChanSet, SecondMissionSequencerAppChanSet,
+        MissionFWCHanSet,MyMission2Register, MyMission2AppChanSet,
+        PEHFWChanSet,MyPEH2AppChanSet,
+        SchedulableMissionSequencerFWChanSet,ThirdMissionSequencerAppChanSet,
+        MissionFWCHanSet,MyMission3Register,MyMission3AppChanSet,
+        PEHFWChanSet,MyPEH3AppChanSet})
 
 CatchNextTierBroadcastsOff(m) = 
 	activate_schedulables.m -> CatchNextTierBroadcastsOn
@@ -2921,10 +2955,12 @@ CatchNextTierBroadcastsOn =
 	
 
 Program = 
+(  
+MyApp_Safelet
+  [| SafeletProgramSync |]
 (
 (
-( MyApp_Safelet
-	[| SafeletProgramSync |]
+( 
 	(MySequencer1
 		[| TopLevelMissionSequencerProgramSync |]
 	TopMission1
@@ -2934,7 +2970,7 @@ Program =
   CatchNextTierBroadcastsOff(TopMission1ID)
 
 )
-[|Mission1Sync|]
+[ TopTierChanSet ||  Tier1ChanSet ]  
 (
 	(
 		FirstMissionSequncer
@@ -2955,6 +2991,7 @@ Program =
 	))
 )
 )	
+)
 
 assert diamond(Program) ; Loop :[ deadlock free [FD] ]
 assert Program :[ divergence free ]
