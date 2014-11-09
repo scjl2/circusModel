@@ -44,7 +44,7 @@ channel checkSchedulable : MissionID.Bool
 channel getSequencerCall 
 channel getSequencerRet : SchedulableID
 
-nametype safeltFWChanSet = 
+nametype SafeletFWChanSet = 
   {|get_globallyRegistered,add_globallyRegistered,remove_globallyRegistered,get_topLevelSequencer,set_topLevelSequencer,done_safeletFW,
     initializeApplicationCall,initializeApplicationRet,checkSchedulable,getSequencerCall,getSequencerRet|}
 
@@ -2257,7 +2257,7 @@ channel end_safelet_app
 nametype SafeltAppSync = 
     {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
-nametype SafeltAppChanSet =
+nametype MyAppChanSet =
   {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
 MyApp  = 
@@ -2291,8 +2291,8 @@ channel set_sequencer_done : SchedulableID.Bool
 
 nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
-nametype MissionSequencerAppChanSet =union
-(  {|get_sequencer_done,set_sequencer_done|},
+nametype MySequencerAppChanSet =
+  union({| get_sequencer_done, set_sequencer_done |} ,
   MissionSequencerAppSync)
 
 MySequencerApp = 
@@ -2348,9 +2348,9 @@ Methods_tlms =
 channel end_mission_fw : MissionID
 
 nametype TopMission1AppChanSet =
-  {|end_mission_fw, initializeCall, initializeRet, cleanupMissionCall, cleanupMissionRet, 
-    register!FirstMissionSequencerID!TopMission1ID, register!SecondMissionSequencerID!TopMission1ID,
-    register!ThirdMissionSequencerID!TopMission1ID |}
+  {|end_mission_fw, initializeCall, initializeRet, cleanupMissionCall, cleanupMissionRet,
+    register.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID,
+    register.ThirdMissionSequencerID.TopMission1ID|}
 
 TopMission1App = 
 ( 
@@ -2439,7 +2439,7 @@ Methods_ms1 =
 -- NESTED MISSION: MY MISSION 1
 
 nametype MyMission1AppChanSet = 
-  {|end_mission_app, initializeCall, initializeRet,register!MyPEH1Id!MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
+  {|end_mission_app, initializeCall, initializeRet,register.MyPEH1Id.MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
 
 MyMission1App = 
 (
@@ -2534,7 +2534,7 @@ Methods_peh1(m) =
 
 
 -- NESTED SEQUENCER: SECOND SEQUENCER
-nametype SecondtMissionSequencerAppChanSet = 
+nametype SecondMissionSequencerAppChanSet = 
   {|get_sequencer_done, set_sequencer_done, end_sequencer_app,getNextMissionCall, getNextMissionRet |}
 
 SecondSequencerApp = 
@@ -2583,7 +2583,7 @@ Methods_ms2 =
 -- NESTED MISSION: MY MISSION 2
 
 nametype MyMission2AppChanSet = 
-  {|end_mission_app, initializeCall, initializeRet,register!MyPEH2Id!MyMission2ID,cleanupMissionCall,cleanupMissionRet    |}
+  {|end_mission_app, initializeCall, initializeRet,register.MyPEH2Id.MyMission2ID,cleanupMissionCall,cleanupMissionRet    |}
 
 
  MyMission2App = 
@@ -2726,7 +2726,7 @@ Methods_ms3 =
 -- NESTED MISSION: MY MISSION 3
 
 nametype MyMission3AppChanSet = 
-  {|end_mission_app, initializeCall, initializeRet,register!MyPEH3Id!MyMission3ID,cleanupMissionCall,cleanupMissionRet    |}
+  {|end_mission_app, initializeCall, initializeRet,register.MyPEH3Id.MyMission3ID,cleanupMissionCall,cleanupMissionRet    |}
 
 
 MyMission3App = 
@@ -2876,21 +2876,21 @@ nametype MyMission1AppSync =
   end_mission_app, end_mission_fw |}
 
 
-MyApp_Safelet = (SafeletFW [| SafeltAppSync |] MyApp)
-MySequencer1 = (TopLevelMissionSequencerFW(TopLevelSequencerId) [| MissionSequencerAppSync |] MySequencerApp)
-TopMission1 = (MissionFW(TopMission1ID) [| TopMission1AppSync |] TopMission1App)
+MyApp_Safelet = (SafeletFW [ SafeletFWChanSet || MyAppChanSet ] MyApp)
+MySequencer1 = (TopLevelMissionSequencerFW(TopLevelSequencerId) [ TopLevelMissionSequencerFWChanSet || MySequencerAppChanSet ] MySequencerApp)
+TopMission1 = (MissionFW(TopMission1ID) [ MissionFWCHanSet || TopMission1AppChanSet ] TopMission1App)
 
-FirstMissionSequncer =  (SchedulableMissionSequencerFW(FirstMissionSequencerID) [| MissionSequencerAppSync |] FirstMissionSequencerApp)
-MyMission1 = (MissionFW(MyMission1ID) [| MyMission1AppSync |] MyMission1App)
-MyPEH1 = (PeriodicEventHandlerFW(MyPEH1Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH1App(MyMission1ID))
+FirstMissionSequncer =  (SchedulableMissionSequencerFW(FirstMissionSequencerID) [SchedulableMissionSequencerFWChanSet||FirstMissionSequencerAppChanSet] FirstMissionSequencerApp)
+MyMission1 = (MissionFW(MyMission1ID) [MissionFWCHanSet||MyMission1AppChanSet] MyMission1App)
+MyPEH1 = (PeriodicEventHandlerFW(MyPEH1Id,1, 0, 0, nullSchedulableId) [PEHFWChanSet||MyPEH1AppChanSet] MyPEH1App(MyMission1ID))
 
-SecondMissionSequencer =  (SchedulableMissionSequencerFW(SecondMissionSequencerID) [| MissionSequencerAppSync |] SecondSequencerApp)
-MyMission2 = (MissionFW(MyMission2ID) [| MyMission2AppSync|] MyMission2App)
-MyPEH2 = (PeriodicEventHandlerFW(MyPEH2Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyPEH2App(MyMission2ID))
+SecondMissionSequencer =  (SchedulableMissionSequencerFW(SecondMissionSequencerID) [SchedulableMissionSequencerFWChanSet||SecondMissionSequencerAppChanSet] SecondSequencerApp)
+MyMission2 = (MissionFW(MyMission2ID) [MissionFWCHanSet|| MyMission2AppChanSet] MyMission2App)
+MyPEH2 = (PeriodicEventHandlerFW(MyPEH2Id,1, 0, 0, nullSchedulableId) [PEHFWChanSet||MyPEH2AppChanSet] MyPEH2App(MyMission2ID))
 
-ThirdMissionSequencer = (SchedulableMissionSequencerFW(ThirdMissionSequencerID) [| MissionSequencerAppSync |] ThirdMissionSequencerApp)
-MyMission3 = (MissionFW(MyMission3ID ) [| MyMission3AppSync |] MyMission3App)
-MyPEH3 = (PeriodicEventHandlerFW(MyPEH3Id,1, 0, 0, nullSchedulableId) [| PEHAppSync |] MyMyPEH3App(MyMission3ID))
+ThirdMissionSequencer = (SchedulableMissionSequencerFW(ThirdMissionSequencerID) [SchedulableMissionSequencerFWChanSet||ThirdMissionSequencerAppChanSet] ThirdMissionSequencerApp)
+MyMission3 = (MissionFW(MyMission3ID ) [MissionFWCHanSet||MyMission3AppChanSet ] MyMission3App)
+MyPEH3 = (PeriodicEventHandlerFW(MyPEH3Id,1, 0, 0, nullSchedulableId) [PEHFWChanSet||MyPEH3AppChanSet] MyMyPEH3App(MyMission3ID))
 
 CatchNextTierBroadcastsOff(m) = 
 	activate_schedulables.m -> CatchNextTierBroadcastsOn
