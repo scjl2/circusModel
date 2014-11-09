@@ -46,7 +46,7 @@ channel getSequencerRet : SchedulableID
 
 nametype SafeletFWChanSet = 
   {|get_globallyRegistered,add_globallyRegistered,remove_globallyRegistered,get_topLevelSequencer,set_topLevelSequencer,done_safeletFW,
-    initializeApplicationCall,initializeApplicationRet,checkSchedulable,getSequencerCall,getSequencerRet|}
+    initializeApplicationCall,initializeApplicationRet,checkSchedulable,getSequencerCall,getSequencerRet, end_safelet_app|}
 
 SafeletFW =
   SafeletFWBehaviour 
@@ -72,7 +72,8 @@ Execute_S =
       Methods_S({}, topLevelSequencer) 
   ) 
   else
-   done_safeletFW -> SKIP
+    end_safelet_app ->
+    done_safeletFW -> SKIP
   
   Methods_S(globallyRegistered, sequencerID) = 
   (
@@ -1004,7 +1005,7 @@ channel get_pending : SchedulableID . Bool
 channel set_data : SchedulableID . num
 channel get_data : SchedulableID . num
 channel end_aperiodicEventHandlerState : SchedulableID
-
+channel end_aperiodicEventHandler_app : SchedulableID
 
 channel fireLong : SchedulableID . num
 channel releaseLongCall : SchedulableID . num
@@ -1103,6 +1104,7 @@ AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMiss
     )
     else 
       end_aperiodicEventHandlerState.schedulable ->
+      end_aperiodicEventHandler_app.schedulable ->
       SKIP 
     )
 )
@@ -1304,7 +1306,7 @@ channel set_startTime : SchedulableID.num
 -- OSEH Channels
 
 channel end_oneshotEventHandlerState : SchedulableID
-
+channel end_oneshotEventHandler_app : SchedulableID
 
 channel reschedule_handler : SchedulableID.num
 channel deschedule_handler : SchedulableID
@@ -1392,6 +1394,7 @@ OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler) =
     )
     else 
       end_oneshotEventHandlerState.schedulable ->
+      end_oneshotEventHandler_app.schedulable ->
       SKIP 
   ) 
 )
@@ -1664,7 +1667,7 @@ nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
 
 nametype PEHFWChanSet = union(
   union(
-    {|get_missedReleases,set_missedReleases,get_periodicTerminating,set_periodicTerminating,end_periodicEventHandlerState,release_complete_PEH|},
+    {|end_periodic_app, get_missedReleases,set_missedReleases,get_periodicTerminating,set_periodicTerminating,end_periodicEventHandlerState,release_complete_PEH|},
     PEHStateSync),ManagedSchedulableFWChanSet)
   
 
@@ -1755,6 +1758,7 @@ PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadline
       )
       else  
          end_periodicEventHandlerState.schedulable ->
+         end_periodic_app.schedulable ->
          SKIP 
     ) 
 )
@@ -1977,7 +1981,7 @@ assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deter
 channel runCall : SchedulableID 
 channel runRet : SchedulableID
 
-
+channel end_managedThreadState_app : SchedulableID
 channel end_managedThreadState : SchedulableID
 
 nametype MTStateSync = {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_managedThreadState |}
@@ -2037,7 +2041,7 @@ ManagedThreadFWBehaviour(schedulable) =
 (
     Start_MT(schedulable) ; 
   get_applicationTerminating.schedulable?applicationTerminating ->
-    (
+  (
     if applicationTerminating == False then 
       (
           Execute_MT(schedulable) ; 
@@ -2047,9 +2051,10 @@ ManagedThreadFWBehaviour(schedulable) =
       else 
     (
       end_managedThreadState.schedulable -> 
-        SKIP
-      ) 
-   )
+      end_managedThreadState_app.schedulable ->
+      SKIP
+    ) 
+  )
 )
 
 Start_MT(schedulable) =
@@ -2345,10 +2350,10 @@ Methods_tlms =
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
-channel end_mission_fw : MissionID
+
 
 nametype TopMission1AppChanSet =
-  {|end_mission_fw, initializeCall, initializeRet, cleanupMissionCall, cleanupMissionRet,
+  {| initializeCall, initializeRet, cleanupMissionCall, cleanupMissionRet,
     register.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID,
     register.ThirdMissionSequencerID.TopMission1ID|}
 
@@ -2359,8 +2364,7 @@ TopMission1App =
 			/\ 
 			(end_mission_app.TopMission1ID -> TopMission1App )
 	) 
-	/\
-	(end_mission_fw.TopMission1ID -> SKIP)
+
 )
 
 
@@ -2448,8 +2452,7 @@ MyMission1App =
 		/\ 
 		(end_mission_app.MyMission1ID -> MyMission1App )
 	) 
-	/\ 
-	(end_mission_fw.MyMission1ID -> SKIP)
+
 )
 
 InitializePhase_m1 = 
@@ -2479,7 +2482,10 @@ channel increment_count : SchedulableID
 channel end_periodic_app : SchedulableID
 
 nametype MyPEH1AppChanSet =
-  {|get_count,increment_count, end_periodic_app,releaseCall,releaseRet,requestTermination, cleanupSchedulableCall, cleanupSchedulableRet |}
+  {|get_count,increment_count, end_periodic_app,
+  releaseCall,releaseRet,
+  requestTermination, end_periodic_app,
+  cleanupSchedulableCall, cleanupSchedulableRet |}
 
 MyPEH1App(m) = 
 (
@@ -2593,8 +2599,7 @@ nametype MyMission2AppChanSet =
 		/\
 		(end_mission_app.MyMission2ID -> MyMission2App )
 	) 
-	/\ 
-	(end_mission_fw.MyMission2ID -> SKIP)
+
 )
 
 InitializePhase_m2 = 
@@ -2619,9 +2624,10 @@ Methods_m2 =
 -- PEH: MY PEH 2
 
 nametype MyPEH2AppChanSet =
-  {|get_count,increment_count, end_periodic_app,releaseCall,releaseRet,requestTermination, cleanupSchedulableCall, cleanupSchedulableRet |}
-
-
+    {|get_count,increment_count, end_periodic_app,
+  releaseCall,releaseRet,
+  requestTermination, end_periodic_app,
+  cleanupSchedulableCall, cleanupSchedulableRet |}
 MyPEH2App(m) =  
 (
   Methods_peh2(m)  
@@ -2726,7 +2732,7 @@ Methods_ms3 =
 -- NESTED MISSION: MY MISSION 3
 
 nametype MyMission3AppChanSet = 
-  {|end_mission_app, initializeCall, initializeRet,register.MyPEH3Id.MyMission3ID,cleanupMissionCall,cleanupMissionRet    |}
+  {|end_mission_app, initializeCall, initializeRet,register.MyPEH3Id.MyMission3ID,cleanupMissionCall,cleanupMissionRet |}
 
 
 MyMission3App = 
@@ -2736,8 +2742,7 @@ MyMission3App =
 		/\
 		(end_mission_app.MyMission3ID -> MyMission3App )
 	) 
-	/\ 
-	(end_mission_fw.MyMission3ID -> SKIP)
+
 )
 
 InitializePhase_m3 = 
@@ -2763,7 +2768,10 @@ Methods_m3 =
 -- PEH: MY PEH 3
 
 nametype MyPEH3AppChanSet =
-  {|get_count,increment_count, end_periodic_app,releaseCall,releaseRet,requestTermination, cleanupSchedulableCall, cleanupSchedulableRet |}
+   {|get_count,increment_count, end_periodic_app,
+  releaseCall,releaseRet,
+  requestTermination, end_periodic_app,
+  cleanupSchedulableCall, cleanupSchedulableRet |}
 
 
 nametype PEHAppSync = {|releaseCall, releaseRet, requestTermination, cleanupSchedulableCall, cleanupSchedulableRet, end_periodic_app |}
@@ -2856,23 +2864,23 @@ nametype TopMission1AppSync =
   {|initializeCall, initializeRet, register.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID, 
   register.ThirdMissionSequencerID.TopMission1ID, setCeilingPriority, terminationPendingCall, terminationPendingRet, 
   cleanupMissionCall, cleanupMissionRet, 
-  end_mission_app, end_mission_fw |}
+  end_mission_app |}
 
 
 nametype MyMission1AppSync = 
   {|initializeCall, initializeRet, register.MyPEH1Id.MyMission1ID, setCeilingPriority, terminationPendingCall, terminationPendingRet, 
   cleanupMissionCall, cleanupMissionRet, 
-  end_mission_app, end_mission_fw |}
+  end_mission_app |}
 
   nametype MyMission2AppSync = 
   {|initializeCall, initializeRet, register.MyPEH2Id.MyMission2ID, setCeilingPriority, terminationPendingCall, terminationPendingRet, 
   cleanupMissionCall, cleanupMissionRet, 
-  end_mission_app, end_mission_fw |}
+  end_mission_app |}
 
   nametype MyMission3AppSync = 
   {|initializeCall, initializeRet, register.MyPEH3Id.MyMission3ID, setCeilingPriority, terminationPendingCall, terminationPendingRet, 
   cleanupMissionCall, cleanupMissionRet, 
-  end_mission_app, end_mission_fw |}
+  end_mission_app |}
 
 
 MyApp_Safelet = (SafeletFW [ SafeletFWChanSet || MyAppChanSet ] MyApp)
