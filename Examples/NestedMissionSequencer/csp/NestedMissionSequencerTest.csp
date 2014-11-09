@@ -9,7 +9,12 @@ datatype MissionID = nullMissionId|
                       missionA|missionB |  
                       TopMission1ID | MyMission1ID | MyMission2ID | MyMission3ID 
 
-datatype ExceptionType = interruptedException | illegalMonitorStateException | illegalArgumentException | illegalThreadStateException | illegalStateException | ceilingViolationException
+datatype ExceptionType = interruptedException | 
+                          illegalMonitorStateException | 
+                          illegalArgumentException | 
+                          illegalThreadStateException | 
+                          illegalStateException | 
+                          ceilingViolationException
 nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
 maxNum = 2
@@ -39,8 +44,9 @@ channel checkSchedulable : MissionID.Bool
 channel getSequencerCall 
 channel getSequencerRet : SchedulableID
 
-
-
+nametype safeltFWChanSet = 
+  {|get_globallyRegistered,add_globallyRegistered,remove_globallyRegistered,get_topLevelSequencer,set_topLevelSequencer,done_safeletFW,
+    initializeApplicationCall,initializeApplicationRet,checkSchedulable,getSequencerCall,getSequencerRet|}
 
 SafeletFW =
   SafeletFWBehaviour 
@@ -119,6 +125,11 @@ channel  end_sequencer_app:SchedulableID
 channel  end_methods : SchedulableID
 channel  end_terminations : SchedulableID
 
+nametype MissionSequencerFWSharedChanSet = 
+  {| get_currentMission, set_currentMission, get_continue, get_controllingMission,set_controllingMission,
+      getNextMissionCall, getNextMissionRet, requestSequenceTermination, sequenceTerminationPendingCall,
+      sequenceTerminationPendingRet, end_sequencer_app, end_methods, end_terminations |}
+
 --TopLevelMissionSequencer
 
 
@@ -136,7 +147,7 @@ channel set_continue : SchedulableID . Bool
 
 channel end_toplevelsequencerState : SchedulableID
 
-
+nametype TopLevelMissionSequencerFWChanSet = union({|start_toplevel_sequencer, done_toplevel_sequencer, set_continue, end_toplevelsequencerState|}, MissionSequencerFWSharedChanSet) 
 
 nametype TopLevelMissionSequencerFWChan  =  {| start_toplevel_sequencer,  end_sequencer_app, end_methods, get_continue, set_continue |}
 nametype TLMSStateSync = {|get_continue, set_continue, get_currentMission, set_currentMission, end_toplevelsequencerState |}
@@ -298,6 +309,8 @@ channel add_schedulable: MissionID.SchedulableID
 channel remove_activeSchedulables : MissionID.SchedulableID
 channel get_missionTerminating : MissionID.Bool
 channel get_registeredSchedulables : MissionID.Set(SchedulableID)
+channel end_mission_state : MissionID
+
 
 nametype MissionFWStateChan = 
   {|activate_schedulables, end_mission_state, set_controllingSequencer, set_applicationTerminating_M, get_applicationTerminating_M, set_missionTerminating, set_activeSchedulables, get_activeSchedulables, add_schedulable, remove_activeSchedulables, get_missionTerminating, get_registeredSchedulables |}
@@ -329,7 +342,14 @@ channel cleanupMissionCall : MissionID
 channel cleanupMissionRet : MissionID.Bool
 channel end_mission_app : MissionID
 channel done_mission : MissionID.Bool
-channel end_mission_state : MissionID
+
+
+nametype MissionFWCHanSet = union(
+  {|start_mission,initializeCall,initializeRet,register,deregister,setCeilingPriority,done_schedulables,activate_schedulables,
+     stop_schedulables,schedulables_stopped,schedulables_terminated,end_mission_terminations,requestTermination,
+        terminationPendingCall,terminationPendingRet,cleanupSchedulableCall,cleanupSchedulableRet,cleanupMissionCall,cleanupMissionRet,
+         end_mission_app,done_mission,throw|},
+     MissionFWStateChan)    
 
 
 nametype TerminateSync = 
@@ -709,8 +729,6 @@ Finish_M(mission, continueSequencer) =
    SKIP
 
 
-
-
 assert MissionFW(missionA); Loop :[ deadlock free [FD] ]
 assert MissionFW(missionA) :[ divergence free ]
 assert MissionFW(missionA) :[ deterministic  [FD] ]
@@ -726,26 +744,32 @@ channel fire:SchedulableID
 channel releaseCall:SchedulableID 
 channel releaseRet:SchedulableID 
 
-  channel  signalTerminationCall : SchedulableID
-  channel  signalTerminationRet : SchedulableID
+channel  signalTerminationCall : SchedulableID
+channel  signalTerminationRet : SchedulableID
 channel set_applicationTerminating: SchedulableID.Bool
 channel get_applicationTerminating: SchedulableID.Bool
+
+nametype ManagedSchedulableFWChanSet = 
+  {|release_complete,done_schedulable,end_releases,fire,releaseCall,releaseRet, 
+  signalTerminationCall,signalTerminationRet,set_applicationTerminating,get_applicationTerminating |}
+
 
 
 --SchedulablelMissionSequencer
 
-
-
 --SMS CHANNELS
  
-
 channel set_continueAbove : SchedulableID.Bool
 channel set_continueBelow : SchedulableID.Bool
 
 channel end_schedulableMissionSequencerState : SchedulableID
 
 
-
+nametype SchedulableMissionSequencerFWChanSet = union(
+  union(
+  {|set_continueAbove, set_continueBelow, end_schedulableMissionSequencerState|},
+  ManagedSchedulableFWChanSet),
+    MissionSequencerFWSharedChanSet)
   
   nametype  SchedulableMissionSequencerFWChan  = {| end_sequencer_app, end_methods, end_terminations, get_continue  |}
   nametype  SMSStateSync = {|get_currentMission, set_currentMission, get_continue, set_continueAbove, set_continueBelow,get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_schedulableMissionSequencerState |}
@@ -989,7 +1013,11 @@ channel releaseLongRet : SchedulableID
 
 channel scheduleNextRelease : SchedulableID.num 
 
-
+nametype APEHFWChanSet = union(
+  union(
+  {|set_pending,get_pending,set_data,get_data,end_aperiodicEventHandlerState,fireLong,releaseLongCall,releaseLongRet|},
+  ManagedSchedulableFWChanSet),
+  APEHStateSync)
 
 nametype DeadlineSync_APEH =  {|releaseCall, end_releases, deschedule_handler, release_complete|}
 nametype APEHStateSync = 
@@ -1293,6 +1321,12 @@ nametype OSEHStateSync =
   {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
   get_startTime, set_startTime,
   end_oneshotEventHandlerState|}
+
+nametype OSEHFWChanSet = union(
+  union({|end_oneshotEventHandlerState,reschedule_handler,deschedule_handler,getNextReleaseTimeCall,getNextReleaseTimeRet,
+   descheduleCall,descheduleRet|},
+   OSEHStateSync),
+  ManagedSchedulableFWChanSet)
 
 -- ONE SHOT EVENT HANDLER
 
@@ -1628,6 +1662,12 @@ nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
                           end_periodicEventHandlerState|}
 
 
+nametype PEHFWChanSet = union(
+  union(
+    {|get_missedReleases,set_missedReleases,get_periodicTerminating,set_periodicTerminating,end_periodicEventHandlerState,release_complete_PEH|},
+    PEHStateSync),ManagedSchedulableFWChanSet)
+  
+
 
 PeriodicEventHandlerFW(schedulable, period, startTime, deadline, deadlineMissHandler) =
 ( 
@@ -1942,6 +1982,14 @@ channel end_managedThreadState : SchedulableID
 
 nametype MTStateSync = {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_managedThreadState |}
 nametype ManagedThreadSync = {|runCall, runRet |} 
+
+
+nametype MTFWChanSet = union(
+  union(
+  {|runCall,runRet|},
+  MTStateSync),
+  ManagedSchedulableFWChanSet)
+
 --Managed Thread
 
 ManagedThreadFW(schedulable) = 
@@ -2203,13 +2251,14 @@ MissionAndSchedulables =
 
 -- SAFELET: MY APP
 
-channel get_safelet_done : Bool
-channel set_safelet_done : Bool
+
 channel end_safelet_app
 
 nametype SafeltAppSync = 
     {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
+nametype SafeltAppChanSet =
+  {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
 MyApp  = 
 	(
@@ -2240,10 +2289,19 @@ Methods_s =
 channel get_sequencer_done : SchedulableID.Bool
 channel set_sequencer_done : SchedulableID.Bool
 
-nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet, sequenceTerminationPendingCall, sequenceTerminationPendingRet, end_sequencer_app|}
+nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
+
+nametype MissionSequencerAppChanSet =union
+(  {|get_sequencer_done,set_sequencer_done|},
+  MissionSequencerAppSync)
 
 MySequencerApp = 
-	(Methods_tlms [|{|get_sequencer_done, set_sequencer_done |}|] DoneController_tlms(False) )/\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
+(
+  Methods_tlms 
+    [|{|get_sequencer_done, set_sequencer_done |}|] 
+  DoneController_tlms(False) 
+)
+/\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
    
 
 DoneController_tlms(done) =
@@ -2278,16 +2336,21 @@ GetNextMission_tlms =
 Methods_tlms = 
  (
 	GetNextMission_tlms 
- ) ; Methods_tlms
+ ) ; Methods_tlms  
 
-  
+
+
+
 
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
 channel end_mission_fw : MissionID
 
-
+nametype TopMission1AppChanSet =
+  {|end_mission_fw, initializeCall, initializeRet, cleanupMissionCall, cleanupMissionRet, 
+    register!FirstMissionSequencerID!TopMission1ID, register!SecondMissionSequencerID!TopMission1ID,
+    register!ThirdMissionSequencerID!TopMission1ID |}
 
 TopMission1App = 
 ( 
@@ -2326,8 +2389,16 @@ Methods_tlm1 =
 
 --NESTED SEQUENCER: FIRST SEQUENCER
 
+nametype FirstMissionSequencerAppChanSet = 
+  {|get_sequencer_done, set_sequencer_done, end_sequencer_app,getNextMissionCall, getNextMissionRet |}
+
 FirstMissionSequencerApp = 
-(Methods_ms1 [|{|get_sequencer_done, set_sequencer_done |}|] DoneController_ms1(False) ) /\ (end_sequencer_app.FirstMissionSequencerID -> SKIP)
+(
+  Methods_ms1 
+    [|{|get_sequencer_done, set_sequencer_done |}|] 
+    DoneController_ms1(False) 
+) 
+/\ (end_sequencer_app.FirstMissionSequencerID -> SKIP)
 
 
 DoneController_ms1(done) =
@@ -2366,6 +2437,10 @@ Methods_ms1 =
 
 
 -- NESTED MISSION: MY MISSION 1
+
+nametype MyMission1AppChanSet = 
+  {|end_mission_app, initializeCall, initializeRet,register!MyPEH1Id!MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
+
 MyMission1App = 
 (
 	( 
@@ -2403,8 +2478,16 @@ channel get_count : SchedulableID.num
 channel increment_count : SchedulableID
 channel end_periodic_app : SchedulableID
 
+nametype MyPEH1AppChanSet =
+  {|get_count,increment_count, end_periodic_app,releaseCall,releaseRet,requestTermination, cleanupSchedulableCall, cleanupSchedulableRet |}
+
 MyPEH1App(m) = 
-(Methods_peh1(m)  [| {|get_count, increment_count |} |] CountController_peh1(0) )   /\ (end_periodic_app.MyPEH1Id -> SKIP)
+(
+  Methods_peh1(m)  
+    [| {|get_count, increment_count |} |] 
+  CountController_peh1(0) 
+)
+   /\ (end_periodic_app.MyPEH1Id -> SKIP)
 
 
 CountController_peh1(count) =
@@ -2451,9 +2534,16 @@ Methods_peh1(m) =
 
 
 -- NESTED SEQUENCER: SECOND SEQUENCER
+nametype SecondtMissionSequencerAppChanSet = 
+  {|get_sequencer_done, set_sequencer_done, end_sequencer_app,getNextMissionCall, getNextMissionRet |}
 
 SecondSequencerApp = 
-(Methods_ms2 [|{|get_sequencer_done, set_sequencer_done |}|] DoneController_ms2(False) ) /\ (end_sequencer_app.SecondMissionSequencerID -> SKIP)
+(
+  Methods_ms2 
+    [|{|get_sequencer_done, set_sequencer_done |}|] 
+  DoneController_ms2(False) 
+)
+ /\ (end_sequencer_app.SecondMissionSequencerID -> SKIP)
 
 
 DoneController_ms2(done) =
@@ -2492,6 +2582,10 @@ Methods_ms2 =
 
 -- NESTED MISSION: MY MISSION 2
 
+nametype MyMission2AppChanSet = 
+  {|end_mission_app, initializeCall, initializeRet,register!MyPEH2Id!MyMission2ID,cleanupMissionCall,cleanupMissionRet    |}
+
+
  MyMission2App = 
 (
 	( 
@@ -2524,8 +2618,16 @@ Methods_m2 =
 
 -- PEH: MY PEH 2
 
+nametype MyPEH2AppChanSet =
+  {|get_count,increment_count, end_periodic_app,releaseCall,releaseRet,requestTermination, cleanupSchedulableCall, cleanupSchedulableRet |}
+
+
 MyPEH2App(m) =  
-(Methods_peh2(m)  [| {|get_count, increment_count |} |] CountController_peh2(0) )   /\ (end_periodic_app.MyPEH2Id -> SKIP)
+(
+  Methods_peh2(m)  
+    [| {|get_count, increment_count |} |] 
+  CountController_peh2(0) 
+)   /\ (end_periodic_app.MyPEH2Id -> SKIP)
 
 
 CountController_peh2(count) =
@@ -2573,8 +2675,16 @@ Methods_peh2(m) =
 
 -- NESTED SEQUENCER: THIRD SEQUENCER
 
+nametype ThirdMissionSequencerAppChanSet = 
+  {|get_sequencer_done, set_sequencer_done, end_sequencer_app,getNextMissionCall, getNextMissionRet |}
+
 ThirdMissionSequencerApp =
-(Methods_ms3 [|{|get_sequencer_done, set_sequencer_done |}|] DoneController_ms3(False) ) /\ (end_sequencer_app.ThirdMissionSequencerID -> SKIP)
+(
+  Methods_ms3 
+    [|{|get_sequencer_done, set_sequencer_done |}|] 
+  DoneController_ms3(False) 
+)
+ /\ (end_sequencer_app.ThirdMissionSequencerID -> SKIP)
 
 
 DoneController_ms3(done) =
@@ -2615,6 +2725,10 @@ Methods_ms3 =
 
 -- NESTED MISSION: MY MISSION 3
 
+nametype MyMission3AppChanSet = 
+  {|end_mission_app, initializeCall, initializeRet,register!MyPEH3Id!MyMission3ID,cleanupMissionCall,cleanupMissionRet    |}
+
+
 MyMission3App = 
 (
 	( 
@@ -2648,10 +2762,18 @@ Methods_m3 =
 
 -- PEH: MY PEH 3
 
+nametype MyPEH3AppChanSet =
+  {|get_count,increment_count, end_periodic_app,releaseCall,releaseRet,requestTermination, cleanupSchedulableCall, cleanupSchedulableRet |}
+
+
 nametype PEHAppSync = {|releaseCall, releaseRet, requestTermination, cleanupSchedulableCall, cleanupSchedulableRet, end_periodic_app |}
 
 MyMyPEH3App(m) =  
-(Methods_peh3(m)  [| {|get_count, increment_count |} |] CountController_peh3(0) )   /\ (end_periodic_app.MyPEH3Id -> SKIP)
+(
+  Methods_peh3(m)  
+    [| {|get_count, increment_count |} |] 
+  CountController_peh3(0) 
+)   /\ (end_periodic_app.MyPEH3Id -> SKIP)
 
 
 CountController_peh3(count) =
