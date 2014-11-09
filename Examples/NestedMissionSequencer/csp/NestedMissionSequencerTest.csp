@@ -2820,10 +2820,10 @@ Methods_peh3(m) =
 
 
 
-nametype SafeletProgramSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, register,  deregister, checkSchedulable|}
-
---.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID, 
-                   --register.ThirdMissionSequencerID.TopMission1ID, register.MyPEH1Id.MyMission1ID, register.MyPEH2Id.MyMission2ID, register.MyPEH3Id.MyMission3ID
+nametype SafeletProgramSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, deregister, checkSchedulable, 
+                                register.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID, 
+                                register.ThirdMissionSequencerID.TopMission1ID, register.MyPEH1Id.MyMission1ID, 
+                                register.MyPEH2Id.MyMission2ID, register.MyPEH3Id.MyMission3ID|}
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
@@ -2831,27 +2831,26 @@ nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, 
 
 nametype Mission1Sync = {| done_safeletFW, done_toplevel_sequencer,  
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, register|} 
---.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID, register.ThirdMissionSequencerID.TopMission1ID
+                   cleanupSchedulableCall, cleanupSchedulableRet, 
+                   register.FirstMissionSequencerID.TopMission1ID, 
+                   register.SecondMissionSequencerID.TopMission1ID, 
+                   register.ThirdMissionSequencerID.TopMission1ID|}
 
 
 
 nametype MyMission1Sync = {| done_safeletFW, done_toplevel_sequencer,  
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, register|} 
---.MyPEH1Id.MyMission1ID
+                   cleanupSchedulableCall, cleanupSchedulableRet, register.MyPEH1Id.MyMission1ID|} 
 
 
 nametype MyMission2Sync = {| done_safeletFW, done_toplevel_sequencer,  
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, register|} 
---.MyPEH2Id.MyMission2ID
+                   cleanupSchedulableCall, cleanupSchedulableRet, register.MyPEH2Id.MyMission2ID|} 
 
 
 nametype MyMission3Sync = {| done_safeletFW, done_toplevel_sequencer,  
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, register|} 
---.MyPEH3Id.MyMission3ID
+                   cleanupSchedulableCall, cleanupSchedulableRet, register.MyPEH3Id.MyMission3ID|} 
 
 nametype TopMission1AppSync = 
   {|initializeCall, initializeRet, register.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID, 
