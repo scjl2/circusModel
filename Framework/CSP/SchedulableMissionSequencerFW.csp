@@ -1,0 +1,213 @@
+--SchedulablelMissionSequencer
+
+--SMS CHANNELS
+ 
+channel set_continueAbove : SchedulableID.Bool
+channel set_continueBelow : SchedulableID.Bool
+
+channel end_schedulableMissionSequencerState : SchedulableID
+
+
+nametype SchedulableMissionSequencerFWChanSet = union(
+  union(ManagedSchedulableFWChanSet , MissionSequencerFWSharedChanSet),
+  {| done_safeletFW, set_continueAbove, set_continueBelow, end_schedulableMissionSequencerState, 
+done_toplevel_sequencer, start_mission, initializeRet, done_mission, requestTermination, release_complete |}  )
+  
+  nametype  SchedulableMissionSequencerFWChan  = {| end_sequencer_app, end_methods, end_terminations, get_continue  |}
+  nametype  SMSStateSync = {|get_currentMission, set_currentMission, get_continue, set_continueAbove, set_continueBelow,get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_schedulableMissionSequencerState |}
+
+-- SchedulableMissionSequencer
+
+SchedulableMissionSequencerFW(sequencer)  =  
+(
+  SchedulableMissionSequencerState(sequencer, nullMissionId, True, True, nullMissionId, False)
+    [| SMSStateSync |]
+  SchedulableMissionSequencerBehaviour(sequencer)
+)\SMSStateSync
+
+
+SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, controllingMission, applicationTerminating) =
+  (
+    get_currentMission.sequencer!currentMission -> 
+    SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    set_currentMission.sequencer?newCurrentMission -> 
+    SchedulableMissionSequencerState(sequencer, newCurrentMission, continueAbove, continueBelow, controllingMission, applicationTerminating)
+  )
+    []
+  (
+    get_continue.sequencer!(continueAbove and continueBelow) ->
+    SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    set_continueAbove.sequencer?newContinueAbove -> 
+    SchedulableMissionSequencerState(sequencer, currentMission, newContinueAbove, continueBelow, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    set_continueBelow.sequencer?newContinueBelow ->
+    SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, newContinueBelow, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    get_controllingMission.sequencer!controllingMission ->
+    SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    set_controllingMission.sequencer?newControllingMission ->
+    SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, newControllingMission, applicationTerminating)
+  )
+  []
+  (
+    get_applicationTerminating.sequencer!applicationTerminating ->
+    SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    set_applicationTerminating.sequencer?newApplicationTerminating ->
+    SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, controllingMission, newApplicationTerminating)
+  )
+  []
+  (
+    end_schedulableMissionSequencerState.sequencer ->
+    SKIP
+  )
+
+
+SchedulableMissionSequencerBehaviour(sequencer) =
+
+(
+  Start_SMS(sequencer) ; 
+  get_applicationTerminating.sequencer?applicationTerminating ->
+    (if applicationTerminating == False then 
+       (
+          Execute_SMS(sequencer) ; 
+          Cleanup_SMS(sequencer) ; 
+          SchedulableMissionSequencerBehaviour(sequencer) 
+        ) 
+     else  
+       end_schedulableMissionSequencerState.sequencer -> 
+       end_sequencer_app.sequencer -> 
+       SKIP
+     )
+)
+
+Start_SMS(sequencer) =  
+ (
+      Register_SMS(sequencer) --;
+      --Activate_SMS(sequencer)
+    )
+ []
+ (
+  done_safeletFW ->
+  set_applicationTerminating.sequencer!True ->
+  SKIP
+)
+[]
+ (
+    done_toplevel_sequencer -> 
+    set_applicationTerminating.sequencer!True ->
+    SKIP
+  )
+ []
+ (
+    activate_schedulables?someMissionID -> 
+    Start_SMS(sequencer) 
+  ) 
+
+Register_SMS(sequencer) = 
+ register.sequencer?controllingMission ->
+ Activate_SMS(sequencer, controllingMission)
+
+Activate_SMS(sequencer, controllingMission) =
+ --get_controllingMission.sequencer?controllingMission -> 
+ activate_schedulables.controllingMission -> 
+ SKIP
+
+Execute_SMS(sequencer) = 
+(
+   RunMission_SMS(sequencer)      
+) 
+
+
+RunMission_SMS(sequencer) = 
+ GetNextMission_SMS(sequencer) ; 
+-- StartMission_SMS(sequencer) ; 
+ Continue_SMS(sequencer)
+
+GetNextMission_SMS(sequencer)  =  
+    getNextMissionCall.sequencer -> 
+    getNextMissionRet.sequencer?next -> 
+    StartMission_SMS(sequencer, next)
+  --SKIP
+
+StartMission_SMS(sequencer, currentMission)  = 
+--get_currentMission.sequencer?currentMission ->  
+   if  currentMission != nullMissionId  then
+   (    
+      start_mission.currentMission.sequencer ->
+      initializeRet.currentMission ->      
+      (      
+        SignalTermination_SMS(sequencer)
+         [| {| end_terminations |} |]
+        (   
+            done_mission.currentMission?continueReturn -> 
+            end_terminations.sequencer -> 
+            set_continueBelow.sequencer!continueReturn ->             
+            SKIP
+        ) 
+      )\{| end_terminations |}
+  )
+  else  
+  (
+      set_continueBelow.sequencer!False -> 
+      SKIP 
+  )
+
+Continue_SMS(sequencer) = 
+  (
+    get_continue.sequencer?continue:({True}) -> 
+    RunMission_SMS(sequencer) 
+  )
+  []  
+  (
+    get_continue.sequencer?continue:({False}) -> 
+    SKIP
+  )
+
+SignalTermination_SMS(sequencer)  = 
+( 
+    (
+      end_terminations.sequencer -> 
+      SKIP
+    )
+    []
+    ( 
+      signalTerminationCall.sequencer -> 
+      set_continueAbove.sequencer!False -> 
+      get_currentMission.sequencer?currentMission ->
+      requestTermination.currentMission.sequencer ->  
+      signalTerminationRet.sequencer -> 
+      --
+      end_terminations.sequencer ->      
+      SKIP
+    ) 
+ )
+
+Cleanup_SMS(sequencer)  = 
+  cleanupSchedulableCall.sequencer -> 
+  cleanupSchedulableRet.sequencer -> 
+  Finish_SMS(sequencer)
+
+Finish_SMS(sequencer) = 
+  done_schedulable.sequencer -> 
+  SKIP
+
+  
+assert SchedulableMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
+assert SchedulableMissionSequencerFW(schedulableA) :[ divergence free ]
+assert SchedulableMissionSequencerFW(schedulableA) :[ deterministic  [FD] ]  
