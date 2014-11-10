@@ -17,7 +17,7 @@ datatype ExceptionType = interruptedException |
                           ceilingViolationException
 nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
-maxNum = 2
+maxNum = 10
 nametype num = {0..maxNum}
 
 
@@ -39,6 +39,7 @@ channel initializeApplicationRet
 channel checkSchedulable : MissionID.Bool 
 channel getSequencerCall 
 channel getSequencerRet : SchedulableID
+channel end_safelet_app
 
 nametype SafeletFWChanSet = 
   {|initializeApplicationCall,initializeApplicationRet,
@@ -117,8 +118,7 @@ channel set_controllingMission : SchedulableID.MissionID
 channel  getNextMissionCall : SchedulableID
 channel  getNextMissionRet : (SchedulableID . MissionID) 
 channel  requestSequenceTermination : (SchedulableID . Bool) 
-channel  sequenceTerminationPendingCall : SchedulableID   
-channel  sequenceTerminationPendingRet : (SchedulableID . Bool) 
+
 
 
 channel  end_sequencer_app:SchedulableID
@@ -127,8 +127,8 @@ channel  end_terminations : SchedulableID
 
 nametype MissionSequencerFWSharedChanSet = 
   {| get_currentMission, set_currentMission, get_continue, get_controllingMission,set_controllingMission,
-      getNextMissionCall, getNextMissionRet, requestSequenceTermination, sequenceTerminationPendingCall,
-      sequenceTerminationPendingRet, end_sequencer_app, end_methods, end_terminations |}
+      getNextMissionCall, getNextMissionRet, requestSequenceTermination, 
+       end_sequencer_app, end_methods, end_terminations |}
 
 --TopLevelMissionSequencer
 
@@ -151,7 +151,7 @@ nametype TopLevelMissionSequencerFWChanSet = union(
   union(MissionSequencerFWSharedChanSet, TLMSStateSync) ,
   {|done_safeletFW, start_toplevel_sequencer,end_methods, 
 getNextMissionCall, getNextMissionRet, start_mission, done_mission,
-sequenceTerminationPendingCall, sequenceTerminationPendingRet, done_toplevel_sequencer |})
+ done_toplevel_sequencer, end_sequencer_app |})
 
 nametype TopLevelMissionSequencerFWChan  =  {| start_toplevel_sequencer,  end_sequencer_app, end_methods, get_continue, set_continue |}
 nametype TLMSStateSync = {|get_continue, set_continue, get_currentMission, set_currentMission, end_toplevelsequencerState |}
@@ -197,6 +197,7 @@ TopLevelMissionSequencerFWBehaviour(sequencer)=
 (
   done_safeletFW -> 
   end_toplevelsequencerState.sequencer ->
+  end_sequencer_app.sequencer ->
   SKIP
 )
 []
@@ -205,6 +206,7 @@ TopLevelMissionSequencerFWBehaviour(sequencer)=
   Execute_TLS(sequencer) ; 
   Finish_TLS(sequencer) ; 
   end_toplevelsequencerState.sequencer ->
+  end_sequencer_app.sequencer ->
   SKIP
 )
 
@@ -214,15 +216,7 @@ Start_TLS(sequencer)  =
 
 Execute_TLS(sequencer)  =
 ( 
-  (
-    (
-      RunMission_TLS(sequencer) ;
-      end_methods.sequencer -> 
-      SKIP
-    )
-      [| {| end_methods |} |]
-    Methods_TLS(sequencer)     
-  )   
+  RunMission_TLS(sequencer)
 ) 
 
 RunMission_TLS(sequencer) = 
@@ -267,29 +261,8 @@ else
     SKIP
   )
 
-
-Methods_TLS(sequencer)   = 
-(
-   (
-     SequenceTerminationPending_TLS(sequencer)  ;
-     Methods_TLS(sequencer)    
-   )
-   [] 
-   ( 
-    end_methods.sequencer -> 
-    SKIP
-   ) 
-)   
-
-SequenceTerminationPending_TLS(sequencer)   = 
- sequenceTerminationPendingCall.sequencer -> 
- get_continue.sequencer?continue -> 
- sequenceTerminationPendingRet.sequencer.continue ->
- SKIP
-
-
 Finish_TLS(sequencer)   = 
-  done_toplevel_sequencer ->
+  done_toplevel_sequencer ->  
   SKIP   
    
 assert TopLevelMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
@@ -360,7 +333,7 @@ activate_schedulables, stop_schedulables, done_schedulables, schedulables_stoppe
 signalTerminationCall, signalTerminationRet, done_schedulable, end_mission_terminations,
 requestTermination, terminationPendingCall, terminationPendingRet, deregister, 
 cleanupMissionCall, cleanupMissionRet, cleanupSchedulableCall, cleanupSchedulableRet,
-end_mission_app, done_mission |})    
+end_mission_app, done_mission, start_mission  |})    
 
 
 nametype TerminateSync = 
@@ -431,12 +404,7 @@ MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTermi
   )
 
 MissionFWBehaviour(mission) =
-(
-  done_safeletFW -> 
-  end_mission_state.mission -> 
-  SKIP
-)
-[]
+
 ( 
   Start_M(mission) ;
     (
@@ -449,7 +417,9 @@ MissionFWBehaviour(mission) =
           MissionFWBehaviour(mission)
       )
       else 
-         end_mission_state.mission -> SKIP
+        end_mission_state.mission -> 
+        end_mission_app.mission ->
+        SKIP
       )
 )
 
@@ -459,6 +429,13 @@ Start_M(mission) =
     set_controllingSequencer.mission!mySequencer ->
     SKIP
   ) 
+  []
+  (
+  done_safeletFW -> 
+  set_applicationTerminating_M.mission!True ->
+  SKIP
+)
+
   []
   (
     done_toplevel_sequencer ->
@@ -500,14 +477,16 @@ register?s!mission ->
   (
     checkSchedulable.mission?check:({False}) ->
     throw.illegalStateException ->
-    CHAOS(Events)
+    --CHAOS(Events)
+    STOP
   )
 )
 
 RegisterException(mission) =
   register?s!mission ->
   throw.illegalStateException ->
-  CHAOS(Events)  
+  --CHAOS(Events)  
+  STOP
 
 SetCeilingPriority(mission) =
  setCeilingPriority.mission?o?p -> 
@@ -516,7 +495,8 @@ SetCeilingPriority(mission) =
 SetCeilingPriorityException(mission) =
  setCeilingPriority.mission?o?p -> 
  throw.illegalStateException ->
- CHAOS(Events)
+ --CHAOS(Events)
+ STOP
 
 MissionPhase(mission) =
 (
@@ -792,7 +772,7 @@ SchedulableMissionSequencerFW(sequencer)  =
   SchedulableMissionSequencerState(sequencer, nullMissionId, True, True, nullMissionId, False)
     [| SMSStateSync |]
   SchedulableMissionSequencerBehaviour(sequencer)
-)--\SMSStateSync
+)\SMSStateSync
 
 
 SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow, controllingMission, applicationTerminating) =
@@ -848,12 +828,7 @@ SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, conti
 
 
 SchedulableMissionSequencerBehaviour(sequencer) =
-(
-  done_safeletFW ->
-  end_schedulableMissionSequencerState.sequencer -> 
-  SKIP
-)
-[]
+
 (
   Start_SMS(sequencer) ; 
   get_applicationTerminating.sequencer?applicationTerminating ->
@@ -864,7 +839,9 @@ SchedulableMissionSequencerBehaviour(sequencer) =
           SchedulableMissionSequencerBehaviour(sequencer) 
         ) 
      else  
-       end_schedulableMissionSequencerState.sequencer -> SKIP 
+       end_schedulableMissionSequencerState.sequencer -> 
+       end_sequencer_app.sequencer -> 
+       SKIP
      )
 )
 
@@ -874,6 +851,12 @@ Start_SMS(sequencer) =
       --Activate_SMS(sequencer)
     )
  []
+ (
+  done_safeletFW ->
+  set_applicationTerminating.sequencer!True ->
+  SKIP
+)
+[]
  (
     done_toplevel_sequencer -> 
     set_applicationTerminating.sequencer!True ->
@@ -896,16 +879,8 @@ Activate_SMS(sequencer, controllingMission) =
 
 Execute_SMS(sequencer) = 
 (
-  ( 
-    (
-        RunMission_SMS(sequencer) ;
-        end_methods.sequencer -> 
-        SKIP
-    )
-      [| {| end_methods |} |]
-    Methods_SMS(sequencer)
-  )\{| end_methods |}   
-) ; done_schedulable.sequencer -> SKIP
+   RunMission_SMS(sequencer)      
+) 
 
 
 RunMission_SMS(sequencer) = 
@@ -930,8 +905,8 @@ StartMission_SMS(sequencer, currentMission)  =
          [| {| end_terminations |} |]
         (   
             done_mission.currentMission?continueReturn -> 
-            set_continueBelow.sequencer!continueReturn -> 
             end_terminations.sequencer -> 
+            set_continueBelow.sequencer!continueReturn ->             
             SKIP
         ) 
       )\{| end_terminations |}
@@ -956,8 +931,8 @@ Continue_SMS(sequencer) =
 SignalTermination_SMS(sequencer)  = 
 ( 
     (
-        end_terminations.sequencer -> 
-        SKIP
+      end_terminations.sequencer -> 
+      SKIP
     )
     []
     ( 
@@ -965,29 +940,12 @@ SignalTermination_SMS(sequencer)  =
       set_continueAbove.sequencer!False -> 
       get_currentMission.sequencer?currentMission ->
       requestTermination.currentMission.sequencer ->  
-      signalTerminationRet.sequencer ->      
+      signalTerminationRet.sequencer -> 
+      --
+      end_terminations.sequencer ->      
       SKIP
-    ) ; 
-    end_terminations.sequencer -> 
-    SKIP
+    ) 
  )
-
-Methods_SMS(sequencer)  = 
-(
-  SequenceTerminationPending_SMS(sequencer) ;
-  Methods_SMS(sequencer)
-)
-[] 
-(
-  end_methods.sequencer ->  
-  SKIP
-)
-
-SequenceTerminationPending_SMS(sequencer)  = 
-  sequenceTerminationPendingCall.sequencer -> 
-  get_continue.sequencer?continue ->
-  sequenceTerminationPendingRet.sequencer!continue ->
-  SKIP
 
 Cleanup_SMS(sequencer)  = 
   cleanupSchedulableCall.sequencer -> 
@@ -1098,12 +1056,7 @@ AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminati
 
 
 AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler) =
-(
-  done_safeletFW ->
-  end_aperiodicEventHandlerState.schedulable ->
-  SKIP
-)
-[]
+
 (   
   Start_APEH(schedulable) ;
   get_applicationTerminating.schedulable?applicationTerminating ->
@@ -1128,6 +1081,12 @@ Start_APEH(schedulable) =
    -- Activate_APEH(schedulable)
   )  
   []
+  (
+  done_safeletFW ->
+  set_applicationTerminating.schedulable!True ->
+  SKIP
+)
+[]
   (
     activate_schedulables?someMissionID -> 
     Start_APEH(schedulable)
@@ -1388,12 +1347,7 @@ OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating
 )
 
 OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler) = 
-(
-  done_safeletFW -> 
-  end_oneshotEventHandlerState.schedulable ->
-  SKIP
-)
-[]
+
 (
   Start_OSEH(schedulable) ;
   get_applicationTerminating.schedulable?applicationTerminating ->
@@ -1417,6 +1371,12 @@ Start_OSEH(schedulable) =
    -- Activate_OSEH(schedulable)
   )  
   []
+  (
+  done_safeletFW -> 
+ set_applicationTerminating.schedulable!True   ->
+  SKIP
+)
+[]
   (
     activate_schedulables?someMissionID -> 
     Start_OSEH(schedulable)
@@ -1664,6 +1624,7 @@ channel get_periodicTerminating : SchedulableID.Bool
 channel set_periodicTerminating : SchedulableID.Bool 
 channel end_periodicEventHandlerState : SchedulableID
 channel release_complete_PEH : SchedulableID.num
+channel end_periodic_app : SchedulableID
 
  nametype ReleaseSync_PEH =  {|fire, end_releases |}
 nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
@@ -1755,12 +1716,7 @@ PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminatin
 )
 
 PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler) =
-(
-  done_safeletFW ->
-  end_periodicEventHandlerState.schedulable ->
-  SKIP
-)
-[]
+
 (
     Start_PEH(schedulable) ;
     get_applicationTerminating.schedulable?applicationTerminating ->
@@ -1784,6 +1740,12 @@ Start_PEH(schedulable) =
    --Activate_PEH(schedulable)
  ) 
  []
+ (
+  done_safeletFW ->
+ set_applicationTerminating.schedulable!True ->
+    SKIP
+)
+[]
  (
       activate_schedulables?someMissionID ->
       Start_PEH(schedulable)
@@ -2045,12 +2007,7 @@ ManagedThreadFWState(schedulable, controllingMission, applicationTerminating) =
 
 
 ManagedThreadFWBehaviour(schedulable) =
-(
-  done_safeletFW -> 
-  end_managedThreadState.schedulable -> 
-  SKIP
-)
-[]
+
 (
     Start_MT(schedulable) ; 
   get_applicationTerminating.schedulable?applicationTerminating ->
@@ -2074,8 +2031,15 @@ Start_MT(schedulable) =
   (
    Register_MT(schedulable) --; 
   -- Activate_MT(schedulable)
-  )  
+  ) 
+
   []
+  (
+  done_safeletFW -> 
+  set_applicationTerminating.schedulable!True ->
+    SKIP 
+)
+[]
   (
     activate_schedulables?someMissionID -> 
     Start_MT(schedulable)
@@ -2270,7 +2234,7 @@ MissionAndSchedulables =
 -- SAFELET: MY APP
 
 
-channel end_safelet_app
+
 
 nametype SafeltAppSync = 
     {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
@@ -2430,7 +2394,7 @@ DoneController_ms1(done) =
 )
 
 GetNextMission_ms1 = 
-    getNextMissionCall.FirstMissionSequencerID -> 
+  getNextMissionCall.FirstMissionSequencerID -> 
 	get_sequencer_done.FirstMissionSequencerID?done ->
 	if done == False then 
     (  
@@ -2492,9 +2456,23 @@ Methods_m1 =
  
 channel get_count : SchedulableID.num
 channel increment_count : SchedulableID
-channel end_periodic_app : SchedulableID
 
-nametpe MyPEHStateSync = {|get_count,increment_count, end_periodic_app|}
+
+nametype MyPEHStateSync = {|get_count,increment_count, end_periodic_app|}
+
+CountController(id, count) =
+(
+  get_count.id!count ->
+  CountController(id, count)
+)
+[]
+(
+  increment_count.id ->
+  if count < maxNum then
+    CountController(id, count +1)
+  else
+    CountController(id, maxNum)
+)
 
 nametype MyPEH1AppChanSet =
   {|get_count,increment_count, end_periodic_app,
@@ -2506,21 +2484,9 @@ MyPEH1App(m) =
 (
   Methods_peh1(m)  
     [| MyPEHStateSync |] 
-  CountController_peh1(0) 
+  CountController(MyPEH1Id, 0) 
 )\MyPEHStateSync
    /\ (end_periodic_app.MyPEH1Id -> SKIP)
-
-
-CountController_peh1(count) =
-(
-	get_count.MyPEH1Id!count ->
-	CountController_peh1(count)
-)
-[]
-(
-	increment_count.MyPEH1Id ->
-	CountController_peh1(count +1)
-)
 
 
 Release_peh1(m) = 
@@ -2647,21 +2613,12 @@ MyPEH2App(m) =
 (
   Methods_peh2(m)  
     [| MyPEHStateSync|] 
-  CountController_peh2(0) 
+  CountController(MyPEH2Id, 0) 
 ) \MyPEHStateSync
 /\ (end_periodic_app.MyPEH2Id -> SKIP)
 
 
-CountController_peh2(count) =
-(
-	get_count.MyPEH2Id!count ->
-	CountController_peh2(count)
-)
-[]
-(
-	increment_count.MyPEH2Id ->
-	CountController_peh2(count +1)
-)
+
 
 
 Release_peh2(m) = 
@@ -2796,21 +2753,9 @@ MyMyPEH3App(m) =
 (
   Methods_peh3(m)  
     [| MyPEHStateSync |] 
-  CountController_peh3(0) 
+  CountController(MyPEH3Id, 0) 
 )\MyPEHStateSync
    /\ (end_periodic_app.MyPEH3Id -> SKIP)
-
-
-CountController_peh3(count) =
-(
-	get_count.MyPEH3Id!count ->
-	CountController_peh3(count)
-)
-[]
-(
-	increment_count.MyPEH3Id ->
-	CountController_peh3(count +1)
-)
 
 
 Release_peh3(m) = 
@@ -2919,7 +2864,7 @@ nametype ThirdMissionSequncerRegister = {| register.ThirdMissionSequencerID.TopM
 
 MyApp_Safelet = (SafeletFW [ SafeletFWChanSet || MyAppChanSet ] MyApp)
 MySequencer1 = (TopLevelMissionSequencerFW(TopLevelSequencerId) [ TopLevelMissionSequencerFWChanSet || MySequencerAppChanSet ] MySequencerApp)
-TopMission1 = (MissionFW(TopMission1ID) [ union(MissionFWCHanSet,TopMission1Register ) || TopMission1AppChanSet ] TopMission1App)
+TopMission1 = (MissionFW(TopMission1ID) [ union(MissionFWCHanSet,TopMission1Register ) || union(TopMission1AppChanSet, {|setCeilingPriority|}) ] TopMission1App)
 
 nametype SafeletTierCHanSet = 
   Union({SafeletFWChanSet,TopMission1Register,MyMission1Register, MyMission2Register,MyMission3Register,MyAppChanSet})
@@ -3001,55 +2946,69 @@ MyApp_Safelet
 )
 
 
-assert diamond(MyApp_Safelet) ; Loop :[ deadlock free [FD] ]
-assert MyApp_Safelet :[ divergence free ]
-assert MyApp_Safelet :[ deterministic  [FD] ]
+assert sbisim(diamond(MyApp_Safelet)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MyApp_Safelet)) :[ divergence free ]
+assert sbisim(diamond(MyApp_Safelet)) :[ deterministic  [FD] ]
 
-assert diamond(MySequencer1) ; Loop :[ deadlock free [FD] ]
-assert MySequencer1 :[ divergence free ]
-assert MySequencer1 :[ deterministic  [FD] ]
+assert sbisim(diamond(MySequencer1)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MySequencer1)) :[ divergence free ]
+assert sbisim(diamond(MySequencer1)) :[ deterministic  [FD] ]
 
-assert diamond(TopMission1) ; Loop :[ deadlock free [FD] ]
-assert TopMission1 :[ divergence free ]
-assert TopMission1 :[ deterministic  [FD] ]
+assert sbisim(diamond(TopMission1)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(TopMission1)) :[ divergence free ]
+assert sbisim(diamond(TopMission1)) :[ deterministic  [FD] ]
 
-assert diamond(FirstMissionSequncer) ; Loop :[ deadlock free [FD] ]
-assert FirstMissionSequncer :[ divergence free ]
-assert FirstMissionSequncer :[ deterministic  [FD] ]
+assert sbisim(diamond(FirstMissionSequncer)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(FirstMissionSequncer)) :[ divergence free ]
+assert sbisim(diamond(FirstMissionSequncer)) :[ deterministic  [FD] ]
 
-assert diamond(MyMission1) ; Loop :[ deadlock free [FD] ]
-assert MyMission1 :[ divergence free ]
-assert MyMission1 :[ deterministic  [FD] ]
+assert sbisim(diamond(MyMission1)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MyMission1)) :[ divergence free ]
+assert sbisim(diamond(MyMission1)) :[ deterministic  [FD] ]
 
-assert diamond(MyPEH1) ; Loop :[ deadlock free [FD] ]
-assert MyPEH1 :[ divergence free ]
-assert MyPEH1 :[ deterministic  [FD] ]
+assert sbisim(diamond(MyPEH1)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MyPEH1)) :[ divergence free ]
+assert sbisim(diamond(MyPEH1)) :[ deterministic  [FD] ]
 
-assert diamond(SecondMissionSequencer) ; Loop :[ deadlock free [FD] ]
-assert SecondMissionSequencer :[ divergence free ]
-assert SecondMissionSequencer :[ deterministic  [FD] ]
+assert sbisim(diamond(SecondMissionSequencer)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(SecondMissionSequencer)) :[ divergence free ]
+assert sbisim(diamond(SecondMissionSequencer)) :[ deterministic  [FD] ]
 
-assert diamond(MyMission2) ; Loop :[ deadlock free [FD] ]
-assert MyMission2 :[ divergence free ]
-assert MyMission2 :[ deterministic  [FD] ]
+assert sbisim(diamond(MyMission2)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MyMission2)) :[ divergence free ]
+assert sbisim(diamond(MyMission2)) :[ deterministic  [FD] ]
 
-assert diamond(MyPEH2) ; Loop :[ deadlock free [FD] ]
-assert MyPEH2 :[ divergence free ]
-assert MyPEH2 :[ deterministic  [FD] ]
+assert sbisim(diamond(MyPEH2)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MyPEH2)) :[ divergence free ]
+assert sbisim(diamond(MyPEH2)) :[ deterministic  [FD] ]
 
-assert diamond(ThirdMissionSequencer) ; Loop :[ deadlock free [FD] ]
-assert ThirdMissionSequencer :[ divergence free ]
-assert ThirdMissionSequencer :[ deterministic  [FD] ]
+assert sbisim(diamond(ThirdMissionSequencer)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(ThirdMissionSequencer)) :[ divergence free ]
+assert sbisim(diamond(ThirdMissionSequencer)) :[ deterministic  [FD] ]
 
-assert diamond(MyMission3) ; Loop :[ deadlock free [FD] ]
-assert MyMission3 :[ divergence free ]
-assert MyMission3 :[ deterministic  [FD] ]
+assert sbisim(diamond(MyMission3)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MyMission3)) :[ divergence free ]
+assert sbisim(diamond(MyMission3 )):[ deterministic  [FD] ]
 
-assert diamond(MyPEH3) ; Loop :[ deadlock free [FD] ]
-assert MyPEH3 :[ divergence free ]
-assert MyPEH3 :[ deterministic  [FD] ]
+assert sbisim(diamond(MyPEH3)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(MyPEH3)) :[ divergence free ]
+assert sbisim(diamond(MyPEH3)) :[ deterministic  [FD] ]
 
 
-assert diamond(Program) ; Loop :[ deadlock free [FD] ]
-assert Program :[ divergence free ]
-assert Program :[ deterministic  [FD] ]
+Module = 
+(
+    FirstMissionSequncer
+      [| {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer, initializeRet|} |]
+     (MyMission1 [| MyMission1Sync |] MyPEH1 )
+)
+
+assert sbisim(diamond(Module)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(Module)) :[ divergence free ]
+assert sbisim(diamond(Module)) :[ deterministic  [FD] ]
+
+
+
+
+assert sbisim(diamond(Program)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(Program)) :[ divergence free ]
+assert sbisim(diamond(Program)) :[ deterministic  [FD] ]
