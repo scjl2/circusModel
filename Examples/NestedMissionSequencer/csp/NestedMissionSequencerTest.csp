@@ -163,7 +163,7 @@ TopLevelMissionSequencerFW(sequencer) =
     TopLevelMissionSequencerFWState(sequencer, nullMissionId, True )
       [| TLMSStateSync |]
     TopLevelMissionSequencerFWBehaviour(sequencer)
-)--\ TLMSStateSync
+)\ TLMSStateSync
 
 
 TopLevelMissionSequencerFWState(sequencer, currentMission, continue) =
@@ -372,7 +372,7 @@ MissionFW(mission) =
   MissionFWState(mission, {}, {}, False, False, nullSequencerId)
     [|MissionFWStateChan|]
   MissionFWBehaviour(mission)
-) --\ MissionFWStateChan
+) \ MissionFWStateChan
 
 
 MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, controllingSequencer) =
@@ -523,7 +523,7 @@ MissionPhase(mission) =
   Execute_M(mission)
     [|  {|done_schedulables|} |] 
   MissionExceptions(mission)
-)--\{|done_schedulables|}
+)\{|done_schedulables|}
 
 Execute_M(mission) =
  ( 
@@ -630,7 +630,7 @@ Methods_M(mission, registeredSchedulables) =
     end_mission_terminations.mission ->
     SKIP
   ) 
-)-- \{| end_mission_terminations |}
+) \{| end_mission_terminations |}
 
 RequestTerminationMeth(mission, registeredSchedulables) =
 --get_registeredSchedulables.mission?registeredSchedulables ->
@@ -780,7 +780,7 @@ channel end_schedulableMissionSequencerState : SchedulableID
 nametype SchedulableMissionSequencerFWChanSet = union(
   union(ManagedSchedulableFWChanSet , MissionSequencerFWSharedChanSet),
   {| done_safeletFW, set_continueAbove, set_continueBelow, end_schedulableMissionSequencerState, 
-done_toplevel_sequencer, register, start_mission, initializeRet, done_mission, requestTermination, release_complete |}  )
+done_toplevel_sequencer, start_mission, initializeRet, done_mission, requestTermination, release_complete |}  )
   
   nametype  SchedulableMissionSequencerFWChan  = {| end_sequencer_app, end_methods, end_terminations, get_continue  |}
   nametype  SMSStateSync = {|get_currentMission, set_currentMission, get_continue, set_continueAbove, set_continueBelow,get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_schedulableMissionSequencerState |}
@@ -904,7 +904,7 @@ Execute_SMS(sequencer) =
     )
       [| {| end_methods |} |]
     Methods_SMS(sequencer)
-  )--\{| end_methods |}   
+  )\{| end_methods |}   
 ) ; done_schedulable.sequencer -> SKIP
 
 
@@ -934,7 +934,7 @@ StartMission_SMS(sequencer, currentMission)  =
             end_terminations.sequencer -> 
             SKIP
         ) 
-      )--\{| end_terminations |}
+      )\{| end_terminations |}
   )
   else  
   (
@@ -1044,7 +1044,7 @@ AperiodicEventHandlerFW(schedulable, aperiodicType, deadline, deadlineMissHandle
   AperiodicEventHandlerState(schedulable, nullMissionId, False, False, 0, deadline, deadlineMissHandler )
     [|APEHStateSync|]
   AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
-)--\APEHStateSync
+)\APEHStateSync
 
 AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler) =
 (
@@ -1177,7 +1177,7 @@ else
   )
     [|{| end_releases |}|]
   SignalTermination_APEH(schedulable)
-)--\{| end_releases |}
+)\{| end_releases |}
 
 DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) = 
 (
@@ -1349,7 +1349,7 @@ OneShotEventHandlerFW(schedulable, startTime, deadline, deadlineMissHandler) =
   OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
     [|OSEHStateSync |]
   OneShotEventHandlerState(schedulable, nullMissionId, False, startTime, deadline, deadlineMissHandler)
-)--\OSEHStateSync
+)\OSEHStateSync
 
 OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler) = 
 (
@@ -1447,7 +1447,7 @@ Execute_OSEH(schedulable, deadline, deadlineMissHandler) =
   )
     [| {| end_releases |} |]
   SignalTermination_OSEH(schedulable)
-)--\{| end_releases |} 
+)\{| end_releases |} 
 
 Run_OSEH(schedulable, deadline, deadlineMissHandler) = 
   
@@ -1692,7 +1692,7 @@ PeriodicEventHandlerFW(schedulable, period, startTime, deadline, deadlineMissHan
   PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
     [|PEHStateSync|]
   PeriodicEventHandlerState(schedulable, nullMissionId, False, period, startTime, deadline, deadlineMissHandler, 0, False)
-)--\PEHStateSync
+)\PEHStateSync
 
 PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) =
 (
@@ -1823,7 +1823,7 @@ circwait.startTime ->
   )  
     [|  {|end_releases, signalTerminationRet|} |] 
   SignalTermination_PEH(schedulable)
-)--\{|end_releases|}
+)\{|end_releases|}
   
 
 Running(schedulable, period)  =
@@ -2014,7 +2014,7 @@ ManagedThreadFW(schedulable) =
   ManagedThreadFWState(schedulable, nullMissionId, False)
     [| MTStateSync |]
   ManagedThreadFWBehaviour(schedulable)
-)--\MTStateSync
+)\MTStateSync
 
 
 ManagedThreadFWState(schedulable, controllingMission, applicationTerminating) =
@@ -2307,18 +2307,19 @@ Methods_s =
 channel get_sequencer_done : SchedulableID.Bool
 channel set_sequencer_done : SchedulableID.Bool
 
+nametype MissionSequencerAppStateSync = {| get_sequencer_done, set_sequencer_done |}
+
 nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
 nametype MySequencerAppChanSet =
-  union({| get_sequencer_done, set_sequencer_done |} ,
-  MissionSequencerAppSync)
+  union(MissionSequencerAppStateSync,MissionSequencerAppSync)
 
 MySequencerApp = 
 (
   Methods_tlms 
-    [|{|get_sequencer_done, set_sequencer_done |}|] 
+    [|MissionSequencerAppStateSync|] 
   DoneController_tlms(False) 
-)
+)\ MissionSequencerAppStateSync
 /\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
    
 
@@ -2411,9 +2412,9 @@ nametype FirstMissionSequencerAppChanSet =
 FirstMissionSequencerApp = 
 (
   Methods_ms1 
-    [|{|get_sequencer_done, set_sequencer_done |}|] 
+    [|MissionSequencerAppStateSync|] 
     DoneController_ms1(False) 
-) 
+) \MissionSequencerAppStateSync
 /\ (end_sequencer_app.FirstMissionSequencerID -> SKIP)
 
 
@@ -2493,6 +2494,8 @@ channel get_count : SchedulableID.num
 channel increment_count : SchedulableID
 channel end_periodic_app : SchedulableID
 
+nametpe MyPEHStateSync = {|get_count,increment_count, end_periodic_app|}
+
 nametype MyPEH1AppChanSet =
   {|get_count,increment_count, end_periodic_app,
   releaseCall,releaseRet,
@@ -2502,9 +2505,9 @@ nametype MyPEH1AppChanSet =
 MyPEH1App(m) = 
 (
   Methods_peh1(m)  
-    [| {|get_count, increment_count |} |] 
+    [| MyPEHStateSync |] 
   CountController_peh1(0) 
-)
+)\MyPEHStateSync
    /\ (end_periodic_app.MyPEH1Id -> SKIP)
 
 
@@ -2558,9 +2561,9 @@ nametype SecondMissionSequencerAppChanSet =
 SecondSequencerApp = 
 (
   Methods_ms2 
-    [|{|get_sequencer_done, set_sequencer_done |}|] 
+    [|MissionSequencerAppStateSync|] 
   DoneController_ms2(False) 
-)
+)\MissionSequencerAppStateSync
  /\ (end_sequencer_app.SecondMissionSequencerID -> SKIP)
 
 
@@ -2643,9 +2646,10 @@ nametype MyPEH2AppChanSet =
 MyPEH2App(m) =  
 (
   Methods_peh2(m)  
-    [| {|get_count, increment_count |} |] 
+    [| MyPEHStateSync|] 
   CountController_peh2(0) 
-)   /\ (end_periodic_app.MyPEH2Id -> SKIP)
+) \MyPEHStateSync
+/\ (end_periodic_app.MyPEH2Id -> SKIP)
 
 
 CountController_peh2(count) =
@@ -2699,9 +2703,9 @@ nametype ThirdMissionSequencerAppChanSet =
 ThirdMissionSequencerApp =
 (
   Methods_ms3 
-    [|{|get_sequencer_done, set_sequencer_done |}|] 
+    [|MissionSequencerAppStateSync|] 
   DoneController_ms3(False) 
-)
+)\MissionSequencerAppStateSync
  /\ (end_sequencer_app.ThirdMissionSequencerID -> SKIP)
 
 
@@ -2791,9 +2795,10 @@ nametype PEHAppSync = {|releaseCall, releaseRet, requestTermination, cleanupSche
 MyMyPEH3App(m) =  
 (
   Methods_peh3(m)  
-    [| {|get_count, increment_count |} |] 
+    [| MyPEHStateSync |] 
   CountController_peh3(0) 
-)   /\ (end_periodic_app.MyPEH3Id -> SKIP)
+)\MyPEHStateSync
+   /\ (end_periodic_app.MyPEH3Id -> SKIP)
 
 
 CountController_peh3(count) =
@@ -2959,16 +2964,16 @@ CatchNextTierBroadcastsOn =
 Program = 
 (  
 MyApp_Safelet
-  [SafeletTierCHanSet||Tier1ChanSet]
+  [SafeletTierCHanSet|| union(TopTierChanSet,Tier1ChanSet)]
 (
 (
 ( 
 	(MySequencer1
-		[| TopLevelMissionSequencerProgramSync |]
+		[union(TopLevelMissionSequencerFWChanSet,MySequencerAppChanSet) || Union({MissionFWCHanSet,TopMission1Register,TopMission1AppChanSet})]
 	TopMission1
 	)
 )
-  [| {|activate_schedulables.TopMission1ID|} |]
+  [TopTierChanSet|| {|activate_schedulables,register|}]
   CatchNextTierBroadcastsOff(TopMission1ID)
 
 )
@@ -2994,6 +2999,56 @@ MyApp_Safelet
 )
 )	
 )
+
+
+assert diamond(MyApp_Safelet) ; Loop :[ deadlock free [FD] ]
+assert MyApp_Safelet :[ divergence free ]
+assert MyApp_Safelet :[ deterministic  [FD] ]
+
+assert diamond(MySequencer1) ; Loop :[ deadlock free [FD] ]
+assert MySequencer1 :[ divergence free ]
+assert MySequencer1 :[ deterministic  [FD] ]
+
+assert diamond(TopMission1) ; Loop :[ deadlock free [FD] ]
+assert TopMission1 :[ divergence free ]
+assert TopMission1 :[ deterministic  [FD] ]
+
+assert diamond(FirstMissionSequncer) ; Loop :[ deadlock free [FD] ]
+assert FirstMissionSequncer :[ divergence free ]
+assert FirstMissionSequncer :[ deterministic  [FD] ]
+
+assert diamond(MyMission1) ; Loop :[ deadlock free [FD] ]
+assert MyMission1 :[ divergence free ]
+assert MyMission1 :[ deterministic  [FD] ]
+
+assert diamond(MyPEH1) ; Loop :[ deadlock free [FD] ]
+assert MyPEH1 :[ divergence free ]
+assert MyPEH1 :[ deterministic  [FD] ]
+
+assert diamond(SecondMissionSequencer) ; Loop :[ deadlock free [FD] ]
+assert SecondMissionSequencer :[ divergence free ]
+assert SecondMissionSequencer :[ deterministic  [FD] ]
+
+assert diamond(MyMission2) ; Loop :[ deadlock free [FD] ]
+assert MyMission2 :[ divergence free ]
+assert MyMission2 :[ deterministic  [FD] ]
+
+assert diamond(MyPEH2) ; Loop :[ deadlock free [FD] ]
+assert MyPEH2 :[ divergence free ]
+assert MyPEH2 :[ deterministic  [FD] ]
+
+assert diamond(ThirdMissionSequencer) ; Loop :[ deadlock free [FD] ]
+assert ThirdMissionSequencer :[ divergence free ]
+assert ThirdMissionSequencer :[ deterministic  [FD] ]
+
+assert diamond(MyMission3) ; Loop :[ deadlock free [FD] ]
+assert MyMission3 :[ divergence free ]
+assert MyMission3 :[ deterministic  [FD] ]
+
+assert diamond(MyPEH3) ; Loop :[ deadlock free [FD] ]
+assert MyPEH3 :[ divergence free ]
+assert MyPEH3 :[ deterministic  [FD] ]
+
 
 assert diamond(Program) ; Loop :[ deadlock free [FD] ]
 assert Program :[ divergence free ]
