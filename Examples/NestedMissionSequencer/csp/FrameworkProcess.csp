@@ -1,0 +1,124 @@
+
+TopLevelMissionSequencers(toplevelSequencerIDs) =
+([|{| done_safeletFW, done_toplevel_sequencer |}|] ms : toplevelSequencerIDs @ TopLevelMissionSequencerFW(ms)) 
+ 
+
+Missions(missions) = ([|{| done_safeletFW, done_toplevel_sequencer |}|] m : missions @ MissionFW(m))
+
+CatchBroadcasts =
+  (done_safeletFW -> SKIP)
+  []
+  (done_toplevel_sequencer->SKIP)
+  []
+  (activate_schedulables?m -> CatchBroadcasts)
+
+SchedulableSequencerFWs(schedulableSequencers) =
+if schedulableSequencers != {} then
+(
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] sms : schedulableSequencers @ SchedulableMissionSequencerFW(sms) 
+)
+else
+(
+  CatchBroadcasts
+)
+
+AperiodicEventHandlerFWs(aperiodicEventHanders) =
+if aperiodicEventHanders != {} then
+(
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (apeh, type, start, missHandler) : aperiodicEventHanders @ AperiodicEventHandlerFW(apeh, type, start, missHandler) 
+)
+else
+(
+  CatchBroadcasts
+)
+
+OneShotEventHandlerFWs(oneShotEventHandlers)=
+if oneShotEventHandlers != {} then
+  (
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (oseh, start, deadline, missHandler) : oneShotEventHandlers @ OneShotEventHandlerFW(oseh, start, deadline, missHandler ) 
+)
+else
+(
+  CatchBroadcasts
+)
+
+PeriodicEventHandlerFWs(periodicEventHandlers) =
+if periodicEventHandlers != {} then
+  (
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (peh, period, start, deadline, missHandler) : periodicEventHandlers @ PeriodicEventHandlerFW(peh, period, start, deadline, missHandler) 
+)
+else
+(
+  CatchBroadcasts
+)
+
+ManagedThreadFWs(managedThreads) =
+if managedThreads != {} then
+  (
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] mt : managedThreads @ ManagedThreadFW(mt) 
+)
+else
+(
+  CatchBroadcasts 
+)
+
+Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)=
+(
+  (
+    ( 
+      (
+        (
+          SchedulableSequencerFWs(schedulableSequencers)
+              [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+          AperiodicEventHandlerFWs(aperiodicEventHanders)
+        )
+            [|{|  activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+        OneShotEventHandlerFWs(oneShotEventHandlers)
+      )
+          [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+      PeriodicEventHandlerFWs(periodicEventHandlers)
+      )
+          [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+      ManagedThreadFWs(managedThreads)
+    )
+)
+
+
+
+nametype SafeltSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, register, deregister, checkSchedulable|}
+nametype TopLevelMissionSequencerSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
+nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  
+                   signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
+                   cleanupSchedulableCall, cleanupSchedulableRet, register|} 
+
+Framework(topLeveSequencers,missions,schedulableSequencers,aperiodicEventHanders,oneShotEventHandlers,periodicEventHandlers,managedThreads) =
+(
+    SafeletFW 
+      [| SafeltSync |]
+    (  
+      TopLevelMissionSequencers(topLeveSequencers)
+        [| TopLevelMissionSequencerSync |]
+      ( 
+        Missions(missions)
+          [| MissionSync |]
+       Schedulables(schedulableSequencers, aperiodicEventHanders,oneShotEventHandlers,periodicEventHandlers,managedThreads)
+    
+      )
+  )
+)
+
+SimpleFramework = Framework({TopLevelSequencerId}, {missionA}, {}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB} )
+
+transparent diamond, sbisim
+
+--assert sbisim(diamond(SimpleFramework)) ; Loop :[ deadlock free [FD] ]
+--assert sbisim(diamond(SimpleFramework)) :[ divergence free ]
+--assert sbisim(diamond(SimpleFramework)) :[ deterministic  [FD] ]
+
+
+MissionAndSchedulables = 
+( 
+    Missions({missionA}) 
+      [| MissionSync |]
+    Schedulables({}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB} )
+)

@@ -1,0 +1,17 @@
+--Schedulable SHARED
+channel release_complete:SchedulableID
+channel done_schedulable : SchedulableID 
+channel end_releases:SchedulableID
+channel fire:SchedulableID
+channel releaseCall:SchedulableID 
+channel releaseRet:SchedulableID 
+
+channel  signalTerminationCall : SchedulableID
+channel  signalTerminationRet : SchedulableID
+channel set_applicationTerminating: SchedulableID.Bool
+channel get_applicationTerminating: SchedulableID.Bool
+
+nametype ManagedSchedulableFWChanSet = 
+  {| done_schedulable,fire,releaseCall,releaseRet, 
+  signalTerminationCall,signalTerminationRet,set_applicationTerminating,get_applicationTerminating,
+  cleanupSchedulableCall, cleanupSchedulableRet, activate_schedulables |}
