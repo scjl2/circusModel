@@ -134,7 +134,7 @@ MissionAndSchedulables =
 )
 
 
-nametype SafeletTierSync = {|start_toplevel_sequencer, done_toplevel_sequencer, done_safeletFW|}
+nametype SafeletTierSync = {|start_toplevel_sequencer, done_toplevel_sequencer, done_safeletFW, getSequencerCall, getSequencerRet |}
 nametype SafeletTierChan = union(SafeletFWChanSet, TopLevelMissionSequencerFWChanSet)
 
 
