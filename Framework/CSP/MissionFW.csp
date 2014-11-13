@@ -59,7 +59,7 @@ activate_schedulables, stop_schedulables, done_schedulables, schedulables_stoppe
 signalTerminationCall, signalTerminationRet, done_schedulable, end_mission_terminations,
 requestTermination, terminationPendingCall, terminationPendingRet, deregister, 
 cleanupMissionCall, cleanupMissionRet, cleanupSchedulableCall, cleanupSchedulableRet,
-end_mission_app, done_mission, start_mission  |})    
+end_mission_app, done_mission, start_mission |})    
 
 
 nametype TerminateSync = 
