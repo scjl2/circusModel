@@ -134,7 +134,7 @@ MissionAndSchedulables =
 )
 
 
-nametype SafeletTierSync = {|start_toplevel_sequencer, done_toplevel_sequencer|}
+nametype SafeletTierSync = {|start_toplevel_sequencer, done_toplevel_sequencer, done_safeletFW|}
 nametype SafeletTierChan = union(SafeletFWChanSet, TopLevelMissionSequencerFWChanSet)
 
 
@@ -218,7 +218,7 @@ NestedTiers(nestedTierIDs) =
 
 
 
-nametype TierSync = {|start_mission, done_mission, register, deregister, checkSchedulable|}
+nametype TierSync = {|start_mission, done_mission, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
 
 nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
 
