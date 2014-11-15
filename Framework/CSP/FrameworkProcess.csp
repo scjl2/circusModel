@@ -159,8 +159,8 @@ Tier(missionIDs,  (schedulableSequencers, aperiodicEventHanders, oneShotEventHan
 Tier0(missionIDs, managedSchedulableIDs  )=
 (
 Tier(missionIDs, managedSchedulableIDs )
-[| RouterSync |]  
-Router(missionIDs)
+--[| RouterSync |]  
+--Router(missionIDs)
 )
 --(apeh, type, start, missHandler) : aperiodicEventHanders
 
@@ -208,8 +208,8 @@ Router(thisTier)=
 NestedTier(missionIDs, managedSchedulableIDs) =
 (  
 Tier(missionIDs, managedSchedulableIDs)
-[| RouterSync |]  
-Router(missionIDs)
+--[| RouterSync |]  
+--Router(missionIDs)
 ) 
 
 
@@ -239,11 +239,11 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
     [|TierSync|]
   (
     Tier0(tier0MissionIDs,tier0SchedulableIDS) 
-      [ Tier0Chan || NestedTeirChan ]
+      [| {|start_mission.missionB, done_mission.missionB, initializeRet.missionB |} |]
     NestedTiers( nestedTierIDs )
   )
 )
-
+--Tier0Chan || NestedTeirChan
                   --{}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}
 SimpleTieredFramework = 
   TieredFramework({TopLevelSequencerId},
