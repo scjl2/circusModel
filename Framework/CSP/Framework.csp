@@ -1,9 +1,9 @@
 --GLOBALS
 
-datatype SchedulableID = nullSequencerId|nullSchedulableId|
-                          schedulableA|schedulableB | schedulableC |
-                          TopLevelSequencerId | FirstMissionSequencerID | SecondMissionSequencerID | ThirdMissionSequencerID |
-          MyPEH1Id  | MyPEH2Id | MyPEH3Id
+
+datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
+                          | FirstMissionSequencerID| schedulableA|schedulableB | schedulableC
+
 
 datatype MissionID = nullMissionId|
                       missionA|missionB |  
