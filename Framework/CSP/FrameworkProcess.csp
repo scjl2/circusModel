@@ -207,9 +207,9 @@ Router(thisTier)=
 
 NestedTier(missionIDs, managedSchedulableIDs) =
 (  
-Tier(missionIDs, managedSchedulableIDs)
---[| RouterSync |]  
---Router(missionIDs)
+  Tier(missionIDs, managedSchedulableIDs)
+  --[| RouterSync |]  
+  --Router(missionIDs)
 ) 
 
 
@@ -239,7 +239,7 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
     [|TierSync|]
   (
     Tier0(tier0MissionIDs,tier0SchedulableIDS) 
-      [| {|start_mission.missionB, done_mission.missionB, initializeRet.missionB |} |]
+      [| {|start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW |} |]
     NestedTiers( nestedTierIDs )
   )
 )

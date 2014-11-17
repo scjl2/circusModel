@@ -262,7 +262,7 @@ TerminateAndDone(mission, activeSchedulables) =
   );
   done_schedulables.mission ->
   SKIP
-)
+)\TerminateSync
  
 SignalTermination_M(mission) =
  (
