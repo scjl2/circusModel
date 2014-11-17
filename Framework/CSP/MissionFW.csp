@@ -80,8 +80,8 @@ MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTermi
   )
   []
   (
-    get_controllingSequencer.mission?mySequencer ->
-    MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, mySequencer)
+    get_controllingSequencer.mission!controllingSequencer ->
+    MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, controllingSequencer)
   )
   []
   (
@@ -345,7 +345,7 @@ get_controllingSequencer.mission?controllingSequencer ->
     SKIP
   )
   []
-  (    
+  (     
     (--
       [] schedulable: union(registeredSchedulables, {|controllingSequencer|})  @
       requestTermination.mission.schedulable ->
