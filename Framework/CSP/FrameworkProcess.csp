@@ -98,8 +98,7 @@ nametype TopLevelMissionSequencerSync = {|done_safeletFW, start_mission, done_mi
 
 nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, terminationPendingCall, terminationPendingRet, register, 
-                   requestTermination|} 
+                   cleanupSchedulableCall, cleanupSchedulableRet, terminationPendingCall, terminationPendingRet, register |} 
 
 Framework(topLeveSequencers,missions,schedulableSequencers,aperiodicEventHanders,oneShotEventHandlers,periodicEventHandlers,managedThreads) =
 (
@@ -218,7 +217,7 @@ NestedTiers(nestedTierIDs) =
 
 
 
-nametype TierSync = {|start_mission, done_mission, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
+nametype TierSync = {|start_mission.missionA, done_mission.missionA, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
 
 nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
 
@@ -239,7 +238,7 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
     [|TierSync|]
   (
     Tier0(tier0MissionIDs,tier0SchedulableIDS) 
-      [| {|start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW |} |]
+      [| {|start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW, requestTermination.missionB |} |]
     NestedTiers( nestedTierIDs )
   )
 )
