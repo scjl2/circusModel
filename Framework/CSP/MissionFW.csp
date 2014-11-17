@@ -13,6 +13,7 @@ channel remove_activeSchedulables : MissionID.SchedulableID
 channel get_missionTerminating : MissionID.Bool
 channel get_registeredSchedulables : MissionID.Set(SchedulableID)
 channel end_mission_state : MissionID
+channel get_controllingSequencer : MissionID.SchedulableID
 
 
 nametype MissionFWStateChan = 
@@ -20,7 +21,7 @@ nametype MissionFWStateChan =
   set_applicationTerminating_M, get_applicationTerminating_M, 
   set_missionTerminating, set_activeSchedulables, 
   get_activeSchedulables, add_schedulable, remove_activeSchedulables, 
-  get_missionTerminating, get_registeredSchedulables |}
+  get_missionTerminating, get_registeredSchedulables, get_controllingSequencer |}
 
 channel start_mission : MissionID.SchedulableID
 
@@ -75,6 +76,11 @@ MissionFW(mission) =
 MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, controllingSequencer) =
   (
     set_controllingSequencer.mission?mySequencer ->
+    MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, mySequencer)
+  )
+  []
+  (
+    get_controllingSequencer.mission?mySequencer ->
     MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, mySequencer)
   )
   []
@@ -332,6 +338,7 @@ Methods_M(mission, registeredSchedulables) =
 
 RequestTerminationMeth(mission, registeredSchedulables) =
 --get_registeredSchedulables.mission?registeredSchedulables ->
+get_controllingSequencer.mission?controllingSequencer ->
 (  
   (
     end_mission_terminations.mission -> 
@@ -339,11 +346,11 @@ RequestTerminationMeth(mission, registeredSchedulables) =
   )
   []
   (    
-    (
-      [] schedulable: registeredSchedulables @
+    (--
+      [] schedulable: union(registeredSchedulables, {|controllingSequencer|})  @
       requestTermination.mission.schedulable ->
       SKIP
-    ) ;
+    ) ;--
     (
       (
         get_missionTerminating.mission?missionTerminating:({False}) ->

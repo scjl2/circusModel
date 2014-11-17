@@ -152,7 +152,7 @@ StartMission_SMS(sequencer, currentMission)  =
       start_mission.currentMission.sequencer ->
       initializeRet.currentMission ->      
       (      
-        SignalTermination_SMS(sequencer)
+        SignalTermination_SMS(sequencer, currentMission)
          [| {| end_terminations |} |]
         (   
             done_mission.currentMission?continueReturn -> 
@@ -188,8 +188,7 @@ SignalTermination_SMS(sequencer)  =
     []
     ( 
       signalTerminationCall.sequencer -> 
-      set_continueAbove.sequencer!False -> 
-      get_currentMission.sequencer?currentMission ->
+      set_continueAbove.sequencer!False ->       
       requestTermination.currentMission.sequencer ->  
       signalTerminationRet.sequencer -> 
       --
