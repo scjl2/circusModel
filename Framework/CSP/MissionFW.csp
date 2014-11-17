@@ -41,8 +41,6 @@ channel schedulables_stopped : MissionID
 channel schedulables_terminated : MissionID
 channel end_mission_terminations : MissionID
 channel requestTermination : MissionID.SchedulableID
-channel terminationPendingCall : MissionID
-channel terminationPendingRet : MissionID.Bool
 channel cleanupSchedulableCall : SchedulableID
 channel cleanupSchedulableRet : SchedulableID
 channel cleanupMissionCall : MissionID 
@@ -57,7 +55,7 @@ nametype MissionFWCHanSet = union(
 checkSchedulable, throw, setCeilingPriority, done_schedulables, 
 activate_schedulables, stop_schedulables, done_schedulables, schedulables_stopped,
 signalTerminationCall, signalTerminationRet, done_schedulable, end_mission_terminations,
-requestTermination, terminationPendingCall, terminationPendingRet, deregister, 
+requestTermination, deregister, 
 cleanupMissionCall, cleanupMissionRet, cleanupSchedulableCall, cleanupSchedulableRet,
 end_mission_app, done_mission, start_mission |})    
 
@@ -322,14 +320,8 @@ DoneSchedulables(mission, activeSchedulables) =
 )
 
 Methods_M(mission, registeredSchedulables) =
-(
-  ( 
-    (
-      RequestTerminationMeth(mission, registeredSchedulables)
-        [|  {|end_mission_terminations|} |] 
-      TerminationPendingMeth(mission)
-    )         
-  )
+(  
+  RequestTerminationMeth(mission, registeredSchedulables)
     [| {|end_mission_terminations|} |] 
   (
     done_schedulables.mission ->
@@ -366,19 +358,6 @@ RequestTerminationMeth(mission, registeredSchedulables) =
       )
     ) 
   )
-)
-
-TerminationPendingMeth(mission) =
-(
-  end_mission_terminations.mission ->
-  SKIP
-)
-[]
-(
-  terminationPendingCall.mission ->
-  get_missionTerminating.mission?missionTerminating ->
-  terminationPendingRet.mission!missionTerminating ->
-  TerminationPendingMeth(mission)
 )
 
 MissionExceptions(mission) =
