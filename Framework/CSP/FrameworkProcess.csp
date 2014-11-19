@@ -213,7 +213,7 @@ NestedTier(missionIDs, managedSchedulableIDs) =
 
 
 NestedTiers(nestedTierIDs) =
-  ||| (missionIDs, managedSchedulableIDs) : nestedTierIDs @ NestedTier(missionIDs, managedSchedulableIDs)
+  || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ [TierInterface] NestedTier(missionIDs, managedSchedulableIDs)
 
 
 
@@ -231,6 +231,13 @@ nametype Tier0Chan = union(diff(TierChanSet, {|start_mission, done_mission|}), {
 
 nametype NestedTeirChan = union(diff(TierChanSet, {|start_mission, done_mission|}), {|start_mission.missionB.FirstMissionSequencerID, done_mission.missionA.True, done_mission.missionA.False |})
  
+nametype TierCommonChan = {|done_toplevel_sequencer, done_safeletFW|}
+nametpye TierSpecificChan = {|start_mission.missionB, done_mission.missionB, initializeRet.missionB, requestTermination.missionB  |}
+
+makeTierInterface(MIds) = forall 
+
+nametype TierInterface
+
 
 TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
 (  
@@ -238,10 +245,12 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
     [|TierSync|]
   (
     Tier0(tier0MissionIDs,tier0SchedulableIDS) 
-      [| {| start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW, requestTermination.missionB  |} |]
+      [| TierInterface |]
     NestedTiers( nestedTierIDs )
   )
 )
+--{| start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW, requestTermination.missionB  |}
+
 --Tier0Chan || NestedTeirChan
                   --{}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}
 SimpleTieredFramework = 
