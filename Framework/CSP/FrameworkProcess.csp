@@ -210,11 +210,15 @@ NestedTier(missionIDs, managedSchedulableIDs) =
   --[| RouterSync |]  
   --Router(missionIDs)
 ) 
+nametype TierCommonChan = {|done_toplevel_sequencer, done_safeletFW|}
+nametype TierSpecificChan = {|start_mission, done_mission, initializeRet, requestTermination |}
 
+--datatype TierInterface = TierSpecificChan.MissionID
 
 NestedTiers(nestedTierIDs) =
-  || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ [TierInterface] NestedTier(missionIDs, managedSchedulableIDs)
-
+(
+  || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ [ union(TierCommonChan, {| TierSpecificChan.x | x <- missionIDs |}) ] NestedTier(missionIDs, managedSchedulableIDs)
+)
 
 
 nametype TierSync = {|start_mission.missionA, done_mission.missionA, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
@@ -231,12 +235,10 @@ nametype Tier0Chan = union(diff(TierChanSet, {|start_mission, done_mission|}), {
 
 nametype NestedTeirChan = union(diff(TierChanSet, {|start_mission, done_mission|}), {|start_mission.missionB.FirstMissionSequencerID, done_mission.missionA.True, done_mission.missionA.False |})
  
-nametype TierCommonChan = {|done_toplevel_sequencer, done_safeletFW|}
-nametpye TierSpecificChan = {|start_mission.missionB, done_mission.missionB, initializeRet.missionB, requestTermination.missionB  |}
 
-makeTierInterface(MIds) = forall 
+--makeTierInterface(MIds) = TierSpecificChan.MIds
 
-nametype TierInterface
+
 
 
 TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
@@ -245,7 +247,7 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
     [|TierSync|]
   (
     Tier0(tier0MissionIDs,tier0SchedulableIDS) 
-      [| TierInterface |]
+      [|  union(TierCommonChan, {| TierSpecificChan.x | x <- diff(MissionID, tier0MissionIDs) |})  |]
     NestedTiers( nestedTierIDs )
   )
 )
