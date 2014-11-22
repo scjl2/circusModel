@@ -176,6 +176,7 @@ Continue_SMS(sequencer) =
   []  
   (
     get_continue.sequencer?continue:({False}) -> 
+    done_schedulable.sequencer -> 
     SKIP
   )
 
@@ -200,11 +201,12 @@ SignalTermination_SMS(sequencer, currentMission)  =
 Cleanup_SMS(sequencer)  = 
   cleanupSchedulableCall.sequencer -> 
   cleanupSchedulableRet.sequencer -> 
-  Finish_SMS(sequencer)
-
-Finish_SMS(sequencer) = 
-  done_schedulable.sequencer -> 
   SKIP
+ -- Finish_SMS(sequencer)
+
+--Finish_SMS(sequencer) = 
+--  done_schedulable.sequencer -> 
+--  SKIP
 
   
 --assert SchedulableMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]

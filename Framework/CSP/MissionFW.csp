@@ -277,7 +277,7 @@ SignalTermination_M(mission) =
   SKIP
 )
 --/\ (schedulables_terminated.mission -> SKIP)
-[] (schedulables_stopped.mission -> SKIP )
+/\ (schedulables_stopped.mission -> SKIP )
 
 StopSchedulables(schedulablesToStop) =
     (|||  s :  schedulablesToStop @
