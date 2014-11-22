@@ -215,9 +215,18 @@ nametype TierSpecificChan = {|start_mission, done_mission, initializeRet, reques
 
 --datatype TierInterface = TierSpecificChan.MissionID
 
+nametype MissionAndSchedulableChans = Union({MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet})
+
 NestedTiers(nestedTierIDs) =
 (
-  || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ [ union(TierCommonChan, {| TierSpecificChan.x | x <- missionIDs |}) ] NestedTier(missionIDs, managedSchedulableIDs)
+  || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ 
+          
+
+            [ union(
+              diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
+              {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |}) 
+            ] 
+            NestedTier(missionIDs, managedSchedulableIDs)
 )
 
 
@@ -238,7 +247,7 @@ nametype NestedTeirChan = union(diff(TierChanSet, {|start_mission, done_mission|
 
 --makeTierInterface(MIds) = TierSpecificChan.MIds
 
-
+p(nestedTierIDs) = {m | (missionIDs, managedSchedulableIDs) <-nestedTierIDs, m <- MissionID, member(m, missionIDs ) }
 
 
 TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
@@ -247,7 +256,11 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
     [|TierSync|]
   (
     Tier0(tier0MissionIDs,tier0SchedulableIDS) 
-      [|  union(TierCommonChan, {| TierSpecificChan.x | x <- diff(MissionID, tier0MissionIDs) |})  |]
+      [| union(
+                  TierCommonChan, 
+                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, p(nestedTierIDs) ) |}
+               )  
+      |]
     NestedTiers( nestedTierIDs )
   )
 )
@@ -263,7 +276,17 @@ SimpleTieredFramework =
                   )
 
 
+JustNestedTier = 
+  NestedTiers({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) 
 
+JustTiers =  
+ Tier0({missionA},({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB})) 
+      [| union(
+                  TierCommonChan, 
+                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, p({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) ) |}
+               )  
+      |]
+    NestedTiers({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) 
 
 assert sbisim(diamond(SimpleTieredFramework)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(SimpleTieredFramework)) :[ divergence free ]

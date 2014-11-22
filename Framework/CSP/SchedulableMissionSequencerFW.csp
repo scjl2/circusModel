@@ -11,7 +11,7 @@ channel end_schedulableMissionSequencerState : SchedulableID
 nametype SchedulableMissionSequencerFWChanSet = union(
   union(ManagedSchedulableFWChanSet , MissionSequencerFWSharedChanSet),
   {| done_safeletFW, set_continueAbove, set_continueBelow, end_schedulableMissionSequencerState, 
-done_toplevel_sequencer, start_mission, initializeRet, done_mission, requestTermination, release_complete |}  )
+done_toplevel_sequencer, start_mission, initializeRet, done_mission, requestTermination |}  )
   
   nametype  SchedulableMissionSequencerFWChan  = {| end_sequencer_app, end_methods, end_terminations, get_continue  |}
   nametype  SMSStateSync = {|get_currentMission, set_currentMission, get_continue, set_continueAbove, set_continueBelow,get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_schedulableMissionSequencerState |}
@@ -160,7 +160,7 @@ StartMission_SMS(sequencer, currentMission)  =
             set_continueBelow.sequencer!continueReturn ->             
             SKIP
         ) 
-      )\{| end_terminations |}
+      )--\{| end_terminations |}
   )
   else  
   (
