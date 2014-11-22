@@ -225,9 +225,9 @@ NestedTiers(nestedTierIDs) =
   || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ 
           
 
-            [ union(
+            [ Union({ SchedulableEndApps,
               diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
-              {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |}) 
+              {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |} }) 
             ] 
             NestedTier(missionIDs, managedSchedulableIDs)
 )
