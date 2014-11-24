@@ -3,11 +3,11 @@
 
 datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
                           | FirstMissionSequencerID| schedulableA|schedulableB | schedulableC
-
+                          | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
 
 datatype MissionID = nullMissionId|
                       missionA|missionB 
-                    -- | TopMission1ID | MyMission1ID | MyMission2ID | MyMission3ID 
+                    | TopMission1ID | MyMission1ID | MyMission2ID | MyMission3ID 
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 

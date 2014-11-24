@@ -729,9 +729,9 @@ Module =
      (MyMission1 [| MyMission1Sync |] MyPEH1 )
 )
 
-assert sbisim(diamond(Module)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(Module)) :[ divergence free ]
-assert sbisim(diamond(Module)) :[ deterministic  [FD] ]
+--assert sbisim(diamond(Module)) ; Loop :[ deadlock free [FD] ]
+--assert sbisim(diamond(Module)) :[ divergence free ]
+--assert sbisim(diamond(Module)) :[ deterministic  [FD] ]
 
 
 

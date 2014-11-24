@@ -10,7 +10,7 @@
 channel runCall : SchedulableID 
 channel runRet : SchedulableID
 
-channel end_managedThreadState_app : SchedulableID
+channel end_managedThread_app : SchedulableID
 channel end_managedThreadState : SchedulableID
 
 nametype MTStateSync = {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_managedThreadState |}
@@ -73,7 +73,7 @@ ManagedThreadFWBehaviour(schedulable) =
       else 
     (
       end_managedThreadState.schedulable -> 
-      end_managedThreadState_app.schedulable ->
+      end_managedThread_app.schedulable ->
       SKIP
     ) 
   )
@@ -145,6 +145,6 @@ Cleanup_MT(schedulable) =
   cleanupSchedulableCall.schedulable ->
   cleanupSchedulableRet.schedulable -> SKIP
  
---assert ManagedThreadFW(schedulableA); Loop :[ deadlock free [FD] ]
---assert ManagedThreadFW(schedulableA) :[ divergence free ]
---assert ManagedThreadFW(schedulableA) :[ deterministic  [FD] ]  
+-- assert ManagedThreadFW(schedulableA); Loop :[ deadlock free [FD] ]
+-- assert ManagedThreadFW(schedulableA) :[ divergence free ]
+-- assert ManagedThreadFW(schedulableA) :[ deterministic  [FD] ]  

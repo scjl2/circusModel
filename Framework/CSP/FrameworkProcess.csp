@@ -8,6 +8,7 @@ channel nested_done_mission : MissionID.Bool
 
 TopLevelMissionSequencers(toplevelSequencerIDs) =
 ([|{| done_safeletFW, done_toplevel_sequencer |}|] ms : toplevelSequencerIDs @ TopLevelMissionSequencerFW(ms)) 
+
  
 
 Missions(missions) = ([|{| done_safeletFW, done_toplevel_sequencer |}|] m : missions @ MissionFW(m))
@@ -128,7 +129,14 @@ transparent diamond, sbisim
 MissionAndSchedulables = 
 ( 
     Missions({missionA}) 
-      [| MissionSync |]
+    --  [| MissionSync |] 
+    [   MissionFWCHanSet
+        ||
+
+       Union({SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet, SchedulableEndApps})
+
+       
+      ] 
     Schedulables({}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB} )
 )
 
@@ -163,53 +171,9 @@ Tier(missionIDs, managedSchedulableIDs )
 )
 --(apeh, type, start, missHandler) : aperiodicEventHanders
 
-nametype RouterSync = {|start_mission, done_mission |}
 
 
-Router(thisTier)=
-(  
-(
-    start_mission?mission:(thisTier)?sequencer ->
-    Router(thisTier) 
-  )
-  []
-  (
-    start_mission?mission:(diff(MissionID,thisTier))?sequencer ->
-    nested_start_mission!mission!sequencer ->
-    Router(thisTier) 
-  )
-[]
-(
-  nested_start_mission?mission:(thisTier)?sequencer ->
-  start_mission!mission!sequencer ->
-  Router(thisTier) 
-)
-[]
-(
-  done_mission?mission:(thisTier)?continueSequencer ->
-  Router(thisTier) 
-)
-[]
-(
-  done_mission?mission:(diff(MissionID,thisTier))?continueSequencer ->
-  nested_done_mission!mission!continueSequencer ->
-   Router(thisTier) 
-)
-[]
-(
-    nested_done_mission?mission:(thisTier)?continueSequencer ->
-    done_mission!mission!continueSequencer ->
-    Router(thisTier) 
-)
-)
 
-
-NestedTier(missionIDs, managedSchedulableIDs) =
-(  
-  Tier(missionIDs, managedSchedulableIDs)
-  --[| RouterSync |]  
-  --Router(missionIDs)
-) 
 nametype TierCommonChan = {|done_toplevel_sequencer, done_safeletFW|}
 nametype TierSpecificChan = {|start_mission, done_mission, initializeRet, requestTermination |}
 
@@ -223,14 +187,13 @@ nametype SchedulableEndApps =  {| end_managedThread_app, end_sequencer_app, end_
 NestedTiers(nestedTierIDs) =
 (
   || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ 
-          
-
-            [ Union({ SchedulableEndApps,
-              diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
-              {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |} }) 
-            ] 
-            NestedTier(missionIDs, managedSchedulableIDs)
+      [ Union({ SchedulableEndApps,
+        diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
+        {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |} }) 
+      ] 
+        Tier(missionIDs, managedSchedulableIDs)
 )
+
 
 
 nametype TierSync = {|start_mission.missionA, done_mission.missionA, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
@@ -280,7 +243,12 @@ SimpleTieredFramework =
 
 
 JustNestedTier = 
-  NestedTiers({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) 
+  NestedTiers({({missionB}, ({FirstMissionSequencerID}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableC}))}) 
+
+JustTier =
+  Tier({missionA}, ({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}))
+
+assert sbisim(diamond(JustNestedTier)) [T= STOP 
 
 JustTiers =  
  Tier0({missionA},({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB})) 
@@ -289,7 +257,7 @@ JustTiers =
                   {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, p({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) ) |}
                )  
       |]
-    NestedTiers({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) 
+ NestedTiers({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) 
 
 assert sbisim(diamond(SimpleTieredFramework)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(SimpleTieredFramework)) :[ divergence free ]
