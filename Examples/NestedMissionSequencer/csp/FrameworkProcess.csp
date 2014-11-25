@@ -211,8 +211,8 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
 --                   )
 
 
--- JustNestedTier = 
---   NestedTiers({({missionB}, ({FirstMissionSequencerID}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableC}))}) 
+ JustNestedTier = 
+   NestedTiers({({MyMission1ID}, ({}, {}, {},  {(MyPEH1Id, 1,1,0, nullSchedulableId)}, {}))}) 
 
 -- JustTier =
 --   Tier({missionA}, ({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}))
