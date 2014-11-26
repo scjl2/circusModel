@@ -1,0 +1,338 @@
+--One SHot EVENT HANDLER FW
+ 
+
+
+-- OSEH Channels
+
+channel end_oneshotEventHandlerState : SchedulableID
+channel end_oneshotEventHandler_app : SchedulableID
+
+channel reschedule_handler : SchedulableID.num
+channel deschedule_handler : SchedulableID
+channel getNextReleaseTimeCall : SchedulableID
+channel getNextReleaseTimeRet : SchedulableID.num
+channel descheduleCall : SchedulableID
+channel descheduleRet : SchedulableID.Bool
+
+
+nametype MethodsSync_OSEH =  {|end_releases, reschedule_handler, deschedule_handler|} 
+nametype ReleaseSync_OSEH = {|releaseCall, reschedule_handler, end_releases|}
+nametype DeadlineSync_OSEH =  {|releaseCall, end_releases, deschedule_handler, release_complete|}
+nametype OSEHStateSync = 
+  {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
+  get_startTime, set_startTime,
+  end_oneshotEventHandlerState|}
+
+nametype OSEHFWChanSet = union(
+  union(OSEHStateSync,ManagedSchedulableFWChanSet),
+  {|reschedule_handler,deschedule_handler,getNextReleaseTimeCall,getNextReleaseTimeRet,
+descheduleCall,descheduleRet, release_complete, end_releases, done_safeletFW, 
+circwait, getNextReleaseTimeCall, getNextReleaseTimeRet, scheduleNextRelease, done_toplevel_sequencer |} )
+
+-- ONE SHOT EVENT HANDLER
+
+OneShotEventHandlerFW(schedulable, startTime, deadline, deadlineMissHandler) = 
+(
+  OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
+    [|OSEHStateSync |]
+  OneShotEventHandlerState(schedulable, nullMissionId, False, startTime, deadline, deadlineMissHandler)
+)\OSEHStateSync
+
+OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler) = 
+(
+  get_controllingMission.schedulable!controllingMission ->
+  OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
+)
+[]
+(
+  set_controllingMission.schedulable?newControllingMission ->
+  OneShotEventHandlerState(schedulable, newControllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
+)
+[]
+(
+  get_applicationTerminating.schedulable!applicationTerminating ->
+  OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
+)
+[]
+(
+  set_applicationTerminating.schedulable?newApplicationTerminating ->
+  OneShotEventHandlerState(schedulable, controllingMission, newApplicationTerminating, startTime, deadline, deadlineMissHandler)
+)
+[]
+( 
+  get_startTime.schedulable!startTime ->
+  OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
+ )
+[]
+(
+  set_startTime.schedulable?newStartTime ->
+   OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, newStartTime, deadline, deadlineMissHandler)
+)
+[]
+(
+  end_oneshotEventHandlerState.schedulable ->
+  SKIP
+)
+
+OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler) = 
+
+(
+  Start_OSEH(schedulable) ;
+  get_applicationTerminating.schedulable?applicationTerminating ->
+  ( 
+    if applicationTerminating == False then  
+    (
+      Execute_OSEH(schedulable, deadline, deadlineMissHandler) ; 
+      Cleanup_OSEH(schedulable) ; 
+      OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
+    )
+    else 
+      end_oneshotEventHandlerState.schedulable ->
+      end_oneshotEventHandler_app.schedulable ->
+      SKIP 
+  ) 
+)
+
+Start_OSEH(schedulable) =
+  ( 
+    Register_OSEH(schedulable)-- ; 
+   -- Activate_OSEH(schedulable)
+  )  
+  []
+  (
+  done_safeletFW -> 
+ set_applicationTerminating.schedulable!True   ->
+  SKIP
+)
+[]
+  (
+    activate_schedulables?someMissionID -> 
+    Start_OSEH(schedulable)
+  ) 
+  [] 
+ (
+  done_toplevel_sequencer ->  
+  set_applicationTerminating.schedulable!True   ->
+  SKIP
+  )
+
+
+Register_OSEH(schedulable) = 
+    register.schedulable?controllingMission -> 
+    Activate_OSEH(schedulable, controllingMission)
+
+Activate_OSEH(schedulable, controllingMission)  =  
+  --get_controllingMission.schedulable?controllingMission ->
+    activate_schedulables.controllingMission -> 
+    SKIP
+
+Execute_OSEH(schedulable, deadline, deadlineMissHandler) =  
+(
+  (
+    Run_OSEH(schedulable, deadline, deadlineMissHandler)
+       [| MethodsSync_OSEH |]
+    Methods_OSEH(schedulable)
+  )
+    [| {| end_releases |} |]
+  SignalTermination_OSEH(schedulable)
+)\{| end_releases |} 
+
+Run_OSEH(schedulable, deadline, deadlineMissHandler) = 
+  
+  if deadlineMissHandler == nullSchedulableId then 
+  ( 
+    ScheduleOrWait(schedulable) 
+      [| ReleaseSync_OSEH |] 
+    Release_OSEH(schedulable) 
+  ) 
+  else
+  (
+    (
+      ScheduleOrWait(schedulable) 
+        [| ReleaseSync_OSEH |]
+      Release_OSEH(schedulable)
+    )
+      [| DeadlineSync_OSEH |]
+      DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+  )
+
+ScheduleOrWait(schedulable) = 
+ get_startTime.schedulable?startTime -> 
+ if startTime != 0 then 
+        Scheduled(schedulable) 
+  else 
+      NotScheduled(schedulable) 
+
+Release_OSEH(schedulable) = 
+ ( 
+      releaseCall.schedulable -> 
+      releaseRet.schedulable ->   
+      release_complete.schedulable -> 
+      Release_OSEH(schedulable)
+  ) 
+ []
+ (
+    reschedule_handler.schedulable?newStartTime -> 
+    set_startTime.schedulable!newStartTime -> 
+    Release_OSEH(schedulable)
+    )
+ []
+ (
+    end_releases.schedulable -> 
+    SKIP
+  )
+
+
+
+DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) = 
+(
+ releaseCall.schedulable ->  
+  (
+    (   
+      (
+        circwait.deadline -> 
+        fire.deadlineMissHandler ->         
+        DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+      ) 
+      [] 
+      (
+        release_complete.schedulable -> 
+        DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+      ) 
+      [] 
+      (
+        deschedule_handler.schedulable -> 
+        DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+      )
+    )
+  )
+) 
+ []
+    (
+        end_releases.schedulable -> 
+        release_complete.schedulable -> 
+        SKIP
+    )
+
+ 
+
+Scheduled(schedulable) = 
+ get_startTime.schedulable?startTime -> 
+ (
+  ( 
+    circwait.startTime ->     
+    releaseCall.schedulable -> 
+    NotScheduled(schedulable)
+     ) 
+     [] 
+  (  
+      ( 
+          deschedule_handler.schedulable -> 
+          NotScheduled(schedulable)
+        )
+      [] 
+      ( 
+        reschedule_handler.schedulable?newStartTime -> 
+        set_startTime.schedulable!newStartTime -> 
+        Scheduled(schedulable)   
+      ) 
+   )   
+ )
+
+
+NotScheduled(schedulable) =
+    ( 
+          deschedule_handler.schedulable -> 
+          NotScheduled(schedulable)
+       )
+    []
+    ( 
+          reschedule_handler.schedulable?newStartTime -> 
+          set_startTime.schedulable!newStartTime -> 
+          Scheduled(schedulable)        
+        )     
+    []
+    (
+    end_releases.schedulable -> 
+    SKIP
+  )
+
+
+Methods_OSEH(schedulable) = 
+ (
+   Deschedule(schedulable) ; 
+   Methods_OSEH(schedulable)
+ ) 
+ [] 
+ (
+   GetNextReleaseTime(schedulable) ; 
+   Methods_OSEH(schedulable)
+ ) 
+ [] 
+ (
+    ScheduleNextRelease(schedulable); 
+   Methods_OSEH(schedulable)
+ ) 
+ []
+ (
+   end_releases.schedulable -> 
+   SKIP
+  )
+
+
+Deschedule(schedulable) = 
+ 
+  descheduleCall.schedulable ->
+  deschedule_handler.schedulable ->
+  get_startTime.schedulable?startTime -> 
+ (
+  if startTime == 0 then
+  --set_wasScheduled.schedulable!False ->
+  set_startTime.schedulable.0 ->  
+    descheduleRet.schedulable.False -> 
+  SKIP
+ 
+ else 
+  --set_wasScheduled.schedulable!True->
+  set_startTime.schedulable.0 ->  
+    descheduleRet.schedulable.True -> 
+  SKIP
+  
+ )  
+
+GetNextReleaseTime(schedulable) = 
+  getNextReleaseTimeCall.schedulable -> 
+  get_startTime.schedulable?startTime -> 
+  getNextReleaseTimeRet.schedulable!startTime -> 
+  SKIP
+
+ScheduleNextRelease(schedulable) = 
+ scheduleNextRelease.schedulable?newStartTime -> 
+ set_startTime.schedulable!newStartTime -> 
+ if newStartTime == 0 then 
+  (
+    deschedule_handler.schedulable -> 
+    SKIP
+  )
+ else 
+  (
+    reschedule_handler.schedulable!newStartTime -> 
+    SKIP 
+  ) 
+
+SignalTermination_OSEH(schedulable) =
+ signalTerminationCall.schedulable ->
+ end_releases.schedulable ->
+ signalTerminationRet.schedulable ->
+ done_schedulable.schedulable ->
+ SKIP
+
+Cleanup_OSEH(schedulable) = 
+  cleanupSchedulableCall.schedulable ->
+  cleanupSchedulableRet.schedulable -> 
+  SKIP
+
+
+-- assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
+-- assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ divergence free ]
+-- assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]  
