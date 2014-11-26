@@ -113,7 +113,7 @@ MainMissionApp =
 	(
 		(Methods_tlm1 )
 		/\ 
-		(end_mission_app.MainMission -> TopMission1App )
+		(end_mission_app.MainMission -> SKIP )
 	) 
 )
 
@@ -173,23 +173,23 @@ NestedMissionSequencerApp =
 (
   Methods_nms 
     [|MissionSequencerAppStateSync|] 
-    DoneController_ms1(False) 
+    DoneController_nms(False) 
 ) \MissionSequencerAppStateSync
 /\ (end_sequencer_app.NestedMissionSequencerId -> SKIP)
 
 
-DoneController_ms1(done) =
+DoneController_nms(done) =
 (
 	get_sequencer_done.NestedMissionSequencerId!done ->
-	DoneController_ms1(done)
+	DoneController_nms(done)
 )
 []
 (
 	set_sequencer_done.NestedMissionSequencerId?newDone ->
-	DoneController_ms1(newDone)
+	DoneController_nms(newDone)
 )
 
-GetNextMission_ms1 = 
+GetNextMission_nms = 
   getNextMissionCall.NestedMissionSequencerId -> 
 	get_sequencer_done.NestedMissionSequencerId?done ->
 	if done == False then 
@@ -205,10 +205,10 @@ GetNextMission_ms1 =
 	)
 
 
-Methods_ms1 = 
+Methods_nms = 
 ( 
-	GetNextMission_ms1 	
-) ; Methods_ms1
+	GetNextMission_nms 	
+) ; Methods_nms
 
   
 
@@ -221,31 +221,31 @@ nametype MyMission1AppChanSet =
 NestedMissionApp = 
 (
 	( 
-		Methods_m1 
+		Methods_nm 
 		/\ 
-		(end_mission_app.NestedMissionId -> MyMission1App )
+		(end_mission_app.NestedMissionId -> SKIP )
 	) 
 
 )
 
-InitializePhase_m1 = 
+InitializePhase_nm = 
   initializeCall.NestedMissionId  -> 
   register!NestedMissionSequencerAId!NestedMissionId -> 
   register!NestedMissionSequencerBId!NestedMissionId -> 
   initializeRet.NestedMissionId -> 
  SKIP
 
-CleanupPhase_m1 = 
+CleanupPhase_nm = 
  cleanupMissionCall.NestedMissionId ->
  cleanupMissionRet.NestedMissionId!True ->
 	SKIP
 
-Methods_m1 = 
+Methods_nm = 
 ( 
-	InitializePhase_m1 
+	InitializePhase_nm 
 	[] 
-	CleanupPhase_m1
-) ; Methods_m1
+	CleanupPhase_nm
+) ; Methods_nm
 
 
 --NESTED MISSION SEQUENCER
@@ -255,25 +255,25 @@ nametype FirstMissionSequencerAppChanSet =
 
 NestedMissionSequencerAApp = 
 (
-  Methods_nms 
+  Methods_nmsa 
     [|MissionSequencerAppStateSync|] 
-    DoneController_ms1(False) 
+    DoneController_nmsa(False) 
 ) \MissionSequencerAppStateSync
 /\ (end_sequencer_app.NestedMissionSequencerAId -> SKIP)
 
 
-DoneController_ms1(done) =
+DoneController_nmsa(done) =
 (
 	get_sequencer_done.NestedMissionSequencerAId!done ->
-	DoneController_ms1(done)
+	DoneController_nmsa(done)
 )
 []
 (
 	set_sequencer_done.NestedMissionSequencerAId?newDone ->
-	DoneController_ms1(newDone)
+	DoneController_nmsa(newDone)
 )
 
-GetNextMission_ms1 = 
+GetNextMission_nmsa = 
   getNextMissionCall.NestedMissionSequencerAId -> 
 	get_sequencer_done.NestedMissionSequencerAId?done ->
 	if done == False then 
@@ -289,10 +289,10 @@ GetNextMission_ms1 =
 	)
 
 
-Methods_ms1 = 
+Methods_nmsa = 
 ( 
-	GetNextMission_ms1 	
-) ; Methods_ms1
+	GetNextMission_nmsa	
+) ; Methods_nmsa
 
 
 
@@ -306,25 +306,25 @@ nametype FirstMissionSequencerAppChanSet =
 
 NestedMissionSequencerBApp = 
 (
-  Methods_nms 
+  Methods_nmsb 
     [|MissionSequencerAppStateSync|] 
-    DoneController_ms1(False) 
+    DoneController_nmsb(False) 
 ) \MissionSequencerAppStateSync
 /\ (end_sequencer_app.NestedMissionSequencerBId -> SKIP)
 
 
-DoneController_ms1(done) =
+DoneController_nmsb(done) =
 (
 	get_sequencer_done.NestedMissionSequencerBId!done ->
-	DoneController_ms1(done)
+	DoneController_nmsb(done)
 )
 []
 (
 	set_sequencer_done.NestedMissionSequencerBId?newDone ->
-	DoneController_ms1(newDone)
+	DoneController_nmsb(newDone)
 )
 
-GetNextMission_ms1 = 
+GetNextMission_nmsb = 
   getNextMissionCall.NestedMissionSequencerBId -> 
 	get_sequencer_done.NestedMissionSequencerBId?done ->
 	if done == False then 
@@ -340,10 +340,91 @@ GetNextMission_ms1 =
 	)
 
 
-Methods_ms1 = 
+Methods_nmsb = 
 ( 
-	GetNextMission_ms1 	
-) ; Methods_ms1
+	GetNextMission_nmsb 	
+) ; Methods_nmsb
+
+
+
+
+-- NESTED MISSION: MY MISSION 1
+
+nametype MyMission1AppChanSet = 
+  {|end_mission_app, initializeCall, initializeRet,register.MyPEH1Id.MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
+
+MissionAApp = 
+(
+	( 
+		Methods_ma 
+		/\ 
+		(end_mission_app.MissionAId -> SKIP )
+	) 
+
+)
+
+InitializePhase_ma = 
+  initializeCall.MissionAId  -> 
+  register!ManagedThread2Id!MissionAId ->   
+  initializeRet.MissionAId -> 
+ SKIP
+
+CleanupPhase_ma = 
+ cleanupMissionCall.MissionAId ->
+ cleanupMissionRet.MissionAId!True ->
+	SKIP
+
+Methods_ma = 
+( 
+	InitializePhase_ma 
+	[] 
+	CleanupPhase_ma
+) ; Methods_ma
+
+
+
+
+
+
+
+-- NESTED MISSION: MY MISSION 1
+
+nametype MyMission1AppChanSet = 
+  {|end_mission_app, initializeCall, initializeRet,register.MyPEH1Id.MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
+
+MissionBApp = 
+(
+	( 
+		Methods_mb 
+		/\ 
+		(end_mission_app.MissionBId -> SKIP )
+	) 
+
+)
+
+InitializePhase_mb = 
+  initializeCall.MissionBId  -> 
+  register!ManagedThread3Id!MissionBId -> 
+  initializeRet.MissionBId -> 
+ SKIP
+
+CleanupPhase_mb = 
+ cleanupMissionCall.MissionBId ->
+ cleanupMissionRet.MissionBId!True ->
+	SKIP
+
+Methods_mb = 
+( 
+	InitializePhase_mb 
+	[] 
+	CleanupPhase_mb
+) ; Methods_mb
+
+
+
+
+
+
 
 
 -- MANAGEDTHREAPP2
@@ -352,14 +433,14 @@ channel sysatemActions : SchedulableID
 
 ManagedThread2App = 
 (
-	Methods_mt1
+	Methods_mt2
 )
 /\ (end_managedThread_app.ManagedThread2Id -> SKIP)
 
-Methods_mt1 =
-	Release_mt1
+Methods_mt2 =
+	Release_mt2
 
-Release_mt1 =
+Release_mt2 =
 	runCall.ManagedThread2Id -> 
 	sysatemActions.ManagedThread2Id ->
 	requestTermination.MissionAId.ManagedThread2Id ->
@@ -372,14 +453,14 @@ Release_mt1 =
 
 ManagedThread3App = 
 (
-	Methods_mt1
+	Methods_mt3
 )
 /\ (end_managedThread_app.ManagedThread3Id -> SKIP)
 
-Methods_mt1 =
-	Release_mt1
+Methods_mt3 =
+	Release_mt3
 
-Release_mt1 =
+Release_mt3 =
 	runCall.ManagedThread3Id -> 
 	sysatemActions.ManagedThread3Id ->
 	requestTermination.MissionBId.ManagedThread3Id ->
@@ -418,28 +499,27 @@ ThreeTiers =
 (  
  	MyApp
  	|||
- 	MySequencerApp
+ 	MainSequencerApp
  	|||
- 	TopMission1App
+ 	MainMissionApp
  	|||
- 	FirstMissionSequencerApp
+ 	ManagedThread1
  	|||
- 	MyMission1App
+ 	NestedMissionSequencerApp
  	|||
- 	MyPEH1App(MyMission1ID)
+ 	NestedMissionApp
  	|||
- 	SecondSequencerApp
+ 	NestedMissionSequencerAApp
  	|||
- 	MyMission2App
+ 	NestedMissionSequencerBApp
  	|||
- 	MyPEH2App(MyMission2ID)
+ 	MissionAApp
  	|||
- 	ThirdMissionSequencerApp
+ 	MissionBApp
  	|||
- 	MyMission3App
+ 	ManagedThread3App
  	|||
- 	MyMyPEH3App(MyMission3ID)
- 
+ 	ManagedThread2App 
 )
 
 	
@@ -458,8 +538,9 @@ TestProgram =
             ({NestedMissionSequencer},{}, {},  {}, {ManagedThread1}),
                   {(
                   		{NestedMission}, 
-                  		({NestedMissionSequencerA, NestedMissionSequencerB}, {}, {},  {}, {}),
-                  		
+                  		({NestedMissionSequencerA, NestedMissionSequencerB}, {}, {},  {}, {})
+                  	),
+                  	(	
                   		{MissionA, MissionB}, 
                   		({}, {}, {},  {}, {ManagedThread2, ManagedThread3}),
                   		

@@ -113,7 +113,7 @@ TopMission1App =
 	(
 			(Methods_tlm1 )
 			/\ 
-			(end_mission_app.TopMission1ID -> TopMission1App )
+			(end_mission_app.TopMission1ID -> SKIP )
 	) 
 )
 
@@ -200,7 +200,7 @@ MyMission1App =
 	( 
 		Methods_m1 
 		/\ 
-		(end_mission_app.MyMission1ID -> MyMission1App )
+		(end_mission_app.MyMission1ID -> SKIP )
 	) 
 
 )
@@ -352,7 +352,7 @@ nametype MyMission2AppChanSet =
 	( 
 		Methods_m2 
 		/\
-		(end_mission_app.MyMission2ID -> MyMission2App )
+		(end_mission_app.MyMission2ID -> SKIP )
 	) 
 
 )
@@ -487,7 +487,7 @@ MyMission3App =
 	( 
 		Methods_m3 
 		/\
-		(end_mission_app.MyMission3ID -> MyMission3App )
+		(end_mission_app.MyMission3ID -> SKIP )
 	) 
 
 )
