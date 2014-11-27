@@ -38,7 +38,6 @@ channel activate_schedulables : MissionID
 channel stop_schedulables : MissionID
 channel schedulables_stopped : MissionID
 
-
 channel schedulables_terminated : MissionID
 channel end_mission_terminations : MissionID
 channel requestTermination : MissionID.SchedulableID
@@ -50,10 +49,13 @@ channel end_mission_app : MissionID
 channel done_mission : MissionID.Bool
 
 
+
+
+
 nametype MissionFWCHanSet = union(
   MissionFWStateChan, 
   {|done_safeletFW, done_toplevel_sequencer, initializeCall, initializeRet,
-checkSchedulable, throw, setCeilingPriority, done_schedulables, 
+checkSchedulable, throw, setCeilingPriority, 
 activate_schedulables, stop_schedulables, done_schedulables, schedulables_stopped,
 signalTerminationCall, signalTerminationRet, done_schedulable, end_mission_terminations,
 requestTermination, deregister, 

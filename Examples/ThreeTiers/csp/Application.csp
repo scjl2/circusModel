@@ -105,29 +105,29 @@ nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissio
 
 nametype TopMission1AppChanSet =
   {| initializeCall, initializeRet, cleanupMissionCall, cleanupMissionRet,
-    register.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID,
-    register.ThirdMissionSequencerID.TopMission1ID|}
+    register.ManagedThread1Id.MainMissionId, register.NestedMissionSequencerId.MainMissionId
+    |}
 
 MainMissionApp = 
 ( 
 	(
 		(Methods_tlm1 )
 		/\ 
-		(end_mission_app.MainMission -> SKIP )
+		(end_mission_app.MainMissionId -> SKIP )
 	) 
 )
 
 
 InitializePhase_tlm1 = 
   initializeCall.MainMissionId   -> 
-  register!ManagedThread1Id !MainMissionId  -> 
-  register!NestedMissionSequencerId !MainMissionId  ->  
+  register!ManagedThread1Id!MainMissionId  -> 
+  register!NestedMissionSequencerId!MainMissionId  ->  
   initializeRet.MainMissionId  -> 
  SKIP
 
 CleanupPhase_tlm1 = 
  cleanupMissionCall.MainMissionId  ->
- cleanupMissionRet.MainMissionId ?continueSequencer ->
+ cleanupMissionRet.MainMissionId?continueSequencer ->
  SKIP
 
 Methods_tlm1 = 
@@ -166,8 +166,7 @@ Release_mt1 =
 
 --NESTED MISSION SEQUENCER
 
-nametype FirstMissionSequencerAppChanSet = 
-  {|get_sequencer_done, set_sequencer_done, end_sequencer_app,getNextMissionCall, getNextMissionRet |}
+
 
 NestedMissionSequencerApp = 
 (
@@ -215,8 +214,6 @@ Methods_nms =
 
 -- NESTED MISSION: MY MISSION 1
 
-nametype MyMission1AppChanSet = 
-  {|end_mission_app, initializeCall, initializeRet,register.MyPEH1Id.MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
 
 NestedMissionApp = 
 (
@@ -227,6 +224,9 @@ NestedMissionApp =
 	) 
 
 )
+
+
+
 
 InitializePhase_nm = 
   initializeCall.NestedMissionId  -> 
@@ -250,8 +250,6 @@ Methods_nm =
 
 --NESTED MISSION SEQUENCER
 
-nametype FirstMissionSequencerAppChanSet = 
-  {|get_sequencer_done, set_sequencer_done, end_sequencer_app,getNextMissionCall, getNextMissionRet |}
 
 NestedMissionSequencerAApp = 
 (
@@ -301,8 +299,7 @@ Methods_nmsa =
 
 --NESTED MISSION SEQUENCER
 
-nametype FirstMissionSequencerAppChanSet = 
-  {|get_sequencer_done, set_sequencer_done, end_sequencer_app,getNextMissionCall, getNextMissionRet |}
+
 
 NestedMissionSequencerBApp = 
 (
@@ -350,8 +347,6 @@ Methods_nmsb =
 
 -- NESTED MISSION: MY MISSION 1
 
-nametype MyMission1AppChanSet = 
-  {|end_mission_app, initializeCall, initializeRet,register.MyPEH1Id.MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
 
 MissionAApp = 
 (
@@ -362,6 +357,8 @@ MissionAApp =
 	) 
 
 )
+
+
 
 InitializePhase_ma = 
   initializeCall.MissionAId  -> 
@@ -389,8 +386,6 @@ Methods_ma =
 
 -- NESTED MISSION: MY MISSION 1
 
-nametype MyMission1AppChanSet = 
-  {|end_mission_app, initializeCall, initializeRet,register.MyPEH1Id.MyMission1ID,cleanupMissionCall,cleanupMissionRet    |}
 
 MissionBApp = 
 (
@@ -401,6 +396,8 @@ MissionBApp =
 	) 
 
 )
+
+
 
 InitializePhase_mb = 
   initializeCall.MissionBId  -> 
@@ -450,6 +447,7 @@ Release_mt2 =
 
 -- MANAGEDTHREAPP3
 
+nametype MTAppSync = {| runCall, runRet, requestTermination, end_managedThread_app |}
 
 ManagedThread3App = 
 (
@@ -474,20 +472,22 @@ Release_mt3 =
 
 
 nametype SafeletProgramSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, deregister, checkSchedulable, 
-                                register.FirstMissionSequencerID.TopMission1ID, register.SecondMissionSequencerID.TopMission1ID, 
-                                register.ThirdMissionSequencerID.TopMission1ID, register.MyPEH1Id.MyMission1ID, 
-                                register.MyPEH2Id.MyMission2ID, register.MyPEH3Id.MyMission3ID|}
+                                register.ManagedThread1Id.MainMissionId, register.NestedMissionSequencerId.MainMissionId, 
+								register.NestedMissionSequencerAId.NestedMissionId, register.NestedMissionSequencerBId.NestedMissionId, 
+  								register.ManagedThread2Id.MissionAId, register.ManagedThread3Id.MissionBId
+
+                                |}
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
 
-nametype Mission1Sync = {| done_safeletFW, done_toplevel_sequencer,  
-                   signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, 
-                   register.FirstMissionSequencerID.TopMission1ID, 
-                   register.SecondMissionSequencerID.TopMission1ID, 
-                   register.ThirdMissionSequencerID.TopMission1ID|}
+--nametype Mission1Sync = {| done_safeletFW, done_toplevel_sequencer,  
+ --                  signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
+ --                  cleanupSchedulableCall, cleanupSchedulableRet, 
+ --                  register.FirstMissionSequencerID.TopMission1ID, 
+ --                  register.SecondMissionSequencerID.TopMission1ID, 
+--                   register.ThirdMissionSequencerID.TopMission1ID|}
 
 
 
@@ -503,7 +503,7 @@ ThreeTiers =
  	|||
  	MainMissionApp
  	|||
- 	ManagedThread1
+ 	ManagedThread1App
  	|||
  	NestedMissionSequencerApp
  	|||
@@ -527,22 +527,22 @@ ThreeTiers =
 Program(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) = 
 (  
 	TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs)
-	[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, PEHAppSync, {|end_mission_app, setCeilingPriority|}})  |]
+	[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority|}})  |]
 	ThreeTiers	
 )
 
 -- PEH : schedulable, period, startTime, deadline, deadlineMissHandler
 TestProgram = 
 	Program({TopLevelSequencerId},
-            {MainMission}, 
-            ({NestedMissionSequencer},{}, {},  {}, {ManagedThread1}),
+            {MainMissionId}, 
+            ({NestedMissionSequencerId},{}, {},  {}, {ManagedThread1Id}),
                   {(
-                  		{NestedMission}, 
-                  		({NestedMissionSequencerA, NestedMissionSequencerB}, {}, {},  {}, {})
+                  		{NestedMissionId}, 
+                  		({NestedMissionSequencerAId, NestedMissionSequencerBId}, {}, {},  {}, {})
                   	),
                   	(	
-                  		{MissionA, MissionB}, 
-                  		({}, {}, {},  {}, {ManagedThread2, ManagedThread3}),
+                  		{MissionAId, MissionBId}, 
+                  		({}, {}, {},  {}, {ManagedThread2Id, ManagedThread3Id})
                   		
                   	)
                   }

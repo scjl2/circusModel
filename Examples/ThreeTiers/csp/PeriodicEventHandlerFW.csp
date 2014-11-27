@@ -308,7 +308,7 @@ DeadlineClock_PEH(schedulable, index, deadline, period, deadlineMissHandler) =
 ) 
 /\ 
   (
-    end_releases.schedulableA ->
+    end_releases.schedulable ->
    -- release_complete_PEH.schedulable?index ->
     SKIP
   )

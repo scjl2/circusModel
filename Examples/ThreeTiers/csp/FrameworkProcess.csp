@@ -158,14 +158,14 @@ NestedTiers(nestedTierIDs) =
   || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ 
       [ Union({ SchedulableEndApps,
         diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
-        {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |} }) 
+        {| setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |} }) 
       ] 
+
         Tier(missionIDs, managedSchedulableIDs)
 )
 
 
-
- nametype TierSync = {|start_mission.TopMission1ID, done_mission.TopMission1ID, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
+nametype TierSync = {|start_mission.MainMissionId, done_mission.MainMissionId, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
 
 nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
 
@@ -182,7 +182,7 @@ nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_s
 
 --makeTierInterface(MIds) = TierSpecificChan.MIds
 
---p(nestedTierIDs) = {m | (missionIDs, managedSchedulableIDs) <-nestedTierIDs, m <- MissionID, member(m, missionIDs ) }
+p(nestedTierIDs) = {m | (missionIDs, managedSchedulableIDs) <-nestedTierIDs, m <- MissionID, member(m, missionIDs ) }
 
 
 TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
