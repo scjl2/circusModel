@@ -531,6 +531,13 @@ Program(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierID
 	ThreeTiers	
 )
 
+Program2(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) = 
+(  
+	TieredFramework2(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs)
+	[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority|}})  |]
+	ThreeTiers	
+)
+
 -- PEH : schedulable, period, startTime, deadline, deadlineMissHandler
 TestProgram = 
 	Program({TopLevelSequencerId},
@@ -539,17 +546,30 @@ TestProgram =
                   {(
                   		{NestedMissionId}, 
                   		({NestedMissionSequencerAId, NestedMissionSequencerBId}, {}, {},  {}, {})
-                  	),
+                  	)
+                  ,
                   	(	
                   		{MissionAId, MissionBId}, 
                   		({}, {}, {},  {}, {ManagedThread2Id, ManagedThread3Id})
-                  		
                   	)
                   }
             )
 
-
-
+TestProgram2 = 
+	Program2({TopLevelSequencerId},
+            {MainMissionId}, 
+            ({NestedMissionSequencerId},{}, {},  {}, {ManagedThread1Id}),
+                  {(
+                  		{NestedMissionId}, 
+                  		({NestedMissionSequencerAId, NestedMissionSequencerBId}, {}, {},  {}, {})
+                 -- 	)
+                  ,
+                 -- 	(	
+                  		{MissionAId, MissionBId}, 
+                  		({}, {}, {},  {}, {ManagedThread2Id, ManagedThread3Id})
+                  	)
+                  }
+            )
 
 assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(TestProgram)) :[ divergence free ]

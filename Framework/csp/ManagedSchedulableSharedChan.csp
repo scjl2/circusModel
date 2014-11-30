@@ -6,8 +6,8 @@ channel fire:SchedulableID
 channel releaseCall:SchedulableID 
 channel releaseRet:SchedulableID 
 
-channel  signalTerminationCall : SchedulableID
-channel  signalTerminationRet : SchedulableID
+channel signalTerminationCall : SchedulableID
+channel signalTerminationRet : SchedulableID
 channel set_applicationTerminating: SchedulableID.Bool
 channel get_applicationTerminating: SchedulableID.Bool
 

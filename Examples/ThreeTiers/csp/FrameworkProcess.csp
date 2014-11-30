@@ -199,6 +199,46 @@ TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nest
     NestedTiers( nestedTierIDs )
   )
 )
+
+TieredFramework2(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
+(  
+  SafeletTier(topLevelSequencerIDs)
+    [|TierSync|]
+  (
+    Tier0(tier0MissionIDs,tier0SchedulableIDS) 
+      [| union(
+                  TierCommonChan, 
+                  {| start_mission.NestedMissionId, done_mission.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId   |}
+               )  
+      |]
+    Tiers1and2( nestedTierIDs )
+  )
+)
+
+
+
+Tiers1and2( nestedTierIDs )=
+(
+  ||| (missionID1s, managedSchedulableID1s, missionID2s, managedSchedulableID2s) : nestedTierIDs @ 
+
+  Tier( missionID1s, managedSchedulableID1s)
+  [ Union({ SchedulableEndApps,
+      diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
+      --{| setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionID1s) |} 
+      {| setCeilingPriority.NestedMissionId, start_mission.NestedMissionId, done_mission.NestedMissionId, initializeCall.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId, register.s.NestedMissionId | s<-SchedulableID  |} ,
+      {| start_mission.MissionAId, done_mission.MissionAId, start_mission.MissionBId, done_mission.MissionBId |}
+      }) 
+    ||
+    Union({ SchedulableEndApps,
+      diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
+     -- {| setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionID2s) |} 
+     {| setCeilingPriority.MissionAId, start_mission.MissionAId, done_mission.MissionAId, initializeCall.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId, register.s.MissionAId | s<-SchedulableID  |},
+     {| setCeilingPriority.MissionBId, start_mission.MissionBId, done_mission.MissionBId, initializeCall.MissionBId, initializeRet.MissionBId, requestTermination.MissionBId, register.s.MissionBId | s<-SchedulableID  |} 
+     }) 
+
+   ]
+   Tier(missionID2s, managedSchedulableID2s)
+)
 --{| start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW, requestTermination.missionB  |}
 
 --Tier0Chan || NestedTeirChan
