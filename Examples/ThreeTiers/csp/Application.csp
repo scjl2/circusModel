@@ -571,6 +571,18 @@ TestProgram2 =
                   }
             )
 
+TestStaticTiers =
+
+Tiers1and2({(
+                  		{NestedMissionId}, 
+                  		({NestedMissionSequencerAId, NestedMissionSequencerBId}, {}, {},  {}, {})
+                 -- 	)
+                  ,
+                 -- 	(	
+                  		{MissionAId, MissionBId}, 
+                  		({}, {}, {},  {}, {ManagedThread2Id, ManagedThread3Id})
+                  	)} )
+
 assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(TestProgram)) :[ divergence free ]
 assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
