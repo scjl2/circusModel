@@ -131,7 +131,7 @@ Activate_SMS(sequencer, controllingMission) =
 Execute_SMS(sequencer) = 
 (
    RunMission_SMS(sequencer)      
-) 
+) \{| end_terminations |}
 
 
 RunMission_SMS(sequencer) = 

@@ -1,24 +1,4 @@
---GLOBALS
-transparent sbisim, diamond
-
-datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
-                          | NestedMissionSequencerId  | NestedMissionSequencerAId  |NestedMissionSequencerBId   
-                          | ManagedThread1Id  | ManagedThread2Id  | ManagedThread3Id  
-
-datatype MissionID = nullMissionId
-                    | MainMissionId  | NestedMissionId  | MissionAId  |MissionBId 
-
-datatype ExceptionType = interruptedException | 
-                          illegalMonitorStateException | 
-                          illegalArgumentException | 
-                          illegalThreadStateException | 
-                          illegalStateException | 
-                          ceilingViolationException
-nametype Bit = {0,1}
-datatype ObjectID = objectA | objectB
-maxNum = 10
-nametype num = {0..maxNum}
-
+include "Types.csp"
 
 channel a
 Loop = a-> Loop

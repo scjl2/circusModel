@@ -92,14 +92,6 @@ Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,
 )
 
 
-SchedulablesConflictTest =
-  (activate_schedulables.MissionAId -> SKIP
-  []
-  activate_schedulables.MissionBId -> SKIP)
-    [|{| activate_schedulables |}|]
-  ( activate_schedulables.MissionAId -> SKIP [|{| activate_schedulables |}|] activate_schedulables.MissionBId -> SKIP )
-
-
 
 nametype SafeltSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, register, deregister, checkSchedulable|}
 
@@ -234,13 +226,8 @@ Tiers1and2( nestedTierIDs )=
   ||| (missionID1s, managedSchedulableID1s, missionID2s, managedSchedulableID2s) : nestedTierIDs @ 
 
   Tier( missionID1s, managedSchedulableID1s)
-    [| {| start_mission.MissionAId, done_mission.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId, 
-          start_mission.MissionBId, done_mission.MissionBId, initializeRet.MissionBId, requestTermination.MissionBId |} |]
-  (Cluster(head(seq(missionID2s)), ({}, {}, {},  {}, {ManagedThread2Id})  ) ||| Cluster(head(tail(seq(missionID2s))),({}, {}, {},  {}, {ManagedThread3Id}) )        )
-
-
-
-
+    [| {| done_toplevel_sequencer, done_safeletFW, start_mission.MissionAId, done_mission.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId|} |]
+  (Cluster(head(seq(missionID2s)), ({}, {}, {},  {}, {ManagedThreadId})  ) ) --[|{|done_toplevel_sequencer, done_safeletFW|}|] Cluster(head(tail(seq(missionID2s))),({}, {}, {},  {}, {ManagedThread3Id}) )  )
 )
 --{| start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW, requestTermination.missionB  |}
 

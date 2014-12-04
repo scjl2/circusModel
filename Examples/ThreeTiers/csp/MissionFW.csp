@@ -167,13 +167,12 @@ Start_M(mission) =
   set_applicationTerminating_M.mission!True ->
   SKIP
 )
-
-  []
-  (
-    done_toplevel_sequencer ->
-    set_applicationTerminating_M.mission!True ->
-    SKIP
-  )
+[]
+(
+  done_toplevel_sequencer ->
+  set_applicationTerminating_M.mission!True ->
+  SKIP
+)
 
 InitializePhase(mission) =
   initializeCall.mission ->
