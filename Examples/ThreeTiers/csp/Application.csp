@@ -419,8 +419,8 @@ TestProgram2 =
 				{TopLevelSequencerId},
 				{(MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {}) )} ,
 				{
-					{(NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
-					{(MissionAId,({}, {}, {},  {}, {ManagedThreadId})  ) }
+					{ (NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
+					{ (MissionAId,({}, {}, {},  {}, {ManagedThreadId})  ) }
 				}
                  
             )

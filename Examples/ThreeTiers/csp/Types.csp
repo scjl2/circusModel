@@ -16,6 +16,6 @@ datatype ExceptionType = interruptedException |
                           ceilingViolationException
 nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
-maxNum = 10
+maxNum = 2
 nametype num = {0..maxNum}
 
