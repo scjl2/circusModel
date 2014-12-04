@@ -398,67 +398,35 @@ ThreeTiers =
 
 	
 
-Program(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) = 
+Program(topLevelSequencerIDs, tier0IDS, nestedTierIDs) = 
 (  
-	TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs)
+	TieredFramework(topLevelSequencerIDs, tier0IDS, nestedTierIDs)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority|}})  |]
 	ThreeTiers	
 )
 
-Program2(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) = 
+Program2(topLevelSequencerIDs, tier0, nestedTiers) = 
 (  
-	TieredFramework2(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs)
+	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, nestedTiers)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority|}})  |]
 	ThreeTiers	
 )
 
--- PEH : schedulable, period, startTime, deadline, deadlineMissHandler
-TestProgram = 
-	Program({TopLevelSequencerId},
-            {MainMissionId}, 
-            ({NestedMissionSequencerId},{}, {},  {}, {}),
-                  {(
-                  		{NestedMissionId}, 
-                  		({NestedMissionSequencerAId}, {}, {},  {}, {})
-                  	)
-                  ,
-                  	(	
-                  		{MissionAId}, 
-                  		({}, {}, {},  {}, {ManagedThreadId})
-                  	)
-                  }
-            )
+
 
 TestProgram2 = 
-	Program2({TopLevelSequencerId},
-            {MainMissionId}, 
-            ({NestedMissionSequencerId},{}, {},  {}, {}),
-                  {(
-                  		{NestedMissionId}, 
-                  		({NestedMissionSequencerAId}, {}, {},  {}, {})
-                 -- 	)
-                   ,
-                 -- 	(	
-                  		{MissionAId}, 
-                  		({}, {}, {},  {}, {ManagedThreadId})
-                  	)
-                  }
+	Program2(
+				{TopLevelSequencerId},
+				{(MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {}) )} ,
+				{
+					{(NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
+					{(MissionAId,({}, {}, {},  {}, {ManagedThreadId})  ) }
+				}
+                 
             )
 
-TestStaticTiers =
 
-Tiers1and2({(
-                {NestedMissionId}, 
-                ({NestedMissionSequencerAId}, {}, {},  {}, {})
-                 -- 	)
-                ,
-                 -- 	(	
-                {MissionAId}, 
-                ({}, {}, {},  {}, {ManagedThreadId})
-            )} )
-[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority|}})  |]
-	ThreeTiers
 
-assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(TestProgram)) :[ divergence free ]
-assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
+assert sbisim(diamond(TestProgram2)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(TestProgram2)) :[ divergence free ]
+assert sbisim(diamond(TestProgram2)) :[ deterministic  [FD] ]

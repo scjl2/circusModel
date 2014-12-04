@@ -123,19 +123,24 @@ SafeletTier(topLevelMissionSequencerIDs) =
 
 
 
-nametype TierChanSet = Union({ MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet, {|register|} })
-
-Tier(missionIDs,  (schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads) ) =
- (
-    Missions(missionIDs)
+Cluster(missionID, (schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads) ) =
+   MissionFW(missionID)
      [|MissionSync|]
     Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
-)
+
+
+nametype TierChanSet = Union({ MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet, {|register|} })
+
+Tier( Clusters ) =
+ (
+    [|{|done_toplevel_sequencer, done_safeletFW|}|] (missionID, schedulableIDSet  ) : Clusters @
+          Cluster(missionID, schedulableIDSet)
+ )
 -- ({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB})
-Tier0(missionIDs, managedSchedulableIDs  )=
+Tier0( Clusters )=
 (
-  Tier(missionIDs, managedSchedulableIDs )
---[| RouterSync |]  
+    Tier( Clusters )
+    --[| RouterSync |]  
 --Router(missionIDs)
 )
 --(apeh, type, start, missHandler) : aperiodicEventHanders
@@ -153,15 +158,16 @@ nametype MissionAndSchedulableChans = Union({MissionFWCHanSet, SchedulableMissio
 nametype SchedulableEndApps =  {| end_managedThread_app, end_sequencer_app, end_periodic_app, end_aperiodicEventHandler_app, 
                                   end_oneshotEventHandler_app  |} 
 
+missionsInCluster(cluster) = {m | (missionID, managedSchedulableIDs) <-cluster, m <- MissionID   }
+
 NestedTiers(nestedTierIDs) =
 (
-  || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ 
+  || cluster : nestedTierIDs @ 
       [ Union({ SchedulableEndApps,
         diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
-        {| setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |} }) 
+        {| setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionsInCluster(cluster)) |} }) 
       ] 
-
-        Tier(missionIDs, managedSchedulableIDs)
+      Tier(cluster)
 )
 
 
@@ -182,53 +188,48 @@ nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_s
 
 --makeTierInterface(MIds) = TierSpecificChan.MIds
 
-p(nestedTierIDs) = {m | (missionIDs, managedSchedulableIDs) <-nestedTierIDs, m <- MissionID, member(m, missionIDs ) }
+MissionsInTiers(nestedTierIDs) = {m | m<- MissionID , cluster <- nestedTierIDs, member(m, missionsInCluster(cluster))  }
 
 
-TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
+TieredFramework(topLevelSequencerIDs, tier0IDS, nestedTierIDs) =
 (  
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
   (
-    Tier0(tier0MissionIDs,tier0SchedulableIDS) 
+    Tier0(tier0IDS) 
       [| union(
                   TierCommonChan, 
-                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, p(nestedTierIDs) ) |}
+                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, MissionsInTiers(nestedTierIDs) ) |}
                )  
       |]
     NestedTiers( nestedTierIDs )
   )
 )
 
-TieredFramework2(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
+ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS, nestedTierIDs) =
 (  
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
   (
-    Tier0(tier0MissionIDs,tier0SchedulableIDS) 
+    Tier0(tier0IDS) 
       [| union(
                   TierCommonChan, 
                   {| start_mission.NestedMissionId, done_mission.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId   |}
                )  
       |]
-    Tiers1and2( nestedTierIDs )
+    NestedTiers( nestedTierIDs )
   )
 )
 
-Cluster(missionID, (schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads) ) =
-   MissionFW(missionID)
-     [|MissionSync|]
-    Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
 
 
-Tiers1and2( nestedTierIDs )=
-(
-  ||| (missionID1s, managedSchedulableID1s, missionID2s, managedSchedulableID2s) : nestedTierIDs @ 
 
-  Tier( missionID1s, managedSchedulableID1s)
-    [| {| done_toplevel_sequencer, done_safeletFW, start_mission.MissionAId, done_mission.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId|} |]
-  (Cluster(head(seq(missionID2s)), ({}, {}, {},  {}, {ManagedThreadId})  ) ) --[|{|done_toplevel_sequencer, done_safeletFW|}|] Cluster(head(tail(seq(missionID2s))),({}, {}, {},  {}, {ManagedThread3Id}) )  )
-)
+
+
+
+
+
+
 --{| start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW, requestTermination.missionB  |}
 
 --Tier0Chan || NestedTeirChan
