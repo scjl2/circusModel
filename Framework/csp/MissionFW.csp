@@ -427,7 +427,7 @@ CleanupExceptions(mission) =
 )
 
 Finish_M(mission, continueSequencer) =
-   end_mission_app.mission ->
+  
    done_mission.mission!continueSequencer ->
    SKIP
 

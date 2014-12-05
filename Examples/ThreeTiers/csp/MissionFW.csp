@@ -60,7 +60,7 @@ activate_schedulables, stop_schedulables, done_schedulables, schedulables_stoppe
 signalTerminationCall, signalTerminationRet, done_schedulable, end_mission_terminations,
 requestTermination, deregister, 
 cleanupMissionCall, cleanupMissionRet, cleanupSchedulableCall, cleanupSchedulableRet,
-end_mission_app, done_mission, start_mission |})    
+ done_mission, start_mission |})    
 
 
 nametype TerminateSync = 
@@ -428,7 +428,7 @@ CleanupExceptions(mission) =
 )
 
 Finish_M(mission, continueSequencer) =
-   end_mission_app.mission ->
+  
    done_mission.mission!continueSequencer ->
    SKIP
 
