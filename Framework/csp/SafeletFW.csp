@@ -39,8 +39,7 @@ Execute_S =
   if topLevelSequencer != nullSequencerId then
   (
       start_toplevel_sequencer.topLevelSequencer -> 
-      Methods_S({}, topLevelSequencer) ;
-      end_safelet_app ->
+    
       SKIP
   ) 
   else

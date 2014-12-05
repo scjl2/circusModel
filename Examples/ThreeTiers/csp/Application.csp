@@ -398,7 +398,7 @@ Program(topLevelSequencerIDs, tier0IDS, nestedTierIDs) =
 (  
 	TieredFramework(topLevelSequencerIDs, tier0IDS, nestedTierIDs)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority|}})  |]
-	ThreeTiers	
+	ThreeTiers	 
 )
 
 Program2(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
@@ -415,7 +415,7 @@ TestProgram2 =
 				{TopLevelSequencerId},
 				{ (MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {}) )} ,
 				{ (NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
-				{ (MissionAId,({}, {}, {},  {}, {ManagedThreadId}) )   }
+				{ (MissionAId,({}, {}, {},  {}, {ManagedThreadId}) ) , (MissionAId,({}, {}, {},  {}, {ManagedThreadId}) )   }
 			                 
             )
 

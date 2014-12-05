@@ -232,8 +232,8 @@ SetCeilingPriorityException(mission) =
 MissionPhase(mission) =
 (
   Execute_M(mission)
-    [|  {|done_schedulables|} |] 
-  MissionExceptions(mission)
+--   [|  {|done_schedulables|} |] 
+-- MissionExceptions(mission)
 )\{|done_schedulables|}
 
 Execute_M(mission) =
@@ -250,8 +250,8 @@ Execute_M(mission) =
     -- set_activeSchedulables.mission!registeredSchedulables ->
      (
         TerminateAndDone(mission, registeredSchedulables) 
-          [| {| stop_schedulables, done_schedulables |} |]          
-        Methods_M(mission, registeredSchedulables)
+   --       [| {| stop_schedulables, done_schedulables |} |]          
+   --     Methods_M(mission, registeredSchedulables)
       );
      CleanupPhase(mission, registeredSchedulables)
 
@@ -261,8 +261,8 @@ Execute_M(mission) =
 TerminateAndDone(mission, activeSchedulables) =
  (
     (
-    SignalTermination_M(mission)              
-      [| TerminateSync |] 
+--    SignalTermination_M(mission)              
+--      [| TerminateSync |] 
     DoneSchedulables(mission, activeSchedulables)       
   );
   done_schedulables.mission ->
