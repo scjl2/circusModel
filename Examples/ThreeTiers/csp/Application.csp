@@ -127,7 +127,7 @@ InitializePhase_tlm1 =
 
 CleanupPhase_tlm1 = 
  cleanupMissionCall.MainMissionId  ->
- cleanupMissionRet.MainMissionId?continueSequencer ->
+ cleanupMissionRet.MainMissionId?false ->
  SKIP
 
 Methods_tlm1 = 
@@ -405,9 +405,9 @@ Program(topLevelSequencerIDs, tier0IDS, nestedTierIDs) =
 	ThreeTiers	
 )
 
-Program2(topLevelSequencerIDs, tier0, nestedTiers) = 
+Program2(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
 (  
-	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, nestedTiers)
+	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority|}})  |]
 	ThreeTiers	
 )
@@ -417,12 +417,10 @@ Program2(topLevelSequencerIDs, tier0, nestedTiers) =
 TestProgram2 = 
 	Program2(
 				{TopLevelSequencerId},
-				{(MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {}) )} ,
-				{
-					{ (NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
-					{ (MissionAId,({}, {}, {},  {}, {ManagedThreadId})  ) }
-				}
-                 
+				{ (MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {}) )} ,
+				{ (NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
+				{ (MissionAId,({}, {}, {},  {}, {ManagedThreadId}) )   }
+			                 
             )
 
 
