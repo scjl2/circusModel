@@ -413,7 +413,7 @@ Program2(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) =
 TestProgram2 = 
 	Program2(
 				{TopLevelSequencerId},
-				{ (MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {}) )} ,
+				{ (MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {} )  )   }       ,
 				{ (NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
 				{ (MissionAId,({}, {}, {},  {}, {ManagedThreadId}) ) , (MissionAId,({}, {}, {},  {}, {ManagedThreadId}) )   }
 			                 

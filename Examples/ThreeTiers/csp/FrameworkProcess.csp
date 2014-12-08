@@ -147,7 +147,6 @@ Tier0( Clusters )=
 
 
 
-
 nametype TierCommonChan = {|done_toplevel_sequencer, done_safeletFW|}
 nametype TierSpecificChan = {|start_mission, done_mission, initializeRet, requestTermination |}
 
@@ -157,22 +156,28 @@ nametype MissionAndSchedulableChans = Union({MissionFWCHanSet, SchedulableMissio
 
 nametype SchedulableEndApps =  {| end_managedThread_app, end_sequencer_app, end_periodic_app, end_aperiodicEventHandler_app, 
                                   end_oneshotEventHandler_app  |} 
-
 missionsInCluster(cluster) = {m | m <- MissionID,   member( m, set(head(seq(cluster))))  } 
+
 
 --mInC = missionsInCluster( ( MissionAId,({}, {}, {},  {}, {ManagedThreadId}) )  )
 
 
 
 --msSet <- ({SchedulableID}, {(SchedulableID, AperiodicType, num, SchedulableID)}, {(SchedulableID, num, num, SchedulableID)}, {(SchedulableID, num, num, num, SchedulableID)}, {SchedulableID}),
---missionsInTier(tier) = {m | m<- MissionID,  cluster <- tier, member(m, missionsInCluster(cluster) ), member(cluster, tier) }
+
+
+
+missionsInTier(tier) = {m | m<- MissionID,  cluster <- tier, member(m, missionsInCluster(cluster) ), member(cluster, tier) }
+
+
+
 
 NestedTiers(nestedTierIDs) =
 (
   || tier : nestedTierIDs @ 
       [ Union({ SchedulableEndApps,
         diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ) --,
-        --{| setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionsInTier(tier)) 
+       -- {| setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionsInTier(tier)) 
        -- {|setCeilingPriority.x, start_mission.x, done_mission.x, initializeCall.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionsInTier(tier) ) |} 
 
         }) 
@@ -228,7 +233,8 @@ ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS, tier1IDs, tier2IDs) =
     Tier0(tier0IDS) 
       [| union(
                   TierCommonChan, 
-                  {| start_mission.NestedMissionId, done_mission.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId   |}
+                  --{| start_mission.NestedMissionId, done_mission.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId   |}
+                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, {NestedMissionId})  |}
                ) 
       |]
     --NestedTiers( nestedTierIDs )
@@ -236,7 +242,8 @@ ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS, tier1IDs, tier2IDs) =
         Tier(tier1IDs)
            [| union(
                   TierCommonChan, 
-                  {| start_mission.MissionAId, done_mission.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId |}
+                 -- {| start_mission.MissionAId, done_mission.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId |}
+                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, {MissionAId})  |}
                ) 
           |]
         Tier(tier2IDs)
@@ -246,29 +253,6 @@ ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS, tier1IDs, tier2IDs) =
 
 
 
-PartiallySequentialFramework(topLevelSequencerIDs, tier0IDS, tier1IDs, tier2IDs) =
-(  
-  SafeletTier(topLevelSequencerIDs)
-    [|TierSync|]
-  (
-    Tier0(tier0IDS) 
-      [| union(
-                  TierCommonChan, 
-                  {| start_mission.NestedMissionId, done_mission.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId   |}
-               ) 
-      |]
-    --NestedTiers( nestedTierIDs )
-    (
-        Tier(tier1IDs)
-           [| union(
-                  TierCommonChan, 
-                  {| start_mission.MissionAId, done_mission.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId |}
-               ) 
-          |]
-        Tier(tier2IDs)
-    )
-  )
-)
 
 
 

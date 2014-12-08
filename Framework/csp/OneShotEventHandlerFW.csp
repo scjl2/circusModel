@@ -16,8 +16,8 @@ channel descheduleRet : SchedulableID.Bool
 
 
 nametype MethodsSync_OSEH =  {|end_releases, reschedule_handler, deschedule_handler|} 
-nametype ReleaseSync_OSEH = {|releaseCall, reschedule_handler, end_releases|}
-nametype DeadlineSync_OSEH =  {|releaseCall, end_releases, deschedule_handler, release_complete|}
+nametype ReleaseSync_OSEH = {|handleAsyncEventCall, reschedule_handler, end_releases|}
+nametype DeadlineSync_OSEH =  {|handleAsyncEventCall, end_releases, deschedule_handler, release_complete|}
 nametype OSEHStateSync = 
   {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
   get_startTime, set_startTime,
@@ -159,14 +159,14 @@ Run_OSEH(schedulable, deadline, deadlineMissHandler) =
 ScheduleOrWait(schedulable) = 
  get_startTime.schedulable?startTime -> 
  if startTime != 0 then 
-        Scheduled(schedulable) 
+      Scheduled(schedulable) 
   else 
       NotScheduled(schedulable) 
 
 Release_OSEH(schedulable) = 
  ( 
-      releaseCall.schedulable -> 
-      releaseRet.schedulable ->   
+      handleAsyncEventCall.schedulable -> 
+      handleAsyncEventRet.schedulable ->   
       release_complete.schedulable -> 
       Release_OSEH(schedulable)
   ) 
@@ -186,12 +186,12 @@ Release_OSEH(schedulable) =
 
 DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) = 
 (
- releaseCall.schedulable ->  
+ handleAsyncEventCall.schedulable ->  
   (
     (   
       (
         circwait.deadline -> 
-        fire.deadlineMissHandler ->         
+        release.deadlineMissHandler ->         
         DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
       ) 
       [] 
@@ -221,7 +221,7 @@ Scheduled(schedulable) =
  (
   ( 
     circwait.startTime ->     
-    releaseCall.schedulable -> 
+    handleAsyncEventCall.schedulable -> 
     NotScheduled(schedulable)
      ) 
      [] 
