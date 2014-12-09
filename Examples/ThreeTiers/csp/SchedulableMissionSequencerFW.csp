@@ -6,7 +6,7 @@ channel set_continueAbove : SchedulableID.Bool
 channel set_continueBelow : SchedulableID.Bool
 
 channel end_schedulableMissionSequencerState : SchedulableID
-
+channel reset_schedulableMissionSequencerState : SchedulableID
 
 nametype SchedulableMissionSequencerFWChanSet = union(
   union(ManagedSchedulableFWChanSet , MissionSequencerFWSharedChanSet),
@@ -14,7 +14,7 @@ nametype SchedulableMissionSequencerFWChanSet = union(
 done_toplevel_sequencer, start_mission, initializeRet, done_mission, requestTermination |}  )
   
   nametype  SchedulableMissionSequencerFWChan  = {| end_sequencer_app, end_methods, end_terminations, get_continue  |}
-  nametype  SMSStateSync = {|get_currentMission, set_currentMission, get_continue, set_continueAbove, set_continueBelow,get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_schedulableMissionSequencerState |}
+  nametype  SMSStateSync = {|reset_schedulableMissionSequencerState, get_currentMission, set_currentMission, get_continue, set_continueAbove, set_continueBelow,get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_schedulableMissionSequencerState |}
 
 -- SchedulableMissionSequencer
 
@@ -73,6 +73,11 @@ SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, conti
   )
   []
   (
+    reset_schedulableMissionSequencerState.sequencer ->
+    SchedulableMissionSequencerState(sequencer, nullMissionId, True, True, nullMissionId, False)
+  )
+  []
+  (
     end_schedulableMissionSequencerState.sequencer ->
     SKIP
   )
@@ -87,6 +92,7 @@ SchedulableMissionSequencerBehaviour(sequencer) =
        (
           Execute_SMS(sequencer) ; 
           Cleanup_SMS(sequencer) ; 
+          reset_schedulableMissionSequencerState.sequencer ->
           SchedulableMissionSequencerBehaviour(sequencer) 
         ) 
      else  
