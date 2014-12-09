@@ -4,6 +4,7 @@
 
 -- OSEH Channels
 
+channel reset_oneshotEventHandlerState : SchedulableID
 channel end_oneshotEventHandlerState : SchedulableID
 channel end_oneshotEventHandler_app : SchedulableID
 
@@ -20,7 +21,7 @@ nametype ReleaseSync_OSEH = {|handleAsyncEventCall, reschedule_handler, end_rele
 nametype DeadlineSync_OSEH =  {|handleAsyncEventCall, end_releases, deschedule_handler, release_complete|}
 nametype OSEHStateSync = 
   {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
-  get_startTime, set_startTime,
+  get_startTime, set_startTime, reset_oneshotEventHandlerState,
   end_oneshotEventHandlerState|}
 
 nametype OSEHFWChanSet = union(
@@ -70,6 +71,11 @@ OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating
 )
 []
 (
+  reset_oneshotEventHandlerState.schedulable ->
+  OneShotEventHandlerState(schedulable, nullMissionId, False, startTime, deadline, deadlineMissHandler)
+)
+[]
+(
   end_oneshotEventHandlerState.schedulable ->
   SKIP
 )
@@ -84,6 +90,7 @@ OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler) =
     (
       Execute_OSEH(schedulable, deadline, deadlineMissHandler) ; 
       Cleanup_OSEH(schedulable) ; 
+      reset_oneshotEventHandlerState.schedulable ->
       OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
     )
     else 
