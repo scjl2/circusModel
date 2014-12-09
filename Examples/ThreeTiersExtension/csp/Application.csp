@@ -375,12 +375,6 @@ ThreeTiers =
 
 	
 
-Program(topLevelSequencerIDs, tier0IDS, nestedTierIDs) = 
-(  
-	TieredFramework(topLevelSequencerIDs, tier0IDS, nestedTierIDs)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority, requestTermination|}})  |]
-	ThreeTiers	 
-)
 
 Program2(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
 (  
@@ -389,14 +383,8 @@ Program2(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) =
 	ThreeTiers	
 )
 
-TestFramework=
-	ClustereAndTieredFramework({TopLevelSequencerId},
-				{ (MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {} )  )   },
-				{ (NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
-				{ (MissionAId,({}, {}, {},  {}, {ManagedThreadId}) )   }	)
-
-TestProgram2 = 
-	Program2(
+TestProgram = 
+	Program(
 				{TopLevelSequencerId},
 				{ (MainMissionId , ({NestedMissionSequencerId},{}, {},  {}, {} )  )   },
 				{ (NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
