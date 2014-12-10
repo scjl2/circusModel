@@ -12,8 +12,6 @@ include "FrameworkProcess.csp"
 nametype SafeltAppSync = 
     {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
-nametype MyAppChanSet =
-  {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
 MyApp  = 
 	(
@@ -48,8 +46,7 @@ nametype MissionSequencerAppStateSync = {| get_sequencer_done, set_sequencer_don
 
 nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
-nametype MySequencerAppChanSet =
-  union(MissionSequencerAppStateSync,MissionSequencerAppSync)
+
 
 MainSequencerApp = 
 (
@@ -103,10 +100,7 @@ Methods_tlms =
 
 nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
 
-nametype TopMission1AppChanSet =
-  {| initializeCall, initializeRet, cleanupMissionCall, cleanupMissionRet,
-    register.NestedMissionSequencerId.Tier0MissionId
-    |}
+
 
 MainMissionApp = 
 ( 
@@ -188,7 +182,7 @@ ReturnController_t0ms(returnedA,returnedB ) =
 
 GetNextMission_t0ms = 
     getNextMissionCall.Tier0SequencerId -> 
-	get_sequencer_returnedA.Tier0SequencerId!returnedA ->
+	get_sequencer_returnedA.Tier0SequencerId?returnedA ->
 	if returnedA == False then 
     (  
 		set_sequencer_returnedA.Tier0SequencerId!True ->
@@ -197,7 +191,7 @@ GetNextMission_t0ms =
 	)
     else
     (
-    	get_sequencer_returnedB.Tier0SequencerId!returnedB ->
+    	get_sequencer_returnedB.Tier0SequencerId?returnedB ->
 	    if returnedB == False then 
 	    (  
 			set_sequencer_returnedB.Tier0SequencerId!True ->
@@ -303,10 +297,6 @@ Methods_t1mb =
 	[] 
 	CleanupPhase_t1mb
 ) ; Methods_t1mb
-
-
-
-
 
 
 
@@ -436,7 +426,7 @@ Methods_t2ma =
 
 -- Tier2 MANAGED THRED APP
 
-channel systemActions : SchedulableID
+
 
 Tier2ManagedThreadApp = 
 (
@@ -548,12 +538,6 @@ handlerAsyncEvent_t2apeh =
 
 nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
 
-nametype SafeletProgramSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, deregister, checkSchedulable, 
-                                register.ManagedThreadId.MainMissionId, register.NestedMissionSequencerId.MainMissionId, 
-								register.NestedMissionSequencerAId.NestedMissionId
-
-                                |}
-
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
@@ -588,12 +572,10 @@ ThreeTiersExtension =
 	Tier2OPEHApp
 	|||
 	Tier2APEHApp
-)
-
-	
+)	
 
 
-Program2(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
+Program(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority, requestTermination|}})  |]
@@ -604,16 +586,16 @@ TestProgram =
 	Program(
 				{TopLevelSequencerId},
 
-				{ (Tier0MissionId , ({Tier0SequencerId, },{}, {},  {}, {Tier0ManagedThreadId} )  )   },
+				{ (Tier0MissionId , ({Tier0SequencerId},{}, {},  {}, {Tier0ManagedThreadId} )  )   },
 
 				{ (Tier1MissionAId, ({Tier1SequencerAId}, {}, {},  {}, {})  ), 
 						(Tier1MissionBId, ({Tier1SequencerBId}, {}, {},  {}, {})  ) },
 
 				{ (Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
-						(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {ManagedThreadId}) )  }			                 
+						(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  }			                 
             )
 
 
-assert sbisim(diamond(TestProgram2)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(TestProgram2)) :[ divergence free ]
-assert sbisim(diamond(TestProgram2)) :[ deterministic  [FD] ]
+assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(TestProgram)) :[ divergence free ]
+assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
