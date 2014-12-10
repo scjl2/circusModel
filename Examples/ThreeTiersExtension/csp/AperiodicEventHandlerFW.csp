@@ -11,25 +11,29 @@ channel set_pending : SchedulableID . Bool
 channel get_pending : SchedulableID . Bool
 channel set_data : SchedulableID . num
 channel get_data : SchedulableID . num
+channel reset_aperiodicEventHandlerState : SchedulableID
 channel end_aperiodicEventHandlerState : SchedulableID
 channel end_aperiodicEventHandler_app : SchedulableID
 
-channel fireLong : SchedulableID . num
-channel releaseLongCall : SchedulableID . num
-channel releaseLongRet : SchedulableID 
+
+channel releaseLong : SchedulableID . num
+
+channel handleAsyncLongEventCall : SchedulableID . num
+channel handleAsyncLongEventRet : SchedulableID 
 
 
 channel scheduleNextRelease : SchedulableID.num 
 
 nametype APEHFWChanSet = union(
   union(ManagedSchedulableFWChanSet, APEHStateSync),
-   {|done_safeletFW, fireLong,releaseLongCall,releaseLongRet, end_releases, circwait, release_complete, 
-  done_schedulable, done_toplevel_sequencer |}  )
+   {|done_safeletFW, releaseLong,release, handleAsyncLongEventCall, handleAsyncEventRet, 
+      end_releases, circwait, 
+     release_complete, done_schedulable, done_toplevel_sequencer |}  )
 
-nametype DeadlineSync_APEH =  {|releaseCall, end_releases, deschedule_handler, release_complete|}
+nametype DeadlineSync_APEH =  {| end_releases, deschedule_handler, release_complete|}
 nametype APEHStateSync = 
   {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
-      get_pending, set_pending, get_data, set_data, end_aperiodicEventHandlerState|}
+      get_pending, set_pending, get_data, set_data, end_aperiodicEventHandlerState, reset_aperiodicEventHandlerState|}
 
 
 AperiodicEventHandlerFW(schedulable, aperiodicType, deadline, deadlineMissHandler) =
@@ -86,6 +90,11 @@ AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminati
 )
 []
 (
+  reset_aperiodicEventHandlerState.schedulable ->
+  AperiodicEventHandlerState(schedulable, nullMissionId, False, False, 0, deadline, deadlineMissHandler )
+)
+[]
+(
   end_aperiodicEventHandlerState.schedulable ->
   SKIP
 )
@@ -101,6 +110,7 @@ AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMiss
     (
       Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) ; 
       Cleanup_APEH(schedulable)  ; 
+      reset_aperiodicEventHandlerState.schedulable ->
       AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
     )
     else 
@@ -156,7 +166,7 @@ if deadlineMissHandler != nullSchedulableId then
       else 
         ReadyLong(schedulable)    
     )
-      [| DeadlineSync_APEH |]
+      [| union(DeadlineSync_APEH, {|release.schedulable|}) |]
     DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
   )
     [|{| end_releases |}|]
@@ -176,12 +186,12 @@ else
 
 DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) = 
 (
- releaseCall.schedulable ->  
+ release.schedulable ->  
   (
     (   
       (
         circwait.deadline -> 
-        fire.deadlineMissHandler ->         
+        release.deadlineMissHandler ->         
         DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
       ) 
       [] 
@@ -201,8 +211,8 @@ DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) =
 
 Ready_APEH(schedulable) = 
 (
-  fire.schedulable -> 
-  releaseCall.schedulable -> 
+  release.schedulable -> 
+  handleAsyncEventCall.schedulable -> 
   Release_APEH(schedulable, False)
 )
 []
@@ -213,9 +223,9 @@ Ready_APEH(schedulable) =
 
 ReadyLong(schedulable) = 
  (  
-  fireLong.schedulable?data -> 
+  releaseLong.schedulable?data -> 
   --set_data.schedulable!data ->
-  releaseLongCall.schedulable.data -> 
+  handleAsyncLongEventCall.schedulable.data -> 
   ReleaseLong(schedulable, data, False) 
  )
  []
@@ -237,19 +247,19 @@ SignalTermination_APEH(schedulable) =
 Release_APEH(schedulable, pending) =  
   
   ( 
-    fire.schedulable -> 
+    release.schedulable -> 
     --set_pending.schedulable!True ->
     Release_APEH(schedulable, True)
   )
   []
   (
-    releaseRet.schedulable -> 
+    handleAsyncEventRet.schedulable -> 
     --get_pending.schedulable?pending ->
     if pending == True then
     ( 
      -- set_pending.schedulable!False ->
       release_complete.schedulable -> 
-      releaseCall.schedulable -> 
+      handleAsyncEventCall.schedulable -> 
       Release_APEH(schedulable, False)
     )
     else 
@@ -263,21 +273,21 @@ Release_APEH(schedulable, pending) =
 
 ReleaseLong(schedulable, data, pending ) =  
  ( 
-    fireLong.schedulable?data -> 
+    releaseLong.schedulable?data -> 
    -- set_data.schedulable!data ->
    -- set_pending.schedulable!True ->
     ReleaseLong(schedulable, data, True)
   )
   []
   (
-    releaseLongRet.schedulable -> 
+    handleAsyncLongEventRet.schedulable -> 
    -- get_pending.schedulable?pending ->
     if pending == True then
     ( 
      -- set_pending.schedulable!False ->
       release_complete.schedulable -> 
      -- get_data.schedulable?data ->
-      releaseLongCall.schedulable.data -> 
+      handleAsyncLongEventCall.schedulable.data -> 
       ReleaseLong(schedulable, data, False)
     )
     else 
@@ -296,6 +306,6 @@ Cleanup_APEH(schedulable) =
  SKIP 
 
 
--- assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
--- assert  AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
--- assert  AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
