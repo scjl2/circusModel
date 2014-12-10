@@ -72,7 +72,7 @@ MissionFW(mission) =
   MissionFWState(mission, {}, {}, False, False, nullSequencerId)
     [|MissionFWStateChan|]
   MissionFWBehaviour(mission)
-) --\ diff(MissionFWStateChan, {|activate_schedulables|})
+) \ diff(MissionFWStateChan, {|activate_schedulables|})
 
 
 MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, controllingSequencer) =

@@ -521,7 +521,7 @@ Tier2APEHApp =
 (
 	Methods_t2apeh
 )
-/\ (end_oneshotEventHandler_app.Tier2APEHId -> SKIP)
+/\ (end_oneshot, EventHandler_app.Tier2APEHId -> SKIP)
 
 Methods_t2apeh =
 	handlerAsyncEvent_t2apeh ; Methods_t2apeh
@@ -575,10 +575,13 @@ ThreeTiersExtension =
 )	
 
 
+nametype APEHSync = {| release |}
+nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
+
 Program(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, {|end_mission_app, setCeilingPriority, requestTermination|}})  |]
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync,  {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	ThreeTiersExtension	
 )
 
