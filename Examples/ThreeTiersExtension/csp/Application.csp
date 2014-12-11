@@ -502,7 +502,7 @@ Tier2OPEHApp =
 (
 	Methods_t2peh
 )
-/\ (end_oneshotEventHandler_app.Tier2PEHId -> SKIP)
+/\ (end_periodic_app.Tier2PEHId -> SKIP)
 
 Methods_t2peh =
 	handlerAsyncEvent_t2peh ; Methods_t2peh
@@ -521,7 +521,7 @@ Tier2APEHApp =
 (
 	Methods_t2apeh
 )
-/\ (end_oneshot, EventHandler_app.Tier2APEHId -> SKIP)
+/\ (end_aperiodicEventHandler_app.Tier2APEHId -> SKIP)
 
 Methods_t2apeh =
 	handlerAsyncEvent_t2apeh ; Methods_t2apeh
@@ -575,13 +575,14 @@ ThreeTiersExtension =
 )	
 
 
-nametype APEHSync = {| release |}
+--nametype APEHSync = {| release |}
 nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
 Program(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync,  {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync, 
+		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	ThreeTiersExtension	
 )
 
@@ -597,6 +598,45 @@ TestProgram =
 				{ (Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
 						(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  }			                 
             )
+
+
+CheckTrue = 
+	(checkSchedulable?mission!True -> CheckTrue)
+	/\ (done_mission.Tier2MissionBId?c -> SKIP  )
+
+
+TestTier2 = 
+	(
+		--Tier2MissionAApp
+	--	|||
+	--	Tier2ManagedThreadApp
+	--	|||
+	--	Tier2OSEHApp
+	--	|||
+		Tier2MissionBApp
+		|||
+		Tier2OPEHApp
+		|||
+		Tier2APEHApp
+	)
+	[| 
+		Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync,  
+		{|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet, release.Tier2APEHId|}})  
+	|]
+	(
+		(
+			CheckTrue
+			[|{| done_mission.Tier2MissionBId |}|]
+			--start_mission.Tier2MissionAId.Tier1SequencerAId -> done_mission.Tier2MissionAId?c -> 
+			start_mission.Tier2MissionBId.Tier1SequencerBId -> done_mission.Tier2MissionBId?c -> SKIP
+		)
+		[|{| checkSchedulable, start_mission, done_mission|}|]
+		Tier({  --(Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
+							(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  })
+	)
+
+
+assert sbisim(diamond(TestTier2)) ; Loop :[ deadlock free [FD] ]  
 
 
 assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
