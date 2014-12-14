@@ -98,23 +98,36 @@ Methods_mms  =
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
+
+
 nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
 
+--channel get_airSpeed : SchedulableID.{1..3}
+channel update_airSpeed : SchedulableID.{0..3}
+
+nametype MainMissionStateSync = {|update_airSpeed |}
+
 MainMissionApp = 
-( 
-	(
-		(Methods_mm )
-		/\ 
-		(end_mission_app.MainMissionId -> SKIP )
-	) 
+(
+	Methods_mm 
+		[| MainMissionStateSync |]
+	MainMissionState(0)
+)\MainMissionStateSync
+/\ (end_mission_app.MainMissionId -> SKIP )
+
+
+MainMissionState(0) = 
+(
+	update_airSpeed.ModeChangerId?newAirSpeed ->
+	MainMissionState(newAirSpeed)
 )
 
 
 InitializePhase_mm = 
   initializeCall.MainMissionId   -> 
-  register!Tier0ManagedThreadId!MainMissionId  -> 
-  register!Tier0ManagedThreadId!MainMissionId  -> 
-  register!Tier0SequencerId!MainMissionId  ->  
+  register!ModeChangerId!MainMissionId  -> 
+  register!EnvironmentMonitorId!MainMissionId  -> 
+  register!ControlHandlerId!MainMissionId  ->  
   initializeRet.MainMissionId  -> 
  SKIP
 
@@ -123,413 +136,573 @@ CleanupPhase_mm =
  cleanupMissionRet.MainMissionId?false ->
  SKIP
 
+
+UpdateAirSpeed_mc = 
+	updateAirSpeed.MainMissionId?newAirSpeed ->
+	update_airSpeed.MainMissionId!newAirSpeed ->
+	SKIP
+
 Methods_mm = 
 ( 
 	InitializePhase_mm 
 	[] 
 	CleanupPhase_mm
+	[]
+	UpdateAirSpeed_mm
 ) ; Methods_mm
   
 
 
-
-
-
-
-
 --NESTED MISSION SEQUENCER
 
-channel get_sequencer_returnedA : SchedulableID.Bool
-channel set_sequencer_returnedA : SchedulableID.Bool
+channel get_modesLeft : SchedulableID.{1..3}
+channel set_modesLeft : SchedulableID.Bool
 
-channel get_sequencer_returnedB : SchedulableID.Bool
-channel set_sequencer_returnedB : SchedulableID.Bool
+channel get_currentMode : SchedulableID.MissionID
+channel set_currentMode : SchedulableID.MissionID
 
-nametype Tier0MissionSequencerSync = 
-	{|get_sequencer_returnedA, set_sequencer_returnedA,
-	  get_sequencer_returnedB,set_sequencer_returnedB |}
 
-Tier0MissionSequencerApp = 
+
+
+nametype ModeChangerStateSync = 
+	{|get_modesLeft, set_modesLeft, get_currentMode, set_currentMode |}
+
+ModeChangerApp = 
 (
-  Methods_t0ms 
-    [|Tier0MissionSequencerSync|] 
-  ReturnController_t0ms(False, False) 
-) \Tier0MissionSequencerSync
-/\ (end_sequencer_app.Tier0SequencerId -> SKIP)
+  Methods_mc
+    [|ModeChangerStateSync|] 
+  ModeChangerState_mc(3, nullMissionId) 
+) \ModeChangerStateSync
+/\ (end_sequencer_app.ModeChangerId -> SKIP)
 
 
-ReturnController_t0ms(returnedA,returnedB ) =
+ModeChangerState_mc(modesLeft, currentMode) =
 (
-	get_sequencer_returnedA.Tier0SequencerId!returnedA ->
-	ReturnController_t0ms(returnedA,returnedB )
+	get_modesLeft.ModeChangerId!modesLeft ->
+	ModesLeftController_mc(modesLeft, currentMode)
 )
 []
 (
-	set_sequencer_returnedA.Tier0SequencerId?newReturnedA ->
-	ReturnController_t0ms(newReturnedA,returnedB )
+	set_modesLeft.ModeChangerId?newModesLeft ->
+	ModesLeftController_mc(newModesLeft, currentMode)
 )
 []
 (
-	get_sequencer_returnedB.Tier0SequencerId!returnedB ->
-	ReturnController_t0ms(returnedA,returnedB )
+	get_currentMode.ModeChangerId!currentMode ->
+	ModesLeftController_mc(modesLeft, currentMode)
 )
 []
 (
-	set_sequencer_returnedB.Tier0SequencerId?newReturnedB ->
-	ReturnController_t0ms(returnedA,newReturnedB )
+	set_currentMode.ModeChangerId?newCurrentMode ->
+	ModesLeftController_mc(modesLeft, newCurrentMode)
 )
+[]
 
-GetNextMission_t0ms = 
-    getNextMissionCall.Tier0SequencerId -> 
-	get_sequencer_returnedA.Tier0SequencerId?returnedA ->
-	if returnedA == False then 
+
+GetNextMission_mc = 
+    getNextMissionCall.ModeChangerId -> 
+    get_currentMode.ModeChangerId?currentMode ->
+	getNextMissionRet.ModeChangerId!currentMode ->
+
+	
+AdvanceMode_mc =
+	get_modesLeft.ModeChangerId?modesLeft ->
+	if modesLeft == 3 then 
     (  
-		set_sequencer_returnedA.Tier0SequencerId!True ->
-		getNextMissionRet.Tier0SequencerId!Tier1MissionAId ->
+		set_modesLeft.ModeChangerId!2 -> 
+		set_currentMode.ModeChangerId!LaunchModeId ->
 		SKIP
 	)
     else
     (
-    	get_sequencer_returnedB.Tier0SequencerId?returnedB ->
-	    if returnedB == False then 
+    	
+	    if modesLeft == 2 then 
 	    (  
-			set_sequencer_returnedB.Tier0SequencerId!True ->
-			getNextMissionRet.Tier0SequencerId!Tier1MissionBId ->
+			set_modesLeft.ModeChangerId!1 -> 
+			set_currentMode.ModeChangerId!CruiseModeId ->
 			SKIP
 		)
 	    else
 		(  
-			getNextMissionRet.Tier0SequencerId!nullMissionId ->
-			SKIP
+			if modesLeft == 1 then 
+			(
+				set_modesLeft.ModeChangerId!0 -> 
+				set_currentMode.ModeChangerId!LandModeId ->
+				SKIP
+			)
+			else
+			(
+				set_currentMode.ModeChangerId!nullMissionId ->
+				SKIP
+			)
 		)
-    )	
+    )		
 
-Methods_t0ms = 
+
+
+
+
+Methods_mc = 
 ( 
-	GetNextMission_t0ms 	
-) ; Methods_t0ms
+	GetNextMission_mc	
+	[]
+	AdvanceMode_mc
+	
+) ; Methods_mc
 
 
 
 
 
--- Tier0 MANAGED THRED APP
+--- Environment Monitor
 
-channel systemActions : SchedulableID
+channel checkEnvironment : SchedulableID.Bool
 
-Tier0ManagedThreadApp = 
+EnvironmentMonitorApp =
 (
-	Methods_t0mt
+	Methods_em
 )
-/\ (end_managedThread_app.Tier0ManagedThreadId -> SKIP)
+/\ (end_periodicEventHandler_app.EnvironmentMonitorId -> SKIP)
 
-Methods_t0mt =
-	Run_t0mt ; Methods_t0mt
+Methods_ =
+	handlerAsyncEvent_em ; Methods_em
 
-Run_t0mt =
-	runCall.Tier0ManagedThreadId -> 
-	systemActions.Tier0ManagedThreadId ->	
-	runRet.Tier0ManagedThreadId ->
-	SKIP
-
-  
-
-
--- Tier 1 Mission A
-
-
-Tier1MissionAApp = 
-(
-	( 
-		Methods_t1ma
-		/\ 
-		(end_mission_app.Tier1MissionAId -> SKIP )
-	) 
-)
-
-InitializePhase_t1ma = 
-  initializeCall.Tier1MissionAId  -> 
-  register!Tier1SequencerAId!Tier1MissionAId ->   
-  initializeRet.Tier1MissionAId -> 
-  SKIP
-
-CleanupPhase_t1ma = 
- cleanupMissionCall.Tier1MissionAId ->
- cleanupMissionRet.Tier1MissionAId!True ->
-	SKIP
-
-Methods_t1ma = 
-( 
-	InitializePhase_t1ma 
-	[] 
-	CleanupPhase_t1ma
-) ; Methods_t1ma
-
-
-
--- Tier 1 Mission B
-
-
-Tier1MissionBApp = 
-(
-	( 
-		Methods_t1mb
-		/\ 
-		(end_mission_app.Tier1MissionBId -> SKIP )
-	) 
-)
-
-InitializePhase_t1mb = 
-  initializeCall.Tier1MissionBId  -> 
-  register!Tier1SequencerBId!Tier1MissionBId ->   
-  initializeRet.Tier1MissionBId -> 
-  SKIP
-
-CleanupPhase_t1mb = 
- cleanupMissionCall.Tier1MissionBId ->
- cleanupMissionRet.Tier1MissionBId!True ->
-	SKIP
-
-Methods_t1mb = 
-( 
-	InitializePhase_t1mb 
-	[] 
-	CleanupPhase_t1mb
-) ; Methods_t1mb
-
-
-
---Tier 1 MISSION SEQUENCER A
-
-Tier1MissionSequencerAApp = 
-(
-  Methods_t1msa
-    [|MissionSequencerAppStateSync|] 
-    DoneController_t1msa(False) 
-) \MissionSequencerAppStateSync
-/\ (end_sequencer_app.Tier1SequencerAId -> SKIP)
-
-
-DoneController_t1msa(done) =
-(
-	get_sequencer_done.Tier1SequencerAId!done ->
-	DoneController_t1msa(done)
-)
-[]
-(
-	set_sequencer_done.Tier1SequencerAId?newDone ->
-	DoneController_t1msa(newDone)
-)
-
-GetNextMission_t1msa = 
-  getNextMissionCall.Tier1SequencerAId -> 
-	get_sequencer_done.Tier1SequencerAId?done ->
-	if done == False then 
-    (  
-		set_sequencer_done.Tier1SequencerAId!True ->
-		getNextMissionRet.Tier1SequencerAId!Tier2MissionAId ->
+handlerAsyncEvent_em =
+	handleAsyncEventCall.EnvironmentMonitorId -> 
+	checkEnvironment.EnvironmentMonitorId?check ->
+	if check = false then
+	(
+		requestTermination.MainMissionId.EnvironmentMonitorId ->
 		SKIP
 	)
 	else
-	(  
-		getNextMissionRet.Tier1SequencerAId!nullMissionId ->
+	(
 		SKIP
 	)
-
-Methods_t1msa = 
-( 
-	GetNextMission_t1msa
-) ; Methods_t1msa
+	;
+    handleAsyncEventRet.EnvironmentMonitorId ->
+    SKIP  
 
 
+--- Control Handler
 
+channel handleControls : SchedulableID
 
---Tier 1 MISSION SEQUENCER B
-
-Tier1MissionSequencerBApp = 
+ControlHandlerApp =
 (
-  Methods_t1msb
-    [|MissionSequencerAppStateSync|] 
-    DoneController_t1msb(False) 
-) \MissionSequencerAppStateSync
-/\ (end_sequencer_app.Tier1SequencerBId -> SKIP)
+	Methods_ch
+)
+/\ (end_aperiodicEventHandler_app.ControlHandlerId -> SKIP)
+
+Methods_ =
+	handlerAsyncEvent_ch ; Methods_ch
+
+handlerAsyncEvent_em =
+	handleAsyncEventCall.ControlHandlerId -> 
+		handleControls.ControlHandlerId ->
+    handleAsyncEventRet.ControlHandlerId ->
+    SKIP  
 
 
-DoneController_t1msb(done) =
+--AirSpeedMonitor
+
+AirSpeedMonitorApp =
 (
-	get_sequencer_done.Tier1SequencerBId!done ->
-	DoneController_t1msb(done)
+	Methods_asm
+)
+/\ (end_periodicEventHandler_app.AirSpeedMonitorId -> SKIP)
+
+Methods_asm =
+	handlerAsyncEvent_asm ; Methods_asm
+
+handlerAsyncEvent_asm =	
+	handleAsyncEventCall.AirSpeedMonitorId -> 
+	updateAirSpeed.MainMissionId!2 ->
+    handleAsyncEventRet.AirSpeedMonitorId ->
+    SKIP  
+
+
+-- Launch Mission
+
+channel get_launch : MissionID.Bool
+channel set_launch : MissionID.Bool
+
+channel goodToLaunch : MissionID
+channel canLaunchCall : MissionID
+channel canLaunchRet : MissionID.Bool
+
+
+nametype LaunchMissionStateSync = {| get_launch, set_launch  |}
+
+LaunchMissionAApp = 
+(
+	Methods_lm
+	[| LaunchMissionStateSync |]	
+	LaunchMissionState(False)
+	 
+) \ LaunchMissionStateSync
+/\ (end_mission_app.LaunchModeId -> SKIP )
+
+
+LaunchMissionState(launch) =
+(
+	get_launch.LaunchModeId!launch->
+	LaunchMissionState(launch)
 )
 []
 (
-	set_sequencer_done.Tier1SequencerBId?newDone ->
-	DoneController_t1msb(newDone)
+	set_launch.LaunchModeId?newLaunch ->
+	LaunchMissionState(newLaunch)
+)	
+
+InitializePhase_lm = 
+  initializeCall.LaunchModeId  -> 
+  set_launch.LaunchModeId!False ->
+  register!LaunchConditionsMonitorId!LaunchModeId ->  
+  register!LaunchHandlerId!LaunchModeId ->  
+  register!LaunchCountdownId!LaunchModeId ->  
+  initializeRet.LaunchModeId -> 
+  SKIP
+
+CleanupPhase_lm = 
+ cleanupMissionCall.LaunchModeId ->
+ cleanupMissionRet.LaunchModeId!True ->
+	SKIP
+
+GoodToLaunch_lm =
+	goodToLaunch.LaunchModeId ->
+	set_launch.LaunchModeId!True ->
+	SKIP
+
+CanLaunch_lm =
+	canLaunchCall.LaunchModeId ->
+	get_launch.LaunchModeId?launch ->
+	canLaunchRet.LaunchModeId!launch ->
+	SKIP
+
+Methods_lm = 
+( 
+	InitializePhase_lm 
+	[] 
+	CleanupPhase_lm
+	[]
+	GoodToLaunch_lm
+	[]
+	CanLaunch_lm
+) ; Methods_lm
+
+
+-- Launch Conditions Monitor
+
+LaunchConditionsMonitorApp =
+(
+	Methods_lcm
+)
+/\ (end_oneshotEventHandler_app.LaunchConditionsMonitorId -> SKIP)
+
+Methods_ =
+	handlerAsyncEvent_lcm ; Methods_lcm
+
+handlerAsyncEvent_lcm =
+	handleAsyncEventCall.LaunchConditionsMonitorId -> 
+	-- simulate some checking here? How though?
+	goodToLaunch.MissionID ->
+    handleAsyncEventRet.LaunchConditionsMonitorId ->
+    SKIP  
+
+
+-- LaunchCountdown
+
+channel get_countdown : SchedulableID.{0..5}
+channel set_countdown : SchedulableID.{0..5}
+
+nametype LaunchCountdownStateSync = {|get_countdown, set_countdown |}
+
+LaunchCountdownApp =
+(
+	Methods_lc
+	[| LaunchCountdownStateSync |]
+	LaunchCountdownState(5)
+) \ LaunchCountdownStateSync
+/\ (end_periodicEventHandler_app.LaunchCountdownId -> SKIP)
+
+
+LaunchCountdownState(countdown) =
+(
+	get_countdown.LaunchCountdownId!countdown ->
+	LaunchCountdownState(countdown)
+)
+[]
+(
+	set_countdown.LaunchCountdownId?newCountdown ->
+	LaunchCountdownState(newCountdown)
 )
 
-GetNextMission_t1msb = 
-  getNextMissionCall.Tier1SequencerBId -> 
-	get_sequencer_done.Tier1SequencerBId?done ->
-	if done == False then 
-    (  
-		set_sequencer_done.Tier1SequencerBId!True ->
-		getNextMissionRet.Tier1SequencerBId!Tier2MissionBId ->
+Methods_ =
+	handlerAsyncEvent_lc ; Methods_lc
+
+handlerAsyncEvent_lc =
+	handleAsyncEventCall.LaunchCountdownId -> 
+	get_countdown.LaunchCountdownId?countdown ->
+	if countdown == 0 then
+	(
+		release.LaunchHandlerId ->
 		SKIP
 	)
 	else
-	(  
-		getNextMissionRet.Tier1SequencerBId!nullMissionId ->
+	(
+		set_countdown.LaunchCountdownId!countdown-1 ->
+		SKIP
+	)
+    handleAsyncEventRet.LaunchCountdownId ->
+    SKIP  
+
+
+
+
+--LaunchHandler
+
+channel launching : SchedulableID
+
+LaunchHandlerApp =
+(
+	Methods_lh
+)
+/\ (end_aperiodicEventHandler_app.LaunchHandlerId -> SKIP)
+
+Methods_lh =
+	handlerAsyncEvent_lh ; Methods_lh
+
+handlerAsyncEvent_lh =
+	handleAsyncEventCall.LaunchHandlerId -> 
+	launching.LaunchHandlerId ->
+	requestTermination.LaunchModeId -> 
+    handleAsyncEventRet.LaunchHandlerId ->
+    SKIP  
+
+
+-- CruiseMission
+
+channel setOkToCruise : MissionID.Bool
+channel isOkToCruiseCall : MissionID
+channel isOkToCruiseRet : MissionID.Bool
+
+channel set_okToCruise : SchedulableID.Bool
+channel get_okToCruise : SchedulableID.Bool
+
+nametype CruiseMissionStateSync = {|set_okToCruise, get_okToCruise |}
+
+CruiseMissionApp = 
+( 
+	Methods_cm
+		[| CruiseMissionStateSync |]
+	CruiseMissionState(False)
+) \ CruiseMissionStateSync
+/\ (end_mission_app.CruiseModeId -> SKIP )
+
+CruiseMissionState(okToCruise) =
+(
+	get_okToCruise.CruiseModeId!okToCruise ->
+	CruiseMissionState(okToCruise)
+)
+[]
+(
+	set_okToCruise.CruiseModeId?newOkToCruise ->
+	CruiseMissionState(newOkToCruise)
+)
+
+
+InitializePhase_cm = 
+  initializeCall.CruiseModeId  -> 
+
+  register!CruiseConditionsMonitorId!CruiseModeId ->   
+  register!BurnActivationHandlerId!CruiseModeId ->   
+  register!BeginLandingHandlerId!CruiseModeId ->   
+
+  initializeRet.CruiseModeId -> 
+  SKIP
+
+CleanupPhase_cm = 
+ cleanupMissionCall.CruiseModeId ->
+ cleanupMissionRet.CruiseModeId!True ->
+	SKIP
+
+setOkToCruise_cm =
+	setOkToCruise.CruiseModeId?newOkToCruise ->
+	set_okToCruise.CruiseModeId!newOkToCruise ->
+	SKIP
+
+isOkToCruise_cm =
+	isOkToCruiseCall.CruiseModeId ->
+	get_okToCruise.CruiseModeId?okToCruise ->
+	isOkToCruiseRet.CruiseModeId!okToCruise ->
+	SKIP
+
+Methods_cm = 
+( 
+	InitializePhase_cm
+	[] 
+	CleanupPhase_cm
+	[]
+	setOkToCruise_cm
+	[]
+	isOkToCruise_cm
+) ; Methods_cm
+
+
+-- CruiseConditionsMonitor
+CruiseConditionsMonitorApp =
+(
+	Methods_ccm
+)
+/\ (end_periodicEventHandler_app.CruiseConditionsMonitorId -> SKIP)
+
+Methods_ccm =
+	handlerAsyncEvent_ccm ; Methods_ccm
+
+handlerAsyncEvent_ccm =
+	handleAsyncEventCall.CruiseConditionsMonitorId -> 
+	setOkToCruise.CruiseModeId!True -> 
+    handleAsyncEventRet.CruiseConditionsMonitorId ->
+    SKIP  
+
+
+-- BurnActivationHandler
+
+BurnActivationHandlerApp =
+(
+	Methods_bah
+)
+/\ (end_aperiodicEventHandler_app.BurnActivationHandlerId -> SKIP)
+
+Methods_bah =
+	handlerAsyncEvent_bah ; Methods_bah
+
+handlerAsyncEvent_bah =
+	handleAsyncEventCall.BurnActivationHandlerId -> 
+	isOkToCruiseCall.CruiseModeId ->
+	isOkToCruiseRet.CruiseModeId?okToCruise ->
+	if okToCruise == True then
+	(
+		activateBurn.BurnActivationHandlerId ->
+		SKIP
+	)
+	else
+	(
+		SKIP
+	)
+	;
+    handleAsyncEventRet.BurnActivationHandlerId ->
+    SKIP 
+
+--BeginLandingHandler
+
+channel beginLanding : SchedulableID
+
+BeginLandingHandlerApp =
+(
+	Methods_blh
+)
+/\ (end_[handlerType]EventHandler_app.BeginLandingHandlerId -> SKIP)
+
+Methods_blh =
+	handlerAsyncEvent_blh ; Methods_blh
+
+handlerAsyncEvent_blh =
+	beginLanding.BeginLandingHandlerId ->
+	release.BeginLandingHandlerId ->
+	handleAsyncEventCall.BeginLandingHandlerId -> 
+	requestTermination.CruiseModeId ->
+    handleAsyncEventRet.BeginLandingHandlerId ->
+    SKIP  
+
+
+
+
+
+-- LandMission
+
+channel updateGroundDistance : MissionID.{50}
+
+LandMissionApp = 
+( 
+	Methods_lam	
+)\
+/\ (end_mission_app.LandModeId -> SKIP )
+
+InitializePhase_lam = 
+  initializeCall.LandModeId  -> 
+  register!GroundDistanceMonitorId!LandModeId ->   
+  register!LandingGearHandlerId!LandModeId -> 
+  initializeRet.LandModeId -> 
+  SKIP
+
+CleanupPhase_lam = 
+ cleanupMissionCall.LandModeId ->
+ cleanupMissionRet.LandModeId!True ->
+ SKIP
+
+UpdateGroundDistance_lam =
+	updateGroundDistance.LandModeId?newDistanceFromGround ->
+	if newDistanceFromGround == 50 then
+	(
+		release.LandingGearHandlerId ->
+		SKIP
+	)
+	else
+	(
 		SKIP
 	)
 
-Methods_t1msb = 
+Methods_lam = 
 ( 
-	GetNextMission_t1msb
-) ; Methods_t1msb
-
-
-
-
-
-
--- Tier 2 Mission A
-
-Tier2MissionAApp = 
-(
-	( 
-		Methods_t2ma
-		/\ 
-		(end_mission_app.Tier2MissionAId -> SKIP )
-	) 
-)
-
-InitializePhase_t2ma = 
-  initializeCall.Tier2MissionAId  -> 
-  register!Tier2ManagedThreadId!Tier2MissionAId ->   
-  register!Tier2OSEHId!Tier2MissionAId -> 
-  initializeRet.Tier2MissionAId -> 
-  SKIP
-
-CleanupPhase_t2ma = 
- cleanupMissionCall.Tier2MissionAId ->
- cleanupMissionRet.Tier2MissionAId!True ->
- SKIP
-
-Methods_t2ma = 
-( 
-	InitializePhase_t2ma
+	InitializePhase_lam
 	[] 
-	CleanupPhase_t2ma
-) ; Methods_t2ma
+	CleanupPhase_lam
+	[]
+	UpdateGroundDistance_lam
+) ; Methods_lam
 
 
+--GroundDistanceMonitor
 
--- Tier2 MANAGED THRED APP
-
-
-
-Tier2ManagedThreadApp = 
+GroundDistanceMonitorApp =
 (
-	Methods_t2mt
+	Methods_gdm
 )
-/\ (end_managedThread_app.Tier2ManagedThreadId -> SKIP)
+/\ (end_periodicEventHandler_app.GroundDistanceMonitorId -> SKIP)
 
-Methods_t2mt =
-	Run_t2mt ; Methods_t2mt
+Methods_gdm =
+	handlerAsyncEvent_gdm ; Methods_gdm
 
-Run_t2mt =
-	runCall.Tier2ManagedThreadId -> 
-	systemActions.Tier2ManagedThreadId ->	
-	runRet.Tier2ManagedThreadId ->
-	SKIP
+handlerAsyncEvent_gdm =
+	handleAsyncEventCall.GroundDistanceMonitorId -> 
+	updateGroundDistance.LandModeId!50 ->
+    handleAsyncEventRet.GroundDistanceMonitorId ->
+    SKIP  
 
 
--- Tier 2 OSEH APP
+-- LandingGearHandler
 
-Tier2OSEHApp =
+channel deployLandingGear : SchedulableID
+
+LandingGearHandlerApp =
 (
-	Methods_t2oseh
+	Methods_lgh
 )
-/\ (end_oneshotEventHandler_app.Tier2OSEHId -> SKIP)
+/\ (end_aperiodicEventHandler_app.LandingGearHandlerId -> SKIP)
 
-Methods_t2oseh =
-	handlerAsyncEvent_t2oseh ; Methods_t2oseh
+Methods_lgh =
+	handlerAsyncEvent_lgh ; Methods_lgh
 
-handlerAsyncEvent_t2oseh=
-	handleAsyncEventCall.Tier2OSEHId -> 
-	requestTermination.Tier2MissionAId.Tier2OSEHId ->
-    handleAsyncEventRet.Tier2OSEHId ->   
-    SKIP
-
-
-
-
--- Tier 2 Mission B
-
-Tier2MissionBApp = 
-(
-	( 
-		Methods_t2mb
-		/\ 
-		(end_mission_app.Tier2MissionBId -> SKIP )
-	) 
-)
-
-InitializePhase_t2mb = 
-  initializeCall.Tier2MissionBId  -> 
-  register!Tier2PEHId!Tier2MissionBId ->   
-  register!Tier2APEHId!Tier2MissionBId -> 
-  initializeRet.Tier2MissionBId -> 
-  SKIP
-
-CleanupPhase_t2mb = 
- cleanupMissionCall.Tier2MissionBId ->
- cleanupMissionRet.Tier2MissionBId!True ->
- SKIP
-
-Methods_t2mb = 
-( 
-	InitializePhase_t2mb
-	[] 
-	CleanupPhase_t2mb
-) ; Methods_t2mb
-
-
-
--- Tier 2 PEH APP
-
-Tier2OPEHApp =
-(
-	Methods_t2peh
-)
-/\ (end_periodic_app.Tier2PEHId -> SKIP)
-
-Methods_t2peh =
-	handlerAsyncEvent_t2peh ; Methods_t2peh
-
-handlerAsyncEvent_t2peh =
-	handleAsyncEventCall.Tier2PEHId -> 
-	release.Tier2APEHId -> 
-    handleAsyncEventRet.Tier2PEHId ->  
+handlerAsyncEvent_lgh =
+	handleAsyncEventCall.LandingGearHandlerId -> 
+	deployLandingGear.LandingGearHandlerId ->
+	requestTermination.LandModeId ->
+    handleAsyncEventRet.LandingGearHandlerId ->
     SKIP 
 
 
-
--- Tier 2 APEH APP
-
-Tier2APEHApp =
-(
-	Methods_t2apeh
-)
-/\ (end_aperiodicEventHandler_app.Tier2APEHId -> SKIP)
-
-Methods_t2apeh =
-	handlerAsyncEvent_t2apeh ; Methods_t2apeh
-
-handlerAsyncEvent_t2apeh =
-	handleAsyncEventCall.Tier2APEHId -> 
-	requestTermination.Tier2MissionBId.Tier2APEHId ->
-    handleAsyncEventRet.Tier2APEHId ->
-    SKIP  
 
 
 

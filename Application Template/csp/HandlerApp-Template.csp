@@ -2,7 +2,7 @@ HandlerApp =
 (
 	Methods_
 )
-/\ (end_oneshotEventHandler_app.[Handler] -> SKIP)
+/\ (end_[handlerType]EventHandler_app.[Handler] -> SKIP)
 
 Methods_ =
 	handlerAsyncEvent_ ; Methods_

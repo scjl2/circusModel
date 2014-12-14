@@ -2,10 +2,11 @@
 transparent sbisim, diamond
 
 datatype SchedulableID = nullSequencerId|nullSchedulableId| MainMissionSequencerId 
-                          | ModeChangerId | EnvironmentMonitorId | ControlHandlerId 
-                          | LaunchMonitorId | LaunchHandlerId 
-                          | CruiseMonitorId | CruiseHandlerId
-                          | LandMonitorId | LandHandlerId  
+                          | ModeChangerId | EnvironmentMonitorId | ControlHandlerId | AirSpeedMonitorId
+                          | LaunchConditionsMonitorId | LaunchHandlerId | LaunchCountdownId
+                          | CruiseConditionsMonitorId | BurnActivationHandlerId | BeginLandingHandlerId
+                          | GroundDistanceMonitorId | LandingGearHandlerId  
+
 datatype MissionID = nullMissionId
                     | MainMissionId | LaunchModeId | CruiseModeId |  LandModeId
 
