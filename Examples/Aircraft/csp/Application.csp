@@ -26,7 +26,7 @@ InitializeApplication_s =
 
 GetSequencer_s = 
 	getSequencerCall -> 
-	getSequencerRet!TopLevelSequencerId ->
+	getSequencerRet!MainMissionSequencerId ->
 	SKIP
 
 Methods_s = 
@@ -39,57 +39,57 @@ Methods_s =
 
 --TOP LEVEL SEQUENCER: MY SEQUENCER
 
-channel get_sequencer_done : SchedulableID.Bool
-channel set_sequencer_done : SchedulableID.Bool
+channel get_returnedMission : SchedulableID.Bool
+channel set_returnedMission : SchedulableID.Bool
 
-nametype MissionSequencerAppStateSync = {| get_sequencer_done, set_sequencer_done |}
+nametype MissionSequencerAppStateSync = {| get_returnedMission, set_returnedMission |}
 
 nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
 
 
-MainSequencerApp = 
+MainMissionSequencerApp = 
 (
-  Methods_tlms 
+  Methods_mms 
     [|MissionSequencerAppStateSync|] 
-  DoneController_tlms(False) 
+  DoneController_mms (False) 
 )\ MissionSequencerAppStateSync
-/\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
+/\ (end_sequencer_app.MainMissionSequencerId -> SKIP)
    
 
-DoneController_tlms(done) =
+DoneController_mms (done) =
 (
-	get_sequencer_done.TopLevelSequencerId!done ->
-	DoneController_tlms(done)
+	get_returnedMission.MainMissionSequencerId!done ->
+	DoneController_mms (done)
 )
 []
 (
-	set_sequencer_done.TopLevelSequencerId?newDone ->
-	DoneController_tlms(newDone)
+	set_returnedMission.MainMissionSequencerId?newDone ->
+	DoneController_mms (newDone)
 )
 
 
-GetNextMission_tlms = 
-    getNextMissionCall.TopLevelSequencerId -> 
-	get_sequencer_done.TopLevelSequencerId?done ->
+GetNextMission_mms  = 
+    getNextMissionCall.MainMissionSequencerId -> 
+	get_returnedMission.MainMissionSequencerId?done ->
 	(
 	  if done == False then
 	  (
-		set_sequencer_done.TopLevelSequencerId!True ->
-		getNextMissionRet.TopLevelSequencerId!Tier0MissionId  ->
+		set_returnedMission.MainMissionSequencerId!True ->
+		getNextMissionRet.MainMissionSequencerId!MainMissionId  ->
 		SKIP
       )
 	  else 
 	  (
-			getNextMissionRet.TopLevelSequencerId!nullMissionId ->
-		    SKIP
+		getNextMissionRet.MainMissionSequencerId!nullMissionId ->
+		SKIP
 	  )
     )
 
-Methods_tlms = 
+Methods_mms  = 
  (
-	GetNextMission_tlms 
- ) ; Methods_tlms  
+	GetNextMission_mms 
+ ) ; Methods_mms  
 
 
 
@@ -100,36 +100,35 @@ Methods_tlms =
 
 nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
 
-
-
 MainMissionApp = 
 ( 
 	(
-		(Methods_tlm1 )
+		(Methods_mm )
 		/\ 
-		(end_mission_app.Tier0MissionId -> SKIP )
+		(end_mission_app.MainMissionId -> SKIP )
 	) 
 )
 
 
-InitializePhase_tlm1 = 
-  initializeCall.Tier0MissionId   -> 
-  register!Tier0ManagedThreadId!Tier0MissionId  -> 
-  register!Tier0SequencerId!Tier0MissionId  ->  
-  initializeRet.Tier0MissionId  -> 
+InitializePhase_mm = 
+  initializeCall.MainMissionId   -> 
+  register!Tier0ManagedThreadId!MainMissionId  -> 
+  register!Tier0ManagedThreadId!MainMissionId  -> 
+  register!Tier0SequencerId!MainMissionId  ->  
+  initializeRet.MainMissionId  -> 
  SKIP
 
-CleanupPhase_tlm1 = 
- cleanupMissionCall.Tier0MissionId  ->
- cleanupMissionRet.Tier0MissionId?false ->
+CleanupPhase_mm = 
+ cleanupMissionCall.MainMissionId  ->
+ cleanupMissionRet.MainMissionId?false ->
  SKIP
 
-Methods_tlm1 = 
+Methods_mm = 
 ( 
-	InitializePhase_tlm1 
+	InitializePhase_mm 
 	[] 
-	CleanupPhase_tlm1
-) ; Methods_tlm1
+	CleanupPhase_mm
+) ; Methods_mm
   
 
 

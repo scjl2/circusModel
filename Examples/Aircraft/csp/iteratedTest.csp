@@ -1,0 +1,6 @@
+nametype Bit = {0,1}
+
+channel a: Bit
+
+Test(IDs) =
+|| i : IDs @ [ {|a.x | x <- Bit, x == i |} ] (a.i -> SKIP)
