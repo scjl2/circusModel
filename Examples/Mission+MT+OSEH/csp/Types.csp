@@ -2,14 +2,10 @@
 transparent sbisim, diamond
 
 datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
-                          | Tier0SequencerId  | Tier0ManagedThreadId 
-                          | Tier1SequencerAId | Tier1SequencerBId
-                          | Tier2ManagedThreadId | Tier2OSEHId | Tier2PEHId | Tier2APEHId
+                          | Tier0SequencerId  | Tier0ManagedThreadId | Tier0OSEHId 
 
 datatype MissionID = nullMissionId
-                    | Tier0MissionId  | 
-                    	Tier1MissionAId  | Tier1MissionBId |
-                    	Tier2MissionAId   | Tier2MissionBId
+                    | Tier0MissionId 
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 

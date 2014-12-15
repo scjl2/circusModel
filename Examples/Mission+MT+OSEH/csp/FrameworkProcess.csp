@@ -209,44 +209,11 @@ nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_s
 --MissionsInTiers(nestedTierIDs) = {m | m<- MissionID , tier <- Set(cluster), (missionID, managedSchedulableIDs) <-cluster, member(cluster, tier), member(tier, nestedTierIDs) ,  member(m, missionsInCluster(cluster))  }
 
 
-TieredFramework(topLevelSequencerIDs, tier0IDS, nestedTierIDs) =
+ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS) =
 (  
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
   (
-    Tier0(tier0IDS) 
-      [| --union(
-                  TierCommonChan
-
-                 --, {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, MissionsInTiers(nestedTierIDs) ) |}
-            --   )  
-      |]
-    NestedTiers( nestedTierIDs )
-  )
-)
-
-ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS, tier1IDs, tier2IDs) =
-(  
-  SafeletTier(topLevelSequencerIDs)
-    [|TierSync|]
-  (
-    Tier0(tier0IDS) 
-      [| union(
-                  TierCommonChan, 
-                  --{| start_mission.NestedMissionId, done_mission.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId   |}
-                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x.y  | x <- MissionID , member(x, {Tier1MissionAId, Tier1MissionBId}), y<- SchedulableID, member(y, {Tier0SequencerId})  |}
-               ) 
-      |]
-    --NestedTiers( nestedTierIDs )
-    (
-        Tier(tier1IDs)
-           [| union(
-                  TierCommonChan, 
-                 -- {| start_mission.MissionAId, done_mission.MissionAId, initializeRet.MissionAId, requestTermination.MissionAId |}
-                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x.y  | x <- MissionID , member(x, {Tier2MissionAId, Tier2MissionBId }), y<- SchedulableID, member(y, {Tier1SequencerAId, Tier1SequencerBId})  |}
-               ) 
-          |]
-        Tier(tier2IDs)
-    )
+    Tier0(tier0IDS)      
   )
 )
