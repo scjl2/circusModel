@@ -114,7 +114,6 @@ MainMissionApp =
 
 InitializePhase_tlm1 = 
   initializeCall.Tier0MissionId   -> 
-  register!Tier0ManagedThreadId!Tier0MissionId  -> 
   register!Tier0SequencerId!Tier0MissionId  ->  
   initializeRet.Tier0MissionId  -> 
  SKIP
@@ -214,28 +213,6 @@ Methods_t0ms =
 
 
 
--- Tier0 MANAGED THRED APP
-
-channel systemActions : SchedulableID
-
-Tier0ManagedThreadApp = 
-(
-	Methods_t0mt
-)
-/\ (end_managedThread_app.Tier0ManagedThreadId -> SKIP)
-
-Methods_t0mt =
-	Run_t0mt ; Methods_t0mt
-
-Run_t0mt =
-	runCall.Tier0ManagedThreadId -> 
-	systemActions.Tier0ManagedThreadId ->	
-	runRet.Tier0ManagedThreadId ->
-	SKIP
-
-  
-
-
 -- Tier 1 Mission A
 
 
@@ -250,7 +227,7 @@ Tier1MissionAApp =
 
 InitializePhase_t1ma = 
   initializeCall.Tier1MissionAId  -> 
-  register!Tier1SequencerAId!Tier1MissionAId ->   
+  register!Tier1ManagedThreadAId!Tier1MissionAId ->   
   initializeRet.Tier1MissionAId -> 
   SKIP
 
@@ -282,7 +259,7 @@ Tier1MissionBApp =
 
 InitializePhase_t1mb = 
   initializeCall.Tier1MissionBId  -> 
-  register!Tier1SequencerBId!Tier1MissionBId ->   
+  register!Tier1ManagedThreadBId!Tier1MissionBId ->   
   initializeRet.Tier1MissionBId -> 
   SKIP
 
@@ -300,248 +277,50 @@ Methods_t1mb =
 
 
 
---Tier 1 MISSION SEQUENCER A
+--Tier1ManagedThreadAApp
 
-Tier1MissionSequencerAApp = 
+
+
+Tier1ManagedThreadAApp = 
 (
-  Methods_t1msa
-    [|MissionSequencerAppStateSync|] 
-    DoneController_t1msa(False) 
-) \MissionSequencerAppStateSync
-/\ (end_sequencer_app.Tier1SequencerAId -> SKIP)
-
-
-DoneController_t1msa(done) =
-(
-	get_sequencer_done.Tier1SequencerAId!done ->
-	DoneController_t1msa(done)
+	Methods_t1mta
 )
-[]
-(
-	set_sequencer_done.Tier1SequencerAId?newDone ->
-	DoneController_t1msa(newDone)
-)
+/\ (end_managedThread_app.Tier1ManagedThreadAId -> SKIP)
 
-GetNextMission_t1msa = 
-  getNextMissionCall.Tier1SequencerAId -> 
-	get_sequencer_done.Tier1SequencerAId?done ->
-	if done == False then 
-    (  
-		set_sequencer_done.Tier1SequencerAId!True ->
-		getNextMissionRet.Tier1SequencerAId!Tier2MissionAId ->
-		SKIP
-	)
-	else
-	(  
-		getNextMissionRet.Tier1SequencerAId!nullMissionId ->
-		SKIP
-	)
+Methods_t1mta =
+	Run_t1mta
 
-Methods_t1msa = 
-( 
-	GetNextMission_t1msa
-) ; Methods_t1msa
-
-
-
-
---Tier 1 MISSION SEQUENCER B
-
-Tier1MissionSequencerBApp = 
-(
-  Methods_t1msb
-    [|MissionSequencerAppStateSync|] 
-    DoneController_t1msb(False) 
-) \MissionSequencerAppStateSync
-/\ (end_sequencer_app.Tier1SequencerBId -> SKIP)
-
-
-DoneController_t1msb(done) =
-(
-	get_sequencer_done.Tier1SequencerBId!done ->
-	DoneController_t1msb(done)
-)
-[]
-(
-	set_sequencer_done.Tier1SequencerBId?newDone ->
-	DoneController_t1msb(newDone)
-)
-
-GetNextMission_t1msb = 
-  getNextMissionCall.Tier1SequencerBId -> 
-	get_sequencer_done.Tier1SequencerBId?done ->
-	if done == False then 
-    (  
-		set_sequencer_done.Tier1SequencerBId!True ->
-		getNextMissionRet.Tier1SequencerBId!Tier2MissionBId ->
-		SKIP
-	)
-	else
-	(  
-		getNextMissionRet.Tier1SequencerBId!nullMissionId ->
-		SKIP
-	)
-
-Methods_t1msb = 
-( 
-	GetNextMission_t1msb
-) ; Methods_t1msb
-
-
-
-
-
-
--- Tier 2 Mission A
-
-Tier2MissionAApp = 
-(
-	( 
-		Methods_t2ma
-		/\ 
-		(end_mission_app.Tier2MissionAId -> SKIP )
-	) 
-)
-
-InitializePhase_t2ma = 
-  initializeCall.Tier2MissionAId  -> 
-  register!Tier2ManagedThreadId!Tier2MissionAId ->   
-  register!Tier2OSEHId!Tier2MissionAId -> 
-  initializeRet.Tier2MissionAId -> 
-  SKIP
-
-CleanupPhase_t2ma = 
- cleanupMissionCall.Tier2MissionAId ->
- cleanupMissionRet.Tier2MissionAId!True ->
- SKIP
-
-Methods_t2ma = 
-( 
-	InitializePhase_t2ma
-	[] 
-	CleanupPhase_t2ma
-) ; Methods_t2ma
-
-
-
--- Tier2 MANAGED THRED APP
-
-
-
-Tier2ManagedThreadApp = 
-(
-	Methods_t2mt
-)
-/\ (end_managedThread_app.Tier2ManagedThreadId -> SKIP)
-
-Methods_t2mt =
-	Run_t2mt ; Methods_t2mt
-
-Run_t2mt =
-	runCall.Tier2ManagedThreadId -> 
-	systemActions.Tier2ManagedThreadId ->	
-	runRet.Tier2ManagedThreadId ->
+Run_t1mta =
+	runCall.Tier1ManagedThreadAId -> 
+		
+	runRet.Tier1ManagedThreadAId ->
 	SKIP
 
+--Tier1ManagedThreadBApp
 
--- Tier 2 OSEH APP
 
-Tier2OSEHApp =
+
+Tier1ManagedThreadBApp = 
 (
-	Methods_t2oseh
+	Methods_t1mtb
 )
-/\ (end_oneshotEventHandler_app.Tier2OSEHId -> SKIP)
+/\ (end_managedThread_app.Tier1ManagedThreadBId -> SKIP)
 
-Methods_t2oseh =
-	handlerAsyncEvent_t2oseh ; Methods_t2oseh
+Methods_t1mtb =
+	Run_t1mtb
 
-handlerAsyncEvent_t2oseh=
-	handleAsyncEventCall.Tier2OSEHId -> 
-	requestTermination.Tier2MissionAId.Tier2OSEHId ->
-    handleAsyncEventRet.Tier2OSEHId ->   
-    SKIP
-
-
-
-
--- Tier 2 Mission B
-
-Tier2MissionBApp = 
-(
-	( 
-		Methods_t2mb
-		/\ 
-		(end_mission_app.Tier2MissionBId -> SKIP )
-	) 
-)
-
-InitializePhase_t2mb = 
-  initializeCall.Tier2MissionBId  -> 
-  register!Tier2PEHId!Tier2MissionBId ->   
-  register!Tier2APEHId!Tier2MissionBId -> 
-  initializeRet.Tier2MissionBId -> 
-  SKIP
-
-CleanupPhase_t2mb = 
- cleanupMissionCall.Tier2MissionBId ->
- cleanupMissionRet.Tier2MissionBId!True ->
- SKIP
-
-Methods_t2mb = 
-( 
-	InitializePhase_t2mb
-	[] 
-	CleanupPhase_t2mb
-) ; Methods_t2mb
-
-
-
--- Tier 2 PEH APP
-
-Tier2OPEHApp =
-(
-	Methods_t2peh
-)
-/\ (end_periodic_app.Tier2PEHId -> SKIP)
-
-Methods_t2peh =
-	handlerAsyncEvent_t2peh ; Methods_t2peh
-
-handlerAsyncEvent_t2peh =
-	handleAsyncEventCall.Tier2PEHId -> 
-	release.Tier2APEHId -> 
-    handleAsyncEventRet.Tier2PEHId ->  
-    SKIP 
-
-
-
--- Tier 2 APEH APP
-
-Tier2APEHApp =
-(
-	Methods_t2apeh
-)
-/\ (end_aperiodicEventHandler_app.Tier2APEHId -> SKIP)
-
-Methods_t2apeh =
-	handlerAsyncEvent_t2apeh ; Methods_t2apeh
-
-handlerAsyncEvent_t2apeh =
-	handleAsyncEventCall.Tier2APEHId -> 
-	requestTermination.Tier2MissionBId.Tier2APEHId ->
-    handleAsyncEventRet.Tier2APEHId ->
-    SKIP  
-
-
-
-
+Run_t1mtb =
+	runCall.Tier1ManagedThreadBId -> 
+		
+	runRet.Tier1ManagedThreadBId ->
+	SKIP
 
 nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-ThreeTiersExtension =
+MultipleNestedMissions =
 (  
 	MyApp
 	|||
@@ -551,92 +330,38 @@ ThreeTiersExtension =
 	|||
 	Tier0MissionSequencerApp
 	|||
-	Tier0ManagedThreadApp
-	|||
 	Tier1MissionAApp
 	|||
 	Tier1MissionBApp
 	|||
-	Tier1MissionSequencerAApp
+	Tier1ManagedThreadAApp
 	|||
-	Tier1MissionSequencerBApp
-	|||
-	Tier2MissionAApp
-	|||
-	Tier2ManagedThreadApp
-	|||
-	Tier2OSEHApp
-	|||
-	Tier2MissionBApp
-	|||
-	Tier2OPEHApp
-	|||
-	Tier2APEHApp
+	Tier1ManagedThreadBApp	
 )	
 
 
 --nametype APEHSync = {| release |}
 nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
-Program(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
+Program(topLevelSequencerIDs, tier0, tier1IDs) = 
 (  
-	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs)
+	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync, 
 		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_periodic_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
-	ThreeTiersExtension	
+	MultipleNestedMissions	
 )
 
 TestProgram = 
 	Program(
 				{TopLevelSequencerId},
 
-				{ (Tier0MissionId , ({Tier0SequencerId},{}, {},  {}, {Tier0ManagedThreadId} )  )   },
+				{ (Tier0MissionId , ({Tier0SequencerId},{}, {},  {}, {} )  )   },
 
-				{ (Tier1MissionAId, ({Tier1SequencerAId}, {}, {},  {}, {})  ), 
-						(Tier1MissionBId, ({Tier1SequencerBId}, {}, {},  {}, {})  ) },
-
-				{ (Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
-						(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  }			                 
+				{ (Tier1MissionAId, ({}, {}, {},  {}, {Tier1ManagedThreadAId})  ), 
+						(Tier1MissionBId, ({}, {}, {},  {}, {Tier1ManagedThreadBId})  ) }	                 
             )
 
 
-CheckTrue = 
-	(checkSchedulable?mission!True -> CheckTrue)
-	/\ (done_mission.Tier2MissionBId?c -> SKIP  )
-
-
-TestTier2 = 
-	(
-		--Tier2MissionAApp
-	--	|||
-	--	Tier2ManagedThreadApp
-	--	|||
-	--	Tier2OSEHApp
-	--	|||
-		Tier2MissionBApp
-		|||
-		Tier2OPEHApp
-		|||
-		Tier2APEHApp
-	)
-	[| 
-		Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync,  
-		{|end_mission_app, end_periodic_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet, release.Tier2APEHId|}})  
-	|]
-	(
-		(
-			CheckTrue
-			[|{| done_mission.Tier2MissionBId |}|]
-			--start_mission.Tier2MissionAId.Tier1SequencerAId -> done_mission.Tier2MissionAId?c -> 
-			start_mission.Tier2MissionBId.Tier1SequencerBId -> done_mission.Tier2MissionBId?c -> SKIP
-		)
-		[|{| checkSchedulable, start_mission, done_mission|}|]
-		Tier({  --(Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
-							(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  })
-	)
-
-
-assert sbisim(diamond(TestTier2)) ; Loop :[ deadlock free [FD] ]  
 
 
 assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
