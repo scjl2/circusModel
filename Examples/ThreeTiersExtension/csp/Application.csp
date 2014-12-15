@@ -607,12 +607,12 @@ CheckTrue =
 
 TestTier2 = 
 	(
-		--Tier2MissionAApp
-	--	|||
-	--	Tier2ManagedThreadApp
-	--	|||
-	--	Tier2OSEHApp
-	--	|||
+		Tier2MissionAApp
+		|||
+		Tier2ManagedThreadApp
+		|||
+		Tier2OSEHApp
+		|||
 		Tier2MissionBApp
 		|||
 		Tier2OPEHApp
@@ -627,11 +627,11 @@ TestTier2 =
 		(
 			CheckTrue
 			[|{| done_mission.Tier2MissionBId |}|]
-			--start_mission.Tier2MissionAId.Tier1SequencerAId -> done_mission.Tier2MissionAId?c -> 
+			start_mission.Tier2MissionAId.Tier1SequencerAId -> done_mission.Tier2MissionAId?c -> 
 			start_mission.Tier2MissionBId.Tier1SequencerBId -> done_mission.Tier2MissionBId?c -> SKIP
 		)
 		[|{| checkSchedulable, start_mission, done_mission|}|]
-		Tier({  --(Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
+		Tier({  (Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
 							(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  })
 	)
 

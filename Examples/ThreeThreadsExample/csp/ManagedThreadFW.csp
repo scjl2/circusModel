@@ -1,0 +1,150 @@
+-- MANAGED THREAD
+
+--MT Types
+
+
+
+-- MT CHannels
+
+
+channel runCall : SchedulableID 
+channel runRet : SchedulableID
+
+channel end_managedThread_app : SchedulableID
+channel end_managedThreadState : SchedulableID
+
+nametype MTStateSync = {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating, end_managedThreadState |}
+nametype ManagedThreadSync = {|runCall, runRet |} 
+
+
+nametype MTFWChanSet = union(
+  union(MTStateSync, ManagedSchedulableFWChanSet),
+  {|runCall,runRet, done_toplevel_sequencer |}   )
+
+--Managed Thread
+
+ManagedThreadFW(schedulable) = 
+(  
+  ManagedThreadFWState(schedulable, nullMissionId, False)
+    [| MTStateSync |]
+  ManagedThreadFWBehaviour(schedulable)
+)\MTStateSync
+
+
+ManagedThreadFWState(schedulable, controllingMission, applicationTerminating) =
+  (
+    get_controllingMission.schedulable!controllingMission ->
+    ManagedThreadFWState(schedulable, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    set_controllingMission.schedulable?newControllingMission ->
+    ManagedThreadFWState(schedulable, newControllingMission, applicationTerminating)
+  )
+  []
+  (
+    get_applicationTerminating.schedulable!applicationTerminating ->
+    ManagedThreadFWState(schedulable, controllingMission, applicationTerminating)
+  )
+  []
+  (
+    set_applicationTerminating.schedulable?newApplicationTerminating ->
+    ManagedThreadFWState(schedulable, controllingMission, newApplicationTerminating)
+  )
+  []
+  (
+    end_managedThreadState.schedulable -> 
+    SKIP 
+  )
+
+
+ManagedThreadFWBehaviour(schedulable) =
+
+(
+    Start_MT(schedulable) ; 
+  get_applicationTerminating.schedulable?applicationTerminating ->
+  (
+    if applicationTerminating == False then 
+      (
+          Execute_MT(schedulable) ; 
+          Cleanup_MT(schedulable) ; 
+          ManagedThreadFWBehaviour(schedulable) 
+      ) 
+      else 
+    (
+      end_managedThreadState.schedulable -> 
+      end_managedThread_app.schedulable ->
+      SKIP
+    ) 
+  )
+)
+
+Start_MT(schedulable) =
+  (
+   Register_MT(schedulable) --; 
+  -- Activate_MT(schedulable)
+  ) 
+
+  []
+  (
+  done_safeletFW -> 
+  set_applicationTerminating.schedulable!True ->
+    SKIP 
+)
+[]
+  (
+    activate_schedulables?someMissionID -> 
+    Start_MT(schedulable)
+  ) 
+  [] 
+  (
+    done_toplevel_sequencer -> 
+    set_applicationTerminating.schedulable!True ->
+    SKIP 
+  )
+
+Register_MT(schedulable) =
+  register.schedulable?controllingMission ->
+  Activate_MT(schedulable, controllingMission)
+
+
+Activate_MT(schedulable, controllingMission) =
+ -- get_controllingMission.schedulable?controllingMission ->  
+  activate_schedulables.controllingMission ->  
+  SKIP
+
+Execute_MT(schedulable)  = 
+  Run_MT(schedulable)
+    [| {| runRet |} |]
+  Methods_MT(schedulable)
+
+
+Run_MT(schedulable) =
+  runCall.schedulable ->
+  runRet.schedulable -> 
+  done_schedulable.schedulable ->
+  SKIP
+
+
+Methods_MT(schedulable) = 
+(
+  SignalTerminationMeth_MT(schedulable) ; 
+  Methods_MT(schedulable)
+)
+[]
+(
+  runRet.schedulable -> 
+  SKIP  
+)
+
+SignalTerminationMeth_MT(schedulable) = 
+  signalTerminationCall.schedulable -> 
+  signalTerminationRet.schedulable -> SKIP
+
+Cleanup_MT(schedulable) = 
+  cleanupSchedulableCall.schedulable ->
+  cleanupSchedulableRet.schedulable -> SKIP
+ 
+-- assert ManagedThreadFW(schedulableA); Loop :[ deadlock free [FD] ]
+-- assert ManagedThreadFW(schedulableA) :[ divergence free ]
+-- assert ManagedThreadFW(schedulableA) :[ deterministic  [FD] ]  

@@ -9,7 +9,7 @@ channel set_periodicTerminating : SchedulableID.Bool
 channel end_periodicEventHandlerState : SchedulableID
 channel release_complete_PEH : SchedulableID.num
 channel reset_periodicEventHandlerState : SchedulableID
-channel end_periodicEventHandler_app : SchedulableID
+channel end_periodic_app : SchedulableID
 
 nametype ReleaseSync_PEH =  {|release, end_releases |}
 nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
@@ -25,7 +25,7 @@ nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
 
 nametype PEHFWChanSet = union(
   union(PEHStateSync, ManagedSchedulableFWChanSet),
-  {|done_safeletFW, end_periodicEventHandler_app, 
+  {|done_safeletFW, end_periodic_app, 
 get_missedReleases,set_missedReleases,
 get_periodicTerminating,set_periodicTerminating,
 end_periodicEventHandlerState,release_complete_PEH,
@@ -118,7 +118,7 @@ PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadline
       )
       else  
          end_periodicEventHandlerState.schedulable ->
-         end_periodicEventHandler_app.schedulable ->
+         end_periodic_app.schedulable ->
          SKIP 
     ) 
 )
