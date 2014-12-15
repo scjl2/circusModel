@@ -38,7 +38,7 @@ PeriodicEventHandlerFW(schedulable, period, startTime, deadline, deadlineMissHan
   PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
     [|PEHStateSync|]
   PeriodicEventHandlerState(schedulable, nullMissionId, False, period, startTime, deadline, deadlineMissHandler, 0, False)
-)--\PEHStateSync
+)\PEHStateSync
 
 PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) =
 (
