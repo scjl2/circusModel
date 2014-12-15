@@ -38,7 +38,6 @@ channel activate_schedulables : MissionID
 channel stop_schedulables : MissionID
 channel schedulables_stopped : MissionID
 
-
 channel schedulables_terminated : MissionID
 channel end_mission_terminations : MissionID
 channel requestTermination : MissionID.SchedulableID
@@ -50,15 +49,18 @@ channel end_mission_app : MissionID
 channel done_mission : MissionID.Bool
 
 
+
+
+
 nametype MissionFWCHanSet = union(
   MissionFWStateChan, 
   {|done_safeletFW, done_toplevel_sequencer, initializeCall, initializeRet,
-checkSchedulable, throw, setCeilingPriority, done_schedulables, 
+checkSchedulable, throw, setCeilingPriority, 
 activate_schedulables, stop_schedulables, done_schedulables, schedulables_stopped,
 signalTerminationCall, signalTerminationRet, done_schedulable, end_mission_terminations,
 requestTermination, deregister, 
 cleanupMissionCall, cleanupMissionRet, cleanupSchedulableCall, cleanupSchedulableRet,
-end_mission_app, done_mission, start_mission |})    
+ done_mission, start_mission |})    
 
 
 nametype TerminateSync = 
@@ -165,13 +167,12 @@ Start_M(mission) =
   set_applicationTerminating_M.mission!True ->
   SKIP
 )
-
-  []
-  (
-    done_toplevel_sequencer ->
-    set_applicationTerminating_M.mission!True ->
-    SKIP
-  )
+[]
+(
+  done_toplevel_sequencer ->
+  set_applicationTerminating_M.mission!True ->
+  SKIP
+)
 
 InitializePhase(mission) =
   initializeCall.mission ->
@@ -231,8 +232,8 @@ SetCeilingPriorityException(mission) =
 MissionPhase(mission) =
 (
   Execute_M(mission)
-    [|  {|done_schedulables|} |] 
-  MissionExceptions(mission)
+--   [|  {|done_schedulables|} |] 
+-- MissionExceptions(mission)
 )\{|done_schedulables|}
 
 Execute_M(mission) =
@@ -432,6 +433,6 @@ Finish_M(mission, continueSequencer) =
    SKIP
 
 
---assert MissionFW(missionA); Loop :[ deadlock free [FD] ]
---assert MissionFW(missionA) :[ divergence free ]
---assert MissionFW(missionA) :[ deterministic  [FD] ]
+-- assert MissionFW(missionA); Loop :[ deadlock free [FD] ]
+-- assert MissionFW(missionA) :[ divergence free ]
+-- assert MissionFW(missionA) :[ deterministic  [FD] ]

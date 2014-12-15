@@ -39,7 +39,8 @@ Execute_S =
   if topLevelSequencer != nullSequencerId then
   (
       start_toplevel_sequencer.topLevelSequencer -> 
-    
+      Methods_S({}, topLevelSequencer) ;
+      end_safelet_app ->
       SKIP
   ) 
   else
@@ -73,6 +74,6 @@ Execute_S =
     deregister?schedulables -> 
     Methods_S(diff(globallyRegistered,schedulables), sequencerID) 
 
---assert SafeletFW; Loop :[ deadlock free [FD] ]
---assert SafeletFW :[ divergence free ]
---assert SafeletFW :[ deterministic  [FD] ]
+-- assert SafeletFW; Loop :[ deadlock free [FD] ]
+-- assert SafeletFW :[ divergence free ]
+-- assert SafeletFW :[ deterministic  [FD] ]

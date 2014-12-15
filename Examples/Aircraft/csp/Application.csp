@@ -13,7 +13,7 @@ nametype SafeltAppSync =
     {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
 
-MyApp  = 
+MySafelet  = 
 	(
 	 	Methods_s 
 	)		
@@ -37,7 +37,7 @@ Methods_s =
  ); Methods_s
 
 
---TOP LEVEL SEQUENCER: MY SEQUENCER
+--MainMissionSequencer
 
 channel get_returnedMission : SchedulableID.Bool
 channel set_returnedMission : SchedulableID.Bool
@@ -102,8 +102,10 @@ Methods_mms  =
 
 nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
 
+channel updateAirSpeed : MissionID.{0..3}
+
 --channel get_airSpeed : SchedulableID.{1..3}
-channel update_airSpeed : SchedulableID.{0..3}
+channel update_airSpeed : MissionID.{0..3}
 
 nametype MainMissionStateSync = {|update_airSpeed |}
 
@@ -118,7 +120,7 @@ MainMissionApp =
 
 MainMissionState(0) = 
 (
-	update_airSpeed.ModeChangerId?newAirSpeed ->
+	update_airSpeed.MainMissionId?newAirSpeed ->
 	MainMissionState(newAirSpeed)
 )
 
@@ -137,7 +139,7 @@ CleanupPhase_mm =
  SKIP
 
 
-UpdateAirSpeed_mc = 
+UpdateAirSpeed_mm = 
 	updateAirSpeed.MainMissionId?newAirSpeed ->
 	update_airSpeed.MainMissionId!newAirSpeed ->
 	SKIP
@@ -153,10 +155,9 @@ Methods_mm =
   
 
 
---NESTED MISSION SEQUENCER
-
+--Mode Changer
 channel get_modesLeft : SchedulableID.{1..3}
-channel set_modesLeft : SchedulableID.Bool
+channel set_modesLeft : SchedulableID.{1..3}
 
 channel get_currentMode : SchedulableID.MissionID
 channel set_currentMode : SchedulableID.MissionID
@@ -179,30 +180,31 @@ ModeChangerApp =
 ModeChangerState_mc(modesLeft, currentMode) =
 (
 	get_modesLeft.ModeChangerId!modesLeft ->
-	ModesLeftController_mc(modesLeft, currentMode)
+	ModeChangerState_mc(modesLeft, currentMode)
 )
 []
 (
 	set_modesLeft.ModeChangerId?newModesLeft ->
-	ModesLeftController_mc(newModesLeft, currentMode)
+	ModeChangerState_mc(newModesLeft, currentMode)
 )
 []
 (
 	get_currentMode.ModeChangerId!currentMode ->
-	ModesLeftController_mc(modesLeft, currentMode)
+	ModeChangerState_mc(modesLeft, currentMode)
 )
 []
 (
 	set_currentMode.ModeChangerId?newCurrentMode ->
-	ModesLeftController_mc(modesLeft, newCurrentMode)
+	ModeChangerState_mc(modesLeft, newCurrentMode)
 )
-[]
+
 
 
 GetNextMission_mc = 
     getNextMissionCall.ModeChangerId -> 
     get_currentMode.ModeChangerId?currentMode ->
 	getNextMissionRet.ModeChangerId!currentMode ->
+	SKIP
 
 	
 AdvanceMode_mc =
@@ -264,13 +266,13 @@ EnvironmentMonitorApp =
 )
 /\ (end_periodicEventHandler_app.EnvironmentMonitorId -> SKIP)
 
-Methods_ =
+Methods_em =
 	handlerAsyncEvent_em ; Methods_em
 
 handlerAsyncEvent_em =
 	handleAsyncEventCall.EnvironmentMonitorId -> 
 	checkEnvironment.EnvironmentMonitorId?check ->
-	if check = false then
+	if check == false then
 	(
 		requestTermination.MainMissionId.EnvironmentMonitorId ->
 		SKIP
@@ -294,10 +296,10 @@ ControlHandlerApp =
 )
 /\ (end_aperiodicEventHandler_app.ControlHandlerId -> SKIP)
 
-Methods_ =
+Methods_ch =
 	handlerAsyncEvent_ch ; Methods_ch
 
-handlerAsyncEvent_em =
+handlerAsyncEvent_ch =
 	handleAsyncEventCall.ControlHandlerId -> 
 		handleControls.ControlHandlerId ->
     handleAsyncEventRet.ControlHandlerId ->
@@ -400,13 +402,13 @@ LaunchConditionsMonitorApp =
 )
 /\ (end_oneshotEventHandler_app.LaunchConditionsMonitorId -> SKIP)
 
-Methods_ =
+Methods_lcm =
 	handlerAsyncEvent_lcm ; Methods_lcm
 
 handlerAsyncEvent_lcm =
 	handleAsyncEventCall.LaunchConditionsMonitorId -> 
 	-- simulate some checking here? How though?
-	goodToLaunch.MissionID ->
+	goodToLaunch.LaunchModeId ->
     handleAsyncEventRet.LaunchConditionsMonitorId ->
     SKIP  
 
@@ -438,7 +440,7 @@ LaunchCountdownState(countdown) =
 	LaunchCountdownState(newCountdown)
 )
 
-Methods_ =
+Methods_lc =
 	handlerAsyncEvent_lc ; Methods_lc
 
 handlerAsyncEvent_lc =
@@ -454,6 +456,7 @@ handlerAsyncEvent_lc =
 		set_countdown.LaunchCountdownId!countdown-1 ->
 		SKIP
 	)
+	;
     handleAsyncEventRet.LaunchCountdownId ->
     SKIP  
 
@@ -476,7 +479,7 @@ Methods_lh =
 handlerAsyncEvent_lh =
 	handleAsyncEventCall.LaunchHandlerId -> 
 	launching.LaunchHandlerId ->
-	requestTermination.LaunchModeId -> 
+	requestTermination.LaunchModeId.LaunchHandlerId -> 
     handleAsyncEventRet.LaunchHandlerId ->
     SKIP  
 
@@ -487,8 +490,8 @@ channel setOkToCruise : MissionID.Bool
 channel isOkToCruiseCall : MissionID
 channel isOkToCruiseRet : MissionID.Bool
 
-channel set_okToCruise : SchedulableID.Bool
-channel get_okToCruise : SchedulableID.Bool
+channel set_okToCruise : MissionID.Bool
+channel get_okToCruise : MissionID.Bool
 
 nametype CruiseMissionStateSync = {|set_okToCruise, get_okToCruise |}
 
@@ -569,6 +572,8 @@ handlerAsyncEvent_ccm =
 
 -- BurnActivationHandler
 
+channel activateBurn : SchedulableID
+
 BurnActivationHandlerApp =
 (
 	Methods_bah
@@ -603,7 +608,7 @@ BeginLandingHandlerApp =
 (
 	Methods_blh
 )
-/\ (end_[handlerType]EventHandler_app.BeginLandingHandlerId -> SKIP)
+/\ (end_aperiodicEventHandler_app.BeginLandingHandlerId -> SKIP)
 
 Methods_blh =
 	handlerAsyncEvent_blh ; Methods_blh
@@ -612,7 +617,7 @@ handlerAsyncEvent_blh =
 	beginLanding.BeginLandingHandlerId ->
 	release.BeginLandingHandlerId ->
 	handleAsyncEventCall.BeginLandingHandlerId -> 
-	requestTermination.CruiseModeId ->
+	requestTermination.CruiseModeId.BeginLandingHandlerId ->
     handleAsyncEventRet.BeginLandingHandlerId ->
     SKIP  
 
@@ -627,7 +632,7 @@ channel updateGroundDistance : MissionID.{50}
 LandMissionApp = 
 ( 
 	Methods_lam	
-)\
+)
 /\ (end_mission_app.LandModeId -> SKIP )
 
 InitializePhase_lam = 
@@ -698,7 +703,7 @@ Methods_lgh =
 handlerAsyncEvent_lgh =
 	handleAsyncEventCall.LandingGearHandlerId -> 
 	deployLandingGear.LandingGearHandlerId ->
-	requestTermination.LandModeId ->
+	requestTermination.LandModeId.LandingGearHandlerId  ->
     handleAsyncEventRet.LandingGearHandlerId ->
     SKIP 
 
@@ -713,103 +718,68 @@ nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-ThreeTiersExtension =
+Aircraft =
 (  
-	MyApp
+	MySafelet
 	|||
-	MainSequencerApp
+	MainMissionSequencerApp
 	|||
 	MainMissionApp
 	|||
-	Tier0MissionSequencerApp
+	ModeChangerApp
 	|||
-	Tier0ManagedThreadApp
+	EnvironmentMonitorApp
 	|||
-	Tier1MissionAApp
+	ControlHandlerApp
 	|||
-	Tier1MissionBApp
+	AirSpeedMonitorApp
 	|||
-	Tier1MissionSequencerAApp
+	LaunchMissionAApp
 	|||
-	Tier1MissionSequencerBApp
+	LaunchConditionsMonitorApp
 	|||
-	Tier2MissionAApp
+	LaunchCountdownApp
 	|||
-	Tier2ManagedThreadApp
+	LaunchHandlerApp
 	|||
-	Tier2OSEHApp
+	CruiseMissionApp
 	|||
-	Tier2MissionBApp
+	CruiseConditionsMonitorApp
 	|||
-	Tier2OPEHApp
+	BurnActivationHandlerApp
 	|||
-	Tier2APEHApp
+	BeginLandingHandlerApp
+	|||
+	LandMissionApp
+	|||
+	GroundDistanceMonitorApp
+	|||
+	LandingGearHandlerApp
 )	
 
 
 --nametype APEHSync = {| release |}
 nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
-Program(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs) = 
+Program(topLevelSequencerIDs, tier0, tier1IDs) = 
 (  
-	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs, tier2IDs)
+	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync, 
 		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
-	ThreeTiersExtension	
+	Aircraft	
 )
 
 TestProgram = 
 	Program(
-				{TopLevelSequencerId},
+				{MainMissionSequencerId},
 
-				{ (Tier0MissionId , ({Tier0SequencerId},{}, {},  {}, {Tier0ManagedThreadId} )  )   },
+				{ (MainMissionId , ({ModeChangerId},{(ControlHandlerId, aperiodic, 0, nullSchedulableId) }, {},  {(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId), (AirSpeedMonitorId, 1, 0, 0, nullSchedulableId)}, {} )  )   },
 
-				{ (Tier1MissionAId, ({Tier1SequencerAId}, {}, {},  {}, {})  ), 
-						(Tier1MissionBId, ({Tier1SequencerBId}, {}, {},  {}, {})  ) },
-
-				{ (Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
-						(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  }			                 
+				{ (LaunchModeId, ({}, {(LaunchHandlerId, aperiodic, 0, nullSchedulableId)}, {},  {(LaunchConditionsMonitorId, 1, 0, 0, nullSchedulableId), (LaunchCountdownId, 1, 0, 0, nullSchedulableId)}, {})  )
+				,		(CruiseModeId, ({(BurnActivationHandlerId, aperiodic, 0, nullSchedulableId), (BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)}, {}, {},  {(CruiseConditionsMonitorId, 1, 0, 0, nullSchedulableId)}, {})  ), 
+							(LandModeId, ({(LandingGearHandlerId, aperiodic, 0, nullSchedulableId)}, {}, {},  {(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId)}, {})  )
+				}			                 
             )
-
-
-CheckTrue = 
-	(checkSchedulable?mission!True -> CheckTrue)
-	/\ (done_mission.Tier2MissionBId?c -> SKIP  )
-
-
-TestTier2 = 
-	(
-		--Tier2MissionAApp
-	--	|||
-	--	Tier2ManagedThreadApp
-	--	|||
-	--	Tier2OSEHApp
-	--	|||
-		Tier2MissionBApp
-		|||
-		Tier2OPEHApp
-		|||
-		Tier2APEHApp
-	)
-	[| 
-		Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync,  
-		{|end_mission_app, end_periodic_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet, release.Tier2APEHId|}})  
-	|]
-	(
-		(
-			CheckTrue
-			[|{| done_mission.Tier2MissionBId |}|]
-			--start_mission.Tier2MissionAId.Tier1SequencerAId -> done_mission.Tier2MissionAId?c -> 
-			start_mission.Tier2MissionBId.Tier1SequencerBId -> done_mission.Tier2MissionBId?c -> SKIP
-		)
-		[|{| checkSchedulable, start_mission, done_mission|}|]
-		Tier({  --(Tier2MissionAId,({}, {}, {(Tier2OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier2ManagedThreadId}) ),
-							(Tier2MissionBId,({}, {(Tier2APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier2PEHId, 1,0,0,nullSchedulableId)}, {}) )  })
-	)
-
-
-assert sbisim(diamond(TestTier2)) ; Loop :[ deadlock free [FD] ]  
-
 
 assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(TestProgram)) :[ divergence free ]

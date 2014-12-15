@@ -27,7 +27,7 @@ channel scheduleNextRelease : SchedulableID.num
 nametype APEHFWChanSet = union(
   union(ManagedSchedulableFWChanSet, APEHStateSync),
    {|done_safeletFW, releaseLong,release, handleAsyncLongEventCall, handleAsyncEventRet, 
-     releaseLong, end_releases, circwait, 
+      end_releases, circwait, 
      release_complete, done_schedulable, done_toplevel_sequencer |}  )
 
 nametype DeadlineSync_APEH =  {| end_releases, deschedule_handler, release_complete|}

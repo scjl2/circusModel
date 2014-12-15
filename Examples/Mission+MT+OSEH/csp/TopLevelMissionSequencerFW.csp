@@ -133,6 +133,6 @@ Finish_TLS(sequencer)   =
   done_toplevel_sequencer ->  
   SKIP   
    
---assert TopLevelMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
---assert TopLevelMissionSequencerFW(schedulableA) :[ divergence free ]
---assert TopLevelMissionSequencerFW(schedulableA) :[ deterministic  [FD] ]
+-- assert TopLevelMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
+-- assert TopLevelMissionSequencerFW(schedulableA) :[ divergence free ]
+-- assert TopLevelMissionSequencerFW(schedulableA) :[ deterministic  [FD] ]

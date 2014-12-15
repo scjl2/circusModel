@@ -1,6 +1,5 @@
---GLOBALS
-
 include "Types.csp"
+
 
 
 channel a
@@ -8,14 +7,6 @@ Loop = a-> Loop
 
 channel circwait : num
 channel  throw : ExceptionType 
-
-
-nametype aperiodicParams = (SchedulableID, AperiodicType, Int, SchedulableID)
-nametype periodicParams = (SchedulableID, Int, Int, Int, SchedulableID)
-nametype oneShotParams = (SchedulableID, Int, Int, SchedulableID)
-nametype schedulableParams = ({SchedulableID},{aperiodicParams}, {oneShotParams}, {periodicParams}, {SchedulableID} )
-nametype cluster = (MissionID, schedulableParams )
-nametype tier = Set(cluster)
 
 include "SafeletFW.csp"
 
