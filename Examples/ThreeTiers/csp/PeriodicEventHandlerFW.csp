@@ -1,10 +1,6 @@
 --PERIODIC EVENT HANDLER FW
- 
-
---datatype boolean = True | False
 
 -- PEH Channels
-
 
 channel get_missedReleases : SchedulableID.num
 channel set_missedReleases : SchedulableID.num
@@ -12,9 +8,10 @@ channel get_periodicTerminating : SchedulableID.Bool
 channel set_periodicTerminating : SchedulableID.Bool 
 channel end_periodicEventHandlerState : SchedulableID
 channel release_complete_PEH : SchedulableID.num
+channel reset_periodicEventHandlerState : SchedulableID
 channel end_periodic_app : SchedulableID
 
- nametype ReleaseSync_PEH =  {|fire, end_releases |}
+nametype ReleaseSync_PEH =  {|release, end_releases |}
 nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
 
 
@@ -23,7 +20,7 @@ nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
                           get_missedReleases,set_missedReleases, 
                           get_periodicTerminating, set_periodicTerminating,
                           get_startTime, set_startTime,
-                          end_periodicEventHandlerState|}
+                          end_periodicEventHandlerState, reset_periodicEventHandlerState|}
 
 
 nametype PEHFWChanSet = union(
@@ -86,15 +83,18 @@ PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminatin
   )
   []
   ( 
-  get_startTime.schedulable!startTime ->
-  PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
- 
+    get_startTime.schedulable!startTime ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) 
   )
-[]
-(
-  set_startTime.schedulable?newStartTime ->
-   PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, newStartTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
- 
+  []
+  (
+    set_startTime.schedulable?newStartTime ->
+    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, newStartTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) 
+  )
+  []
+  (
+    reset_periodicEventHandlerState.schedulable ->
+    PeriodicEventHandlerState(schedulable, nullMissionId, False, period, startTime, deadline, deadlineMissHandler, 0, False)
   )
   []
   (
@@ -113,6 +113,7 @@ PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadline
       (
            Execute_PEH(schedulable, startTime, period, deadline, deadlineMissHandler)  ; 
            Cleanup_PEH(schedulable) ; 
+           reset_periodicEventHandlerState.schedulable ->
            PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
       )
       else  
@@ -135,22 +136,21 @@ Start_PEH(schedulable) =
 )
 []
  (
-      activate_schedulables?someMissionID ->
-      Start_PEH(schedulable)
+    activate_schedulables?someMissionID ->
+    Start_PEH(schedulable)
  ) 
  []
  (
     done_toplevel_sequencer ->
     set_applicationTerminating.schedulable!True ->
     SKIP
-   )  
+  )  
 
 Register_PEH(schedulable) =
    register.schedulable?controllingMission ->
    Activate_PEH(schedulable, controllingMission)
 
 Activate_PEH(schedulable, controllingMission) =
-  --  get_controllingMission.schedulable?controllingMission -> 
     activate_schedulables.controllingMission ->
     SKIP
 
@@ -173,12 +173,14 @@ circwait.startTime ->
   )  
     [|  {|end_releases, signalTerminationRet|} |] 
   SignalTermination_PEH(schedulable)
-)\{|end_releases|}
+)--\{|end_releases|}
   
 
 Running(schedulable, period)  =
 ( 
-  (fire.schedulable -> PeriodicClock(schedulable, period))
+ ( (release.schedulable -> PeriodicClock(schedulable, period))
+   []
+   (end_releases.schedulable -> SKIP)  )
     [| ReleaseSync_PEH |] 
   Release_PEH(schedulable,0)
 )
@@ -196,7 +198,7 @@ PeriodicClock(schedulable, period) =
     circwait.period ->
     (  
       (
-        fire.schedulable ->
+        release.schedulable ->
         PeriodicClock(schedulable, period)
       )
       []
@@ -216,30 +218,42 @@ PeriodicClock(schedulable, period) =
 
 Release_PEH(schedulable, index) =
 get_missedReleases.schedulable?missedReleases ->
+
+(
+(   
+    end_releases.schedulable ->
+    release_complete_PEH.schedulable.index ->
+    signalTerminationRet.schedulable ->
+    SKIP 
+) 
+[]
+( 
 (
   if missedReleases == 0 then 
-  (
-    fire.schedulable ->
-    releaseCall.schedulable ->
-    SKIP
-  )
-  else 
-  (
-    releaseCall.schedulable ->
-    if missedReleases-1 < 0 then
-      SKIP
-    else
-      set_missedReleases.schedulable!(missedReleases -1) ->
-      SKIP
-  )
-);
+   (
+     release.schedulable ->
+     handleAsyncEventCall.schedulable ->
+     SKIP
+   )
+   else 
+   (
+     handleAsyncEventCall.schedulable ->
+     if missedReleases-1 < 0 then
+       SKIP
+     else
+       set_missedReleases.schedulable!(missedReleases -1) ->
+       SKIP
+   )    
+
+)
+;
 (
   (
-    releaseRet.schedulable ->
+    handleAsyncEventRet.schedulable ->
     release_complete_PEH.schedulable.index ->
     SKIP
   ) 
-    [| {|releaseRet|} |] 
+    [| {|handleAsyncEventRet|} |] 
   FireCatcher(schedulable) 
 ) ;
 (
@@ -253,17 +267,19 @@ get_missedReleases.schedulable?missedReleases ->
    )
   []
   (
-    --get_periodicTerminating.schedulable?periodicTerminating:(periodicTerminating == True) ->
+    get_periodicTerminating.schedulable?periodicTerminating:({True}) ->
     end_releases.schedulable ->
     signalTerminationRet.schedulable ->
     SKIP
   )
 )
+)
+)
 
 FireCatcher(schedulable) = 
 (
   (
-    fire.schedulable ->
+    release.schedulable ->
     get_missedReleases.schedulable?missedReleases ->
     if missedReleases +1 > maxNum then
      SKIP
@@ -273,7 +289,7 @@ FireCatcher(schedulable) =
   )
   []
   (
-    releaseRet.schedulable -> 
+    handleAsyncEventRet.schedulable -> 
     SKIP
   )
 )
@@ -285,7 +301,7 @@ DeadlineClock_PEH(schedulable, index, deadline, period, deadlineMissHandler) =
     (
         
         circwait.deadline ->
-        fire.deadlineMissHandler ->
+        handleAsyncEventRet.deadlineMissHandler ->
         release_complete_PEH.schedulable.index ->
         SKIP
       ) 
@@ -308,8 +324,7 @@ DeadlineClock_PEH(schedulable, index, deadline, period, deadlineMissHandler) =
 ) 
 /\ 
   (
-    end_releases.schedulable ->
-   -- release_complete_PEH.schedulable?index ->
+    end_releases.schedulable ->   
     SKIP
   )
 )
@@ -327,7 +342,6 @@ Cleanup_PEH(schedulable) =
   cleanupSchedulableRet.schedulable ->
   SKIP
 
-
--- assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
--- assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ divergence free ]
--- assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]
+--assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
+--assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ divergence free ]
+--assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]

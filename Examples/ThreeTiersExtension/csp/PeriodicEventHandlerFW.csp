@@ -38,7 +38,7 @@ PeriodicEventHandlerFW(schedulable, period, startTime, deadline, deadlineMissHan
   PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
     [|PEHStateSync|]
   PeriodicEventHandlerState(schedulable, nullMissionId, False, period, startTime, deadline, deadlineMissHandler, 0, False)
-)--\PEHStateSync
+)\PEHStateSync
 
 PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) =
 (
@@ -178,7 +178,9 @@ circwait.startTime ->
 
 Running(schedulable, period)  =
 ( 
-  (release.schedulable -> PeriodicClock(schedulable, period))
+ ( (release.schedulable -> PeriodicClock(schedulable, period))
+   []
+   (end_releases.schedulable -> SKIP)  )
     [| ReleaseSync_PEH |] 
   Release_PEH(schedulable,0)
 )
@@ -216,23 +218,35 @@ PeriodicClock(schedulable, period) =
 
 Release_PEH(schedulable, index) =
 get_missedReleases.schedulable?missedReleases ->
+
+(
+(   
+    end_releases.schedulable ->
+    release_complete_PEH.schedulable.index ->
+    signalTerminationRet.schedulable ->
+    SKIP 
+) 
+[]
+( 
 (
   if missedReleases == 0 then 
-  (
-    release.schedulable ->
-    handleAsyncEventCall.schedulable ->
-    SKIP
-  )
-  else 
-  (
-    handleAsyncEventCall.schedulable ->
-    if missedReleases-1 < 0 then
-      SKIP
-    else
-      set_missedReleases.schedulable!(missedReleases -1) ->
-      SKIP
-  )
-);
+   (
+     release.schedulable ->
+     handleAsyncEventCall.schedulable ->
+     SKIP
+   )
+   else 
+   (
+     handleAsyncEventCall.schedulable ->
+     if missedReleases-1 < 0 then
+       SKIP
+     else
+       set_missedReleases.schedulable!(missedReleases -1) ->
+       SKIP
+   )    
+
+)
+;
 (
   (
     handleAsyncEventRet.schedulable ->
@@ -258,6 +272,8 @@ get_missedReleases.schedulable?missedReleases ->
     signalTerminationRet.schedulable ->
     SKIP
   )
+)
+)
 )
 
 FireCatcher(schedulable) = 
