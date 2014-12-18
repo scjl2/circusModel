@@ -14,10 +14,10 @@
    height="1052.3622"
    id="svg2"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="Mission+PEH+APEHStructure.svg"
-   inkscape:export-filename="/home/matt/Uni/Model/Examples/ThreeTiers/ThreeTiersStucture.png"
-   inkscape:export-xdpi="500"
-   inkscape:export-ydpi="500">
+   sodipodi:docname="ThreeThreadsStructure.svg"
+   inkscape:export-filename="/usr/userfs/m/ml881/Documents/Model/Examples/ThreeThreadsExample/ThreeThreadsStructure.png"
+   inkscape:export-xdpi="1000.0132"
+   inkscape:export-ydpi="1000.0132">
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -32,7 +32,7 @@
      id="namedview122"
      showgrid="false"
      inkscape:zoom="1.2467191"
-     inkscape:cx="326.87796"
+     inkscape:cx="328.48217"
      inkscape:cy="836.88657"
      inkscape:window-x="0"
      inkscape:window-y="27"
@@ -615,5 +615,5 @@
            height="513.34741"
            x="-219.77686"
            y="-99.461029" /></flowRegion><flowPara
-         id="flowPara3118"></flowPara></flowRoot>  </g>
+         id="flowPara3118" /></flowRoot>  </g>
 </svg>
