@@ -758,13 +758,13 @@ Aircraft =
 )	
 
 
---nametype APEHSync = {| release |}
+nametype APEHSync = {| release |}
 nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
 Program(topLevelSequencerIDs, tier0, tier1IDs) = 
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync, 
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync, 
 		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	Aircraft	
 )
