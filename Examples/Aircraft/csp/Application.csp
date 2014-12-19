@@ -776,8 +776,8 @@ TestProgram =
 				{ (MainMissionId , ({ModeChangerId},{(ControlHandlerId, aperiodic, 0, nullSchedulableId) }, {},  {(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId), (AirSpeedMonitorId, 1, 0, 0, nullSchedulableId)}, {} )  )   },
 
 				{ (LaunchModeId, ({}, {(LaunchHandlerId, aperiodic, 0, nullSchedulableId)}, {},  {(LaunchConditionsMonitorId, 1, 0, 0, nullSchedulableId), (LaunchCountdownId, 1, 0, 0, nullSchedulableId)}, {})  )
-				,		(CruiseModeId, ({(BurnActivationHandlerId, aperiodic, 0, nullSchedulableId), (BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)}, {}, {},  {(CruiseConditionsMonitorId, 1, 0, 0, nullSchedulableId)}, {})  ), 
-							(LandModeId, ({(LandingGearHandlerId, aperiodic, 0, nullSchedulableId)}, {}, {},  {(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId)}, {})  )
+				,		(CruiseModeId, ({},{(BurnActivationHandlerId, aperiodic, 0, nullSchedulableId), (BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)},  {},  {(CruiseConditionsMonitorId, 1, 0, 0, nullSchedulableId)}, {})  ), 
+							(LandModeId, ({},{(LandingGearHandlerId, aperiodic, 0, nullSchedulableId)},  {},  {(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId)}, {})  )
 				}			                 
             )
 
