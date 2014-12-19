@@ -130,9 +130,9 @@ SafeletTier(topLevelMissionSequencerIDs) =
 
 
 Cluster(missionID, x) =
-   MissionFW(missionID)
-     [|MissionSync|]
-    Schedulables(x)
+  MissionFW(missionID)
+    [|MissionSync|]
+  Schedulables(x)
 
 
 nametype TierChanSet = diff(Union({ MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet, {|register|} }), {|end_mission_app|})
