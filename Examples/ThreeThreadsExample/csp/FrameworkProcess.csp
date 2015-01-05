@@ -27,7 +27,8 @@ if schedulableSequencers != {} then
 )
 else
 (
-  CatchBroadcasts
+ CatchBroadcasts
+	
 )
 
 AperiodicEventHandlerFWs(aperiodicEventHanders) =
@@ -37,37 +38,40 @@ if aperiodicEventHanders != {} then
 )
 else
 (
-  CatchBroadcasts
+ CatchBroadcasts
+	
 )
 
 OneShotEventHandlerFWs(oneShotEventHandlers)=
 if oneShotEventHandlers != {} then
-  (
+(
    [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (oseh, start, deadline, missHandler) : oneShotEventHandlers @ OneShotEventHandlerFW(oseh, start, deadline, missHandler ) 
 )
 else
 (
-  CatchBroadcasts
+ CatchBroadcasts
+	
 )
 
 PeriodicEventHandlerFWs(periodicEventHandlers) =
 if periodicEventHandlers != {} then
-  (
+(
    [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (peh, period, start, deadline, missHandler) : periodicEventHandlers @ PeriodicEventHandlerFW(peh, period, start, deadline, missHandler) 
 )
 else
 (
-  CatchBroadcasts
+ CatchBroadcasts
+	
 )
 
 ManagedThreadFWs(managedThreads) =
 if managedThreads != {} then
-  (
+(
    [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] mt : managedThreads @ ManagedThreadFW(mt) 
 )
 else
 (
-  CatchBroadcasts 
+  CatchBroadcasts	
 )
 
 Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)=
@@ -103,9 +107,7 @@ nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,
 
 
 
---assert sbisim(diamond(SimpleFramework)) ; Loop :[ deadlock free [FD] ]
---assert sbisim(diamond(SimpleFramework)) :[ divergence free ]
---assert sbisim(diamond(SimpleFramework)) :[ deterministic  [FD] ]
+
 
 
 
@@ -126,7 +128,7 @@ SafeletTier(topLevelMissionSequencerIDs) =
 Cluster(missionID, (schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads) ) =
    MissionFW(missionID)
      [|MissionSync|]
-    Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
+   Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
 
 
 nametype TierChanSet = diff(Union({ MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet, {|register|} }), {|end_mission_app|})
