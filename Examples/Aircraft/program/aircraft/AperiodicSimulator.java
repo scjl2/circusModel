@@ -1,11 +1,11 @@
-/** Spacecraft - Mode Change Example
+/** Aircraft - Mode Change Example
 * 
 * This class simulates the aperiodic firing of an 
 * external event (e.g. a button press) by simply firing the event periodically
 * 
 * @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 import javax.realtime.*;
 import javax.safetycritical.AperiodicEventHandler;

@@ -1,8 +1,10 @@
-/** Spacecraft - Mode Change Example
-* 
+/** Aircraft - Mode Change Example
+
+*   Handler for the Aircraft's controls
+
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 import javax.realtime.AperiodicParameters;
 import javax.realtime.PriorityParameters;
@@ -10,21 +12,19 @@ import javax.safetycritical.AperiodicEventHandler;
 import javax.safetycritical.StorageParameters;
 
 
-//Handler for responding to the pilot starting an engine burn
-public class CruiseHandler extends AperiodicEventHandler
+public class ControlHandler extends AperiodicEventHandler
 {	
     /**
-    * Class Constructor
-    * @param	priorityParameters	the priority parameters for this handler
+    * Class Constructor 
+  	* @param	priorityParameters	the priority parameters for this handler
 	 * @param	periodicParameters	the periodic parameters for this handler
 	 * @param 	storageConfigurationParameters	the storage parameters for this handler
 	 * @param	size	the size of the private memory for this handler
-	 */
-	public CruiseHandler(PriorityParameters priority, AperiodicParameters release,
-			StorageParameters storage, String name, long size)
+    */
+	public ControlHandler(PriorityParameters priority, AperiodicParameters release,
+			StorageParameters storage, String name)
 	{
-		super(priority, release, storage, name);
-		
+		super(priority, release, storage, name);		
 	}
 
     /**
@@ -33,7 +33,6 @@ public class CruiseHandler extends AperiodicEventHandler
 	@Override
 	public void handleAsyncEvent()
 	{
-		System.out.println("Handling Cruise");		
+		System.out.println("Handling Controls");		
 	}
-
 }

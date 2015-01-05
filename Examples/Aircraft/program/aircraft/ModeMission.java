@@ -1,4 +1,4 @@
-package modeChangeExample;
+package aircraft;
 
 import javax.safetycritical.Mission;
 

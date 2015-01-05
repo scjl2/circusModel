@@ -1,10 +1,10 @@
-/** Spacecraft - Mode Change Example
+/** Aircraft - Mode Change Example
 * 
 * 	The main mission sequencer for the application
 * 
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 
 import javax.realtime.PriorityParameters;

@@ -1,11 +1,11 @@
-/** Spacecraft - Mode Change Example
+/** Aircraft - Mode Change Example
 * 
-* 	This is the mode changer for the Spacecraft application,
+* 	This is the mode changer for the Aircraft application,
 * 	it controls which mode the application is in
 * 
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 
 import javax.realtime.PriorityParameters;
@@ -15,8 +15,16 @@ import javax.safetycritical.StorageParameters;
 import modechange.Mode;
 import modechange.ModeChanger;
 
-public class SPModeChanger extends MissionSequencer<ModeMission> implements ModeChanger
+public class ACModeChanger extends MissionSequencer<ModeMission> implements ModeChanger
 {
+	private MainMission controllingMission;
+	
+	public ACModeChanger(PriorityParameters priority, StorageParameters storage,MainMission controllingMission)
+	{
+		super(priority, storage);
+		this.controllingMission = controllingMission;
+	}
+	
 	/**
 	 * This variable represents the number of modes this ModeChanger
 	 * has to deal with
@@ -32,13 +40,13 @@ public class SPModeChanger extends MissionSequencer<ModeMission> implements Mode
 	 * @param priority	the priority parameters for this mission sequencer	
 	 * @param storage	the storage parameters for this mission sequencer
 	 */
-	public SPModeChanger(PriorityParameters priority,
+	public ACModeChanger(PriorityParameters priority,
 			StorageParameters storage)
 	{
 		super(priority, storage);
-		launchMode = (Mode) new LaunchMission();
-		cruiseMode = (Mode) new CruiseMission();		
-		landMode   = (Mode) new LandMission();
+		launchMode = (Mode) new TakeOffMission(controllingMission);
+		cruiseMode = (Mode) new CruiseMission(controllingMission);		
+		landMode   = (Mode) new LandMission(controllingMission);
 	
 	}
 

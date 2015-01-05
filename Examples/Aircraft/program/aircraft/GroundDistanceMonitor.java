@@ -1,8 +1,10 @@
-/** Spacecraft - Mode Change Example
+/** Aircraft - Mode Change Example
+* 
+*  Monitors the Aircraft's distance from the ground
 * 
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 import javax.realtime.PeriodicParameters;
 import javax.realtime.PriorityParameters;
@@ -18,6 +20,8 @@ public class GroundDistanceMonitor extends PeriodicEventHandler
 	*/	
 	private final LandMission mission;
 	
+	private final double readingOnGround;
+	
 	 /**
     * Class Constructor
     * @param	priorityParameters	the priority parameters for this handler
@@ -32,6 +36,7 @@ public class GroundDistanceMonitor extends PeriodicEventHandler
 		super(priority, periodic, storage);
 		
 		mission = landMission;
+		this.readingOnGround = landMission.getControllingMission().ALTITUDE_READING_ON_GROUND;
 	}
 
      /**
@@ -42,7 +47,14 @@ public class GroundDistanceMonitor extends PeriodicEventHandler
 	{
 		System.out.println("Checking Ground Distance");
 		//read this value from sensors
-		mission.setGroundDistance(0.0);		
+		double distance =mission.getControllingMission().getAltitude();		
+		
+		
+		if(distance == readingOnGround)
+		{
+			System.out.println("Aircraft Landed, Terminating Mission");
+			mission.requestTermination();
+		}
 	}
 
 }

@@ -1,10 +1,12 @@
-/** Spacecraft - Mode Change Example
+/** Aircraft - Mode Change Example
 * 
-*   Handler for dealing with the craft's landing gear 
+*   Handler for dealing with the craft's landing gear.
+*   This version simply toggles the landingGearDeployed variable
+*   in its controlling mission
 * 
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 import javax.realtime.AperiodicParameters;
 import javax.realtime.PriorityParameters;
@@ -15,9 +17,9 @@ import javax.safetycritical.StorageParameters;
 public class LandingGearHandler extends AperiodicEventHandler
 {
 	/**
-	 * The controlling missino of this handler
+	 * The controlling mission of this handler
 	 */
-	private final LandMission mission;
+	private final LandingGearUser mission;
 	
 	/**
 	 * Class Constructor 
@@ -28,11 +30,11 @@ public class LandingGearHandler extends AperiodicEventHandler
 	 * @param landMission the controlling mission of this handler
 	 */
 	public LandingGearHandler(PriorityParameters priority, AperiodicParameters release,
-			StorageParameters storage, String name, LandMission landMission)
+			StorageParameters storage, String name, LandingGearUser mission)
 	{
 		super(priority, release, storage, name);
 		
-		mission = landMission; 
+		this.mission = mission; 
 	}
 	
 	/**
@@ -43,6 +45,15 @@ public class LandingGearHandler extends AperiodicEventHandler
 	{
 		System.out.println("Deploying Landing Gear");
 		
-		mission.deployLandingGear();
+		boolean landingGearIsDeployed = mission.isLandingGearDeployed();
+		
+		if(landingGearIsDeployed)
+		{	
+			mission.stowLandingGear();
+		}
+		else
+		{		
+			mission.deployLandingGear();
+		}
 	}	
 }

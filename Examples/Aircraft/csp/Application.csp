@@ -371,6 +371,8 @@ CleanupPhase_lm =
  cleanupMissionRet.LaunchModeId!True ->
 	SKIP
 
+
+
 GoodToLaunch_lm =
 	goodToLaunch.LaunchModeId ->
 	set_launch.LaunchModeId!True ->
@@ -724,7 +726,11 @@ Aircraft =
 	|||
 	MainMissionSequencerApp
 	|||
-	MainMissionApp
+	(
+		MainMissionApp
+			[|{|updateAirSpeed|}|]
+		AirSpeedMonitorApp
+	)
 	|||
 	ModeChangerApp
 	|||
@@ -732,29 +738,31 @@ Aircraft =
 	|||
 	ControlHandlerApp
 	|||
-	AirSpeedMonitorApp
-	|||
-	LaunchMissionAApp
-	|||
-	LaunchConditionsMonitorApp
+	(LaunchMissionAApp
+		[|  {| goodToLaunch|} |]	
+		LaunchConditionsMonitorApp)
 	|||
 	LaunchCountdownApp
 	|||
 	LaunchHandlerApp
 	|||
-	CruiseMissionApp
-	|||
+	(
+		CruiseMissionApp
+			[|{|isOkToCruiseCall, isOkToCruiseCall|}|]
+		BurnActivationHandlerApp
+	)
+	[|{|setOkToCruise|}|]
 	CruiseConditionsMonitorApp
-	|||
-	BurnActivationHandlerApp
 	|||
 	BeginLandingHandlerApp
 	|||
-	LandMissionApp
-	|||
+	(
+		LandMissionApp
+			[|{|updateGroundDistance|}|]
+		LandingGearHandlerApp
+	)
+	|||	
 	GroundDistanceMonitorApp
-	|||
-	LandingGearHandlerApp
 )	
 
 
@@ -765,7 +773,7 @@ Program(topLevelSequencerIDs, tier0, tier1IDs) =
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync, 
-		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, end_periodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	Aircraft	
 )
 

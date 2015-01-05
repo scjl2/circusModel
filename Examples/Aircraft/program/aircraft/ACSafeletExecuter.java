@@ -1,10 +1,10 @@
-/** Spacecraft - Mode Change Example
+/** Aircraft - Mode Change Example
 * 
 * 	Executes the application's <code>Safelet</code>
 * 
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 
 import javax.safetycritical.Launcher;
@@ -12,13 +12,13 @@ import javax.safetycritical.Mission;
 import javax.safetycritical.Safelet;
 
 
-public class SPSafeletExecuter extends Launcher
+public class ACSafeletExecuter extends Launcher
 {
     /**
     * Class Constructor
     *   @param arg0 The Safelet to execute
     */
-	public SPSafeletExecuter(Safelet<Mission> safelet)
+	public ACSafeletExecuter(Safelet<Mission> safelet)
 	{
 		super(safelet, 2);	
 	}
@@ -28,6 +28,8 @@ public class SPSafeletExecuter extends Launcher
     */
 	public static void main (String [] args)
 	{
-		new SPSafeletExecuter(new SPSafelet()).run();
+		ACSafelet GERTI = new ACSafelet();
+		
+		new ACSafeletExecuter(GERTI).run();
 	}
 }

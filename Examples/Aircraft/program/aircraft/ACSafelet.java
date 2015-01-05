@@ -1,10 +1,10 @@
-/** Spacecraft - Mode Change Example
+/** Aircraft - Mode Change Example
 * 
 * This safelet is the top level of the application and loads the main mission sequencer
 * 
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
-package modeChangeExample;
+package aircraft;
 
 
 import javax.realtime.PriorityParameters;
@@ -14,7 +14,7 @@ import javax.safetycritical.Safelet;
 import javax.safetycritical.StorageParameters;
 import javax.scj.util.Const;
 
-public class SPSafelet implements Safelet<Mission>
+public class ACSafelet implements Safelet<Mission>
 {
 	@Override
 	public MissionSequencer<Mission> getSequencer()
