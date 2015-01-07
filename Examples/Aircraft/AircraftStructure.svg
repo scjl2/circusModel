@@ -13,7 +13,7 @@
    width="1052.3622"
    height="744.09448"
    id="svg2"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.48.5 r10040"
    sodipodi:docname="AircraftStructure.svg"
    inkscape:export-filename="/usr/userfs/m/ml881/Documents/Model/Examples/Aircraft/AircraftStructure.png"
    inkscape:export-xdpi="1000.0037"
@@ -27,15 +27,15 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1134"
+     inkscape:window-width="1024"
+     inkscape:window-height="744"
      id="namedview122"
      showgrid="false"
      inkscape:zoom="0.88156353"
-     inkscape:cx="523.16466"
-     inkscape:cy="416.37419"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:cx="525.43336"
+     inkscape:cy="144.13062"
+     inkscape:window-x="1366"
+     inkscape:window-y="24"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
   <defs
@@ -387,7 +387,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -574,7 +574,7 @@
          height="66.428566"
          width="531.42859" /></flowRegion><flowPara
        style="font-size:29.98765373px;stroke:#ffffff"
-       id="flowPara3074-9-9-0-3">GroundDistanceHandler</flowPara></flowRoot>  <flowRoot
+       id="flowPara3074-9-9-0-3">GroundDistanceMonitor</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-2-4"

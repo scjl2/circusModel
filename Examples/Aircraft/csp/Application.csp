@@ -726,43 +726,61 @@ Aircraft =
 	|||
 	MainMissionSequencerApp
 	|||
-	(
-		MainMissionApp
-			[|{|updateAirSpeed|}|]
-		AirSpeedMonitorApp
+	((
+			(
+				(
+					MainMissionApp
+						[|{|setAirSpeed, setAltitude, setHeading|}|]
+					FlightSensorMonitorApp
+				)
+				[|{|setCabinPressure, setEmergencyOxygen, setFuelRemaining|}|]
+				EnvironmentMonitorApp
+			)
+			|||
+			ModeChangerApp
+			|||
+			ControlHandlerApp
+			|||
+			CommunicationsHandlerApp
+			|||
+			(
+				(
+					(
+						TakeOffMissionAApp
+						[|  {| requestTermination|} |]	
+						TakeOffMonitorApp
+					)
+					[|  {| stowLandingGear, deployLandingGear|} |]	
+					LandingGearHandlerApp1
+				)
+				[|  {| abort, requestTermination|} |]	
+				TakeOffFailurehHandlerApp
+			)
+		)
+		[|{| getHeading, getAirSpeed, getAltitude |}|]
+		NavigationHandlerApp
+		|||
+		(
+			CruiseMissionApp	
+			 [|{| requestTermination |}|]
+			BeginLandingHandlerApp
+		)
 	)
+	[|{getAltitude}|]
+	((SafeLandingHandler
+			|||	
+			GroundDistanceMonitorApp
+		)
+			[|{requestTermination}|]]
+			(
+				LandMissionApp
+					[|{|{| stowLandingGear, deployLandingGear|}|}|]
+				LandingGearHandlerApp2
+			)
+		))
 	|||
-	ModeChangerApp
-	|||
-	EnvironmentMonitorApp
-	|||
-	ControlHandlerApp
-	|||
-	(LaunchMissionAApp
-		[|  {| goodToLaunch|} |]	
-		LaunchConditionsMonitorApp)
-	|||
-	LaunchCountdownApp
-	|||
-	LaunchHandlerApp
-	|||
-	(
-		CruiseMissionApp
-			[|{|isOkToCruiseCall, isOkToCruiseCall|}|]
-		BurnActivationHandlerApp
-	)
-	[|{|setOkToCruise|}|]
-	CruiseConditionsMonitorApp
-	|||
-	BeginLandingHandlerApp
-	|||
-	(
-		LandMissionApp
-			[|{|updateGroundDistance|}|]
-		LandingGearHandlerApp
-	)
-	|||	
-	GroundDistanceMonitorApp
+	InstrumentLandingSystemMonitorApp
+	
 )	
 
 

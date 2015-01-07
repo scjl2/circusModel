@@ -1,6 +1,6 @@
 /** Aircraft - Mode Change Example
 * 
-* 	This class monitors the Aircraft's environment -- Oxygen levels, internal pressure, fuel levels etc.
+* 	This class monitors the Aircraft's environment -- Oxygen levels, cabin pressure, fuel levels etc.
 * 
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
