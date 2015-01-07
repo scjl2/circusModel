@@ -23,7 +23,7 @@ public class TakeOffMission extends ModeMission implements LandingGearUser
 	
 	private MainMission controllingMission;
 	
-	private boolean abort;
+	private boolean abort = false;
 	
 	/**
 	 * Is the landing gear deployed?
@@ -55,8 +55,8 @@ public class TakeOffMission extends ModeMission implements LandingGearUser
 
 		landingGearHandler.register();
 		
-		TakeOffHandler takeOffHandler =
-				new TakeOffHandler
+		TakeOffMonitor takeOffMonitor =
+				new TakeOffMonitor
 					(new PriorityParameters(PriorityScheduler.instance().getMaxPriority()),
 					new PeriodicParameters(new RelativeTime(0, 0), new RelativeTime(500, 0)),
 					storageParametersSchedulable,
@@ -64,7 +64,7 @@ public class TakeOffMission extends ModeMission implements LandingGearUser
 					TAKEOFF_ALTITUDE,
 					landingGearHandler);
 		
-		takeOffHandler.register();
+		takeOffMonitor.register();
 
 		TakeOffFailureHandler takeOffFailureHandler = 
 			new TakeOffFailureHandler(new PriorityParameters(5),
@@ -102,8 +102,6 @@ public class TakeOffMission extends ModeMission implements LandingGearUser
 	}
 
 
-
-
 	@Override
 	public synchronized void deployLandingGear()
 	{
@@ -114,13 +112,13 @@ public class TakeOffMission extends ModeMission implements LandingGearUser
 	public boolean cleanUp()
 	{
 		System.out.println("Take Off Mission Cleanup, Returning " + abort);
-		return abort;		
+		return !abort;		
 	}
 
 	@Override
 	public void stowLandingGear() 
 	{
-		landingGearDeployed = true;		
+		landingGearDeployed = false;		
 	}
 
 	@Override

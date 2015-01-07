@@ -13,7 +13,7 @@ nametype SafeltAppSync =
     {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
 
-MySafelet  = 
+ACSafelet  = 
 	(
 	 	Methods_s 
 	)		
@@ -102,12 +102,53 @@ Methods_mms  =
 
 nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
 
-channel updateAirSpeed : MissionID.{0..3}
 
---channel get_airSpeed : SchedulableID.{1..3}
-channel update_airSpeed : MissionID.{0..3}
+channel getCabinPressureCall : MissionID.{0..3}
+channel getCabinPressureRet : MissionID.{0..3}
+channel setCabinPressure : MissionID.{0..3}
 
-nametype MainMissionStateSync = {|update_airSpeed |}
+channel getEmergencyOxygenCall : MissionID.{0..3}
+channel getEmergencyOxygenRet : MissionID.{0..3}
+channel setEmergencyOxygen : MissionID.{0..3}
+
+channel getFuelRemainingCall : MissionID.{0..3}
+channel getFuelRemainingRet : MissionID.{0..3}
+channel setFuelRemaining : MissionID.{0..3}
+		
+channel getAltitudeCall : SchedulableID.MissionID.{0..3}
+channel getAltitudeRet : SchedulableID.MissionID.{0..3}
+channel setAltitude : SchedulableID.MissionID.{0..3}
+
+channel getAirSpeedCall : MissionID.{0..3}
+channel getAirSpeedRet : MissionID.{0..3}
+channel setAirSpeed : MissionID.{0..3}
+
+channel getHeadingCall : MissionID.{0..3}
+channel getHeadingRet : MissionID.{0..3}
+channel setHeading : MissionID.{0..3}
+
+-- State Channels
+channel get_cabinPressure : MissionID.{0..3}
+channel set_cabinPressure : MissionID.{0..3}
+
+channel get_emergencyOxygen : MissionID.{0..3}
+channel set_emergencyOxygen : MissionID.{0..3}
+
+channel get_fuelRemaining : MissionID.{0..3}
+channel set_fuelRemaining : MissionID.{0..3}
+		
+channel get_altitude : SchedulableID.MissionID.{0..3}
+channel set_altitude : SchedulableID.MissionID.{0..3}
+
+channel get_airSpeed : MissionID.{0..3}
+channel set_airSpeed : MissionID.{0..3}
+
+channel get_heading : MissionID.{0..3}
+channel set_heading : MissionID.{0..3}
+
+nametype MainMissionStateSync = 
+	{|	get_cabinPressure, set_cabinPressure, get_emergencyOxygen, set_emergencyOxygen, get_fuelRemaining, set_fuelRemaining,
+		get_altitude, set_altitude, get_airSpeed, set_airSpeed, get_heading, set_heading |}
 
 MainMissionApp = 
 (
@@ -118,17 +159,76 @@ MainMissionApp =
 /\ (end_mission_app.MainMissionId -> SKIP )
 
 
-MainMissionState(0) = 
+MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading) = 
 (
-	update_airSpeed.MainMissionId?newAirSpeed ->
-	MainMissionState(newAirSpeed)
+	(
+		get_cabinPressure.MainMissionId!cabinPressure ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		set_cabinPressure.MainMissionId?newCabinPressure ->
+		MainMissionState(newCabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		get_emergencyOxygen.MainMissionId!emergencyOxygen ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		set_emergencyOxygen.MainMissionId?newEmergencyOxygen ->
+		MainMissionState(cabinPressure, newEmergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		get_fuelRemaining.MainMissionId!fuelRemaining ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		set_fuelRemaining.MainMissionId?newFuelRemaining ->
+		MainMissionState(cabinPressure, emergencyOxygen, newFuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		get_altitude.MainMissionId!altitude ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		set_altitude.MainMissionId?newAltitude ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, newAltitude, airSpeed, heading)
+	)
+	[]
+	(
+		get_airSpeed.MainMissionId!airSpeed ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		set_airSpeed.MainMissionId?newAirSpeed->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, newAirSpeed, heading)
+	)
+	[]
+	(
+		get_heading.MainMissionId!heading ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
+	)
+	[]
+	(
+		set_heading.MainMissionId?newHeading ->
+		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, newHeading)
+	)
 )
 
 
 InitializePhase_mm = 
   initializeCall.MainMissionId   -> 
-  register!ModeChangerId!MainMissionId  -> 
+  register!ACModeChangerId!MainMissionId  -> 
   register!EnvironmentMonitorId!MainMissionId  -> 
+  register!FlightSensorMonitorId!MainMissionId ->
+  register!CommunicationsHandlerId!MainMissionId ->
   register!ControlHandlerId!MainMissionId  ->  
   initializeRet.MainMissionId  -> 
  SKIP
@@ -139,10 +239,72 @@ CleanupPhase_mm =
  SKIP
 
 
-UpdateAirSpeed_mm = 
-	updateAirSpeed.MainMissionId?newAirSpeed ->
-	update_airSpeed.MainMissionId!newAirSpeed ->
+GetCabinPressure_mm = 
+	getCabinPressureCall.MainMissionId ->
+	get_cabinPressure.MainMissionId?cabinPressure ->
+	getCabinPressureRet.MainMissionId!cabinPressure ->
 	SKIP
+
+SetCabinPressure_mm = 
+	setCabinPressure.MainMissionId?newCabinPressure ->
+	set_cabinPressure.MainMissionId!newCabinPressure ->
+	SKIP
+
+GetFuelRemaining_mm = 
+	getFuelRemainingCall.MainMissionId ->
+	get_fuelRemaining.MainMissionId?fuelRemaining ->
+	getFuelRemainingRet.MainMissionId!fuelRemaining ->
+	SKIP
+
+SetFuelRemaining_mm = 
+	setFuelRemaining.MainMissionId?newFuelRemaining ->
+	set_fuelRemaining.MainMissionId!newFuelRemaining ->
+	SKIP
+
+GetAltitude_mm = 
+	getAltitudeCall?Schedulable!MainMissionId ->
+	get_altitude.MainMissionId?altitude ->
+	getAltitudeRet!Schedulable!MainMissionId!altitude ->
+	SKIP
+
+SetAltitude_mm = 
+	setAltitude.MainMissionId?newAltitude ->
+	set_altitude.MainMissionId!newAltitude ->
+	SKIP
+
+GetAirSpeed_mm = 
+	getAirSpeedCall.MainMissionId ->
+	get_airSpeed.MainMissionId?airSpeed ->
+	getAirSpeedRet.MainMissionId!airSpeed ->
+	SKIP
+
+SetAirSpeed_mm = 
+	setAirSpeed.MainMissionId?newAirSpeed ->
+	set_airSpeed.MainMissionId!newAirSpeed ->
+	SKIP
+
+GetEmergencyOxygen_mm = 
+	getEmergencyOxygenCall.MainMissionId ->
+	get_emergencyOxygen.MainMissionId?emergencyOxygen ->
+	getEmergencyOxygenRet.MainMissionId!emergencyOxygen ->
+	SKIP
+
+SetEmergencyOxygen_mm = 
+	setEmergencyOxygen.MainMissionId?newEmergencyOxygen ->
+	set_emergencyOxygen.MainMissionId!newEmergencyOxygen ->
+	SKIP
+
+GetHeading_mm = 
+	getHeadingCall.MainMissionId ->
+	get_heading.MainMissionId?heading->
+	getHeadingRet.MainMissionId!heading ->
+	SKIP
+
+SetHeading_mm = 
+	setHeading.MainMissionId?newHeading ->
+	set_heading.MainMissionId!newHeading ->
+	SKIP
+	
 
 Methods_mm = 
 ( 
@@ -150,7 +312,29 @@ Methods_mm =
 	[] 
 	CleanupPhase_mm
 	[]
-	UpdateAirSpeed_mm
+	GetCabinPressure_mm 
+	[] 
+	SetCabinPressure_mm 
+	[] 
+	GetFuelRemaining_mm
+	[] 
+	SetFuelRemaining_mm 
+	[] 
+	GetAltitude_mm 
+	[] 
+	SetAltitude_mm 
+	[] 
+	GetAirSpeed_mm 
+	[] 
+	SetAirSpeed_mm 
+	[] 
+	GetEmergencyOxygen_mm 
+	[] 
+	SetEmergencyOxygen_mm 
+	[] 
+	GetHeading_mm 
+	[] 
+	SetHeading_mm
 ) ; Methods_mm
   
 
@@ -168,7 +352,7 @@ channel set_currentMode : SchedulableID.MissionID
 nametype ModeChangerStateSync = 
 	{|get_modesLeft, set_modesLeft, get_currentMode, set_currentMode |}
 
-ModeChangerApp = 
+ACModeChangerApp = 
 (
   Methods_mc
     [|ModeChangerStateSync|] 
@@ -198,14 +382,11 @@ ModeChangerState_mc(modesLeft, currentMode) =
 	ModeChangerState_mc(modesLeft, newCurrentMode)
 )
 
-
-
 GetNextMission_mc = 
     getNextMissionCall.ModeChangerId -> 
     get_currentMode.ModeChangerId?currentMode ->
 	getNextMissionRet.ModeChangerId!currentMode ->
 	SKIP
-
 	
 AdvanceMode_mc =
 	get_modesLeft.ModeChangerId?modesLeft ->
@@ -271,17 +452,9 @@ Methods_em =
 
 handlerAsyncEvent_em =
 	handleAsyncEventCall.EnvironmentMonitorId -> 
-	checkEnvironment.EnvironmentMonitorId?check ->
-	if check == false then
-	(
-		requestTermination.MainMissionId.EnvironmentMonitorId ->
-		SKIP
-	)
-	else
-	(
-		SKIP
-	)
-	;
+	setCabinPressure.MainMissionId!0 ->
+	setEmergencyOxygen.MainMissionId!0 ->
+	setFuelRemaining.MainMissionId!0 ->
     handleAsyncEventRet.EnvironmentMonitorId ->
     SKIP  
 
@@ -305,223 +478,261 @@ handlerAsyncEvent_ch =
     handleAsyncEventRet.ControlHandlerId ->
     SKIP  
 
+--- CommunicationsHandler
 
---AirSpeedMonitor
+channel handleComms : SchedulableID
 
-AirSpeedMonitorApp =
+CommunicationsHandlerApp =
 (
-	Methods_asm
+	Methods_comh
 )
-/\ (end_periodicEventHandler_app.AirSpeedMonitorId -> SKIP)
+/\ (end_aperiodicEventHandler_app.CommunicationsHandlerId -> SKIP)
 
-Methods_asm =
-	handlerAsyncEvent_asm ; Methods_asm
+Methods_comh =
+	handlerAsyncEvent_comh ; Methods_comh
 
-handlerAsyncEvent_asm =	
-	handleAsyncEventCall.AirSpeedMonitorId -> 
-	updateAirSpeed.MainMissionId!2 ->
-    handleAsyncEventRet.AirSpeedMonitorId ->
+handlerAsyncEvent_comh =
+	handleAsyncEventCall.CommunicationsHandlerId -> 
+		handleComms.CommunicationsHandlerId ->
+    handleAsyncEventRet.CommunicationsHandlerId ->
+    SKIP 
+
+
+--FlightSensorsMonitor
+FlightSensorsMonitorApp =
+(
+	Methods_fsm
+)
+/\ (end_periodicEventHandler_app.FlightSensorsMonitorId -> SKIP)
+
+Methods_fsm =
+	handlerAsyncEvent_fsm ; Methods_fsm
+
+handlerAsyncEvent_fsm =	
+	handleAsyncEventCall.FlightSensorsMonitorId -> 
+	setAirSpeed.MainMissionId!2 ->
+	setAltitude.MainMissionId!2 ->
+	setHeading.MainMissionId!2 ->
+    handleAsyncEventRet.FlightSensorsMonitorId ->
     SKIP  
 
 
--- Launch Mission
+-- TakeOffMission
 
-channel get_launch : MissionID.Bool
-channel set_launch : MissionID.Bool
+channel get_abort : MissionID.Bool
+channel set_abort : MissionID.Bool
+
+channel get_landingGearDeployed : MissionID.Bool
+channel set_landingGearDeployed : MissionID.Bool
 
 channel goodToLaunch : MissionID
 channel canLaunchCall : MissionID
 channel canLaunchRet : MissionID.Bool
 
 
-nametype LaunchMissionStateSync = {| get_launch, set_launch  |}
+nametype TakeOffMissionStateSync = {| get_abort, set_abort, get_landingGearDeployed, set_landingGearDeployed  |}
 
-LaunchMissionAApp = 
+TakeOffMissionApp = 
 (
-	Methods_lm
-	[| LaunchMissionStateSync |]	
-	LaunchMissionState(False)
+	Methods_tom
+	[| TakeOffMissionStateSync |]	
+	TakeOffMissionState(False)
 	 
-) \ LaunchMissionStateSync
-/\ (end_mission_app.LaunchModeId -> SKIP )
+) \ TakeOffMissionStateSync
+/\ (end_mission_app.TakeOffModeId -> SKIP )
 
 
-LaunchMissionState(launch) =
-(
-	get_launch.LaunchModeId!launch->
-	LaunchMissionState(launch)
+TakeOffMissionState(abort, landingGearDeployed) =
+((
+	get_abort.TakeOffModeId!abort->
+	TakeOffMissionState(abort, landingGearDeployed)
 )
 []
 (
-	set_launch.LaunchModeId?newLaunch ->
-	LaunchMissionState(newLaunch)
+	set_abort.TakeOffModeId?newAbort ->
+	TakeOffMissionState(newAbort, landingGearDeployed)
 )	
+[]
+(
+	get_landingGearDeployed.TakeOffModeId!landingGearDeployed ->
+	TakeOffMissionState(abort, landingGearDeployed)	
+)
+[]
+(
+	set_landingGearDeployed.TakeOffModeId?newLandingGearDeployed ->
+	TakeOffMissionStatekeabort, newLandingGearDeployed)	
+))
 
-InitializePhase_lm = 
-  initializeCall.LaunchModeId  -> 
-  set_launch.LaunchModeId!False ->
-  register!LaunchConditionsMonitorId!LaunchModeId ->  
-  register!LaunchHandlerId!LaunchModeId ->  
-  register!LaunchCountdownId!LaunchModeId ->  
-  initializeRet.LaunchModeId -> 
+InitializePhase_tom = 
+  initializeCall.TakeOffModeId  -> 
+  set_launch.TakeOffModeId!False ->
+  register!LaunchConditionsMonitorId!TakeOffModeId ->  
+  register!LaunchHandlerId!TakeOffModeId ->  
+  register!LaunchCountdownId!TakeOffModeId ->  
+  initializeRet.TakeOffModeId -> 
   SKIP
 
-CleanupPhase_lm = 
- cleanupMissionCall.LaunchModeId ->
- cleanupMissionRet.LaunchModeId!True ->
+CleanupPhase_tom = 
+ cleanupMissionCall.TakeOffModeId ->
+ get_abort.TakeOffModeId?abort ->
+ cleanupMissionRet.TakeOffModeId!abort ->
+	SKIP
+
+Abort_tom =
+	abort.TakeOffModeId ->
+	set_abort.TakeOffModeId!true ->
+	SKIP
+
+StowLandingGear_tom =
+	stowLandingGear.TakeOffModeId ->
+	set_landingGearDeployed.TakeOffModeId!false ->
+	SKIP
+
+IsLandingGearDeployed_tom =
+	isLandingGearDeployedCall.TakeOffModeId ->
+	get_landingGearDeployed.TakeOffModeId?landingGearDeployed ->
+	isLandingGearDeployedRet.TakeOffModeId!landingGearDeployed ->
+	SKIP
+	
+DeployLandingGear_tom =
+	deployLandingGear.TakeOffModeId ->
+	set_landingGearDeployed.TakeOffModeId!true ->
 	SKIP
 
 
-
-GoodToLaunch_lm =
-	goodToLaunch.LaunchModeId ->
-	set_launch.LaunchModeId!True ->
-	SKIP
-
-CanLaunch_lm =
-	canLaunchCall.LaunchModeId ->
-	get_launch.LaunchModeId?launch ->
-	canLaunchRet.LaunchModeId!launch ->
-	SKIP
-
-Methods_lm = 
+Methods_tom = 
 ( 
-	InitializePhase_lm 
+	InitializePhase_tom 
 	[] 
-	CleanupPhase_lm
+	CleanupPhase_tom
 	[]
-	GoodToLaunch_lm
+	Abort_tom
 	[]
-	CanLaunch_lm
-) ; Methods_lm
+	StowLandingGear_tom
+	[]
+	DeployLandingGear_tom
+	[]
+	IsLandingGearDeployed_tom
+) ; Methods_tom
 
 
--- Launch Conditions Monitor
+-- TakeOffMonitor
 
-LaunchConditionsMonitorApp =
+TakeOffMonitorApp(takeOffAltitude, landingGearHandler) =
 (
-	Methods_lcm
+	Methods_tomon(takeOffAltitude, landingGearHandler)
 )
-/\ (end_oneshotEventHandler_app.LaunchConditionsMonitorId -> SKIP)
+/\ (end_periodicEventHandler_app.TakeOffMonitorId -> SKIP)
 
-Methods_lcm =
-	handlerAsyncEvent_lcm ; Methods_lcm
+Methods_tomon(takeOffAltitude, landingGearHandler) =
+	handlerAsyncEvent_tomon(takeOffAltitude, landingGearHandler) ; Methods_tomon(takeOffAltitude, landingGearHandler)
 
-handlerAsyncEvent_lcm =
-	handleAsyncEventCall.LaunchConditionsMonitorId -> 
-	-- simulate some checking here? How though?
-	goodToLaunch.LaunchModeId ->
-    handleAsyncEventRet.LaunchConditionsMonitorId ->
+handlerAsyncEvent_tomon(takeOffAltitude, landingGearHandler) =
+	handleAsyncEventCall.TakeOffMonitorId -> 
+	getAltitudeCall.MainMissionId ->
+	getAltitudeRet.MainMissionId?altitude ->
+	(
+		if altitude > takeOffAltitude then
+		(
+			release.landingGearHandlerId ->
+			requestTermination.TakeOffModeId ->
+			SKIP
+		)
+		else
+			SKIP
+	)
+	;		
+    handleAsyncEventRet.TakeOffMonitorId ->
     SKIP  
 
 
--- LaunchCountdown
+-- TakeOffFailureHandler
 
-channel get_countdown : SchedulableID.{0..5}
-channel set_countdown : SchedulableID.{0..5}
+channel continueAndLand : MissionID
 
-nametype LaunchCountdownStateSync = {|get_countdown, set_countdown |}
-
-LaunchCountdownApp =
+TakeOffFailureHandlerApp(threshold) =
 (
-	Methods_lc
-	[| LaunchCountdownStateSync |]
-	LaunchCountdownState(5)
-) \ LaunchCountdownStateSync
-/\ (end_periodicEventHandler_app.LaunchCountdownId -> SKIP)
-
-
-LaunchCountdownState(countdown) =
-(
-	get_countdown.LaunchCountdownId!countdown ->
-	LaunchCountdownState(countdown)
+	Methods_tofh(threshold)
 )
-[]
-(
-	set_countdown.LaunchCountdownId?newCountdown ->
-	LaunchCountdownState(newCountdown)
-)
+/\ (end_aperiodicEventHandler_app.TakeOffFailureHandlerId -> SKIP)
 
-Methods_lc =
-	handlerAsyncEvent_lc ; Methods_lc
+Methods_tofh(threshold) =
+	handlerAsyncEvent_tofh(threshold) ; Methods_tofh(threshold)
 
-handlerAsyncEvent_lc =
-	handleAsyncEventCall.LaunchCountdownId -> 
-	get_countdown.LaunchCountdownId?countdown ->
-	if countdown == 0 then
+handlerAsyncEvent_tofh(threshold) =
+	handleAsyncEventCall.TakeOffFailureHandlerId -> 
+	getAirSpeedCall.MainMissionId ->
+	getAirSpeedRet.MainMissionId?currentSpeed ->
 	(
-		release.LaunchHandlerId ->
-		SKIP
-	)
-	else
-	(
-		set_countdown.LaunchCountdownId!countdown-1 ->
-		SKIP
+		if currentSpeed < threshold then
+		(				
+			abort.TakeOffModeId ->
+			requestTermination.TakeOffModeId.TakeOffFailureHandlerId -> 
+			SKIP
+		)		
+		else
+			continueAndLand.TakeOffModeId ->
+			SKIP	
 	)
 	;
-    handleAsyncEventRet.LaunchCountdownId ->
+    handleAsyncEventRet.TakeOffFailureHandlerId ->
     SKIP  
 
 
 
+-- LandingGearHandler1
 
---LaunchHandler
+channel deployLandingGear : SchedulableID
 
-channel launching : SchedulableID
-
-LaunchHandlerApp =
+LandingGearHandlerApp1(mission) =
 (
-	Methods_lh
+	Methods_lgh1(mission)
 )
-/\ (end_aperiodicEventHandler_app.LaunchHandlerId -> SKIP)
+/\ (end_aperiodicEventHandler_app.LandingGearHandler1Id -> SKIP)
 
-Methods_lh =
-	handlerAsyncEvent_lh ; Methods_lh
+Methods_lgh1(mission) =
+	handlerAsyncEvent_lgh1(mission) ; Methods_lgh1(mission)
 
-handlerAsyncEvent_lh =
-	handleAsyncEventCall.LaunchHandlerId -> 
-	launching.LaunchHandlerId ->
-	requestTermination.LaunchModeId.LaunchHandlerId -> 
-    handleAsyncEventRet.LaunchHandlerId ->
-    SKIP  
+handlerAsyncEvent_lgh1(mission) =
+	handleAsyncEventCall.LandingGearHandler1Id -> 
+	isLandingGearDeployedCall.mission ->
+	isLandingGearDeployedRet.mission?deployed ->
+	(
+		if landingGearIsDeployed == true then
+		(	
+			stowLandingGear.LandingGearHandler1Id.mission ->
+			SKIP
+		)
+		else
+		(		
+			deployLandingGear.LandingGearHandler1Id.mission ->
+			SKIP
+		)
+	)
+	;
+	requestTermination.LandModeId.LandingGearHandler1Id  ->
+    handleAsyncEventRet.LandingGearHandler1Id ->
+    SKIP 
 
 
 -- CruiseMission
 
-channel setOkToCruise : MissionID.Bool
-channel isOkToCruiseCall : MissionID
-channel isOkToCruiseRet : MissionID.Bool
 
-channel set_okToCruise : MissionID.Bool
-channel get_okToCruise : MissionID.Bool
 
-nametype CruiseMissionStateSync = {|set_okToCruise, get_okToCruise |}
+
 
 CruiseMissionApp = 
 ( 
-	Methods_cm
-		[| CruiseMissionStateSync |]
-	CruiseMissionState(False)
-) \ CruiseMissionStateSync
+	Methods_cm	
+) 
 /\ (end_mission_app.CruiseModeId -> SKIP )
-
-CruiseMissionState(okToCruise) =
-(
-	get_okToCruise.CruiseModeId!okToCruise ->
-	CruiseMissionState(okToCruise)
-)
-[]
-(
-	set_okToCruise.CruiseModeId?newOkToCruise ->
-	CruiseMissionState(newOkToCruise)
-)
 
 
 InitializePhase_cm = 
   initializeCall.CruiseModeId  -> 
 
-  register!CruiseConditionsMonitorId!CruiseModeId ->   
-  register!BurnActivationHandlerId!CruiseModeId ->   
+  register!navigationMonitorId!CruiseModeId ->   
+     
   register!BeginLandingHandlerId!CruiseModeId ->   
 
   initializeRet.CruiseModeId -> 
@@ -530,77 +741,40 @@ InitializePhase_cm =
 CleanupPhase_cm = 
  cleanupMissionCall.CruiseModeId ->
  cleanupMissionRet.CruiseModeId!True ->
-	SKIP
-
-setOkToCruise_cm =
-	setOkToCruise.CruiseModeId?newOkToCruise ->
-	set_okToCruise.CruiseModeId!newOkToCruise ->
-	SKIP
-
-isOkToCruise_cm =
-	isOkToCruiseCall.CruiseModeId ->
-	get_okToCruise.CruiseModeId?okToCruise ->
-	isOkToCruiseRet.CruiseModeId!okToCruise ->
-	SKIP
+ SKIP
 
 Methods_cm = 
 ( 
 	InitializePhase_cm
 	[] 
-	CleanupPhase_cm
-	[]
-	setOkToCruise_cm
-	[]
-	isOkToCruise_cm
+	CleanupPhase_cm	
 ) ; Methods_cm
 
 
--- CruiseConditionsMonitor
-CruiseConditionsMonitorApp =
+-- NavigationMonitor
+NavigationMonitorApp =
 (
-	Methods_ccm
+	Methods_nm
 )
-/\ (end_periodicEventHandler_app.CruiseConditionsMonitorId -> SKIP)
+/\ (end_periodicEventHandler_app.navigationMonitorId -> SKIP)
 
-Methods_ccm =
-	handlerAsyncEvent_ccm ; Methods_ccm
+Methods_nm =
+	handlerAsyncEvent_nm ; Methods_nm
 
-handlerAsyncEvent_ccm =
-	handleAsyncEventCall.CruiseConditionsMonitorId -> 
-	setOkToCruise.CruiseModeId!True -> 
-    handleAsyncEventRet.CruiseConditionsMonitorId ->
+handlerAsyncEvent_nm =
+	handleAsyncEventCall.navigationMonitorId -> 
+
+	getHeadingCall.MainMissionId ->
+	getHeadingRet.MainMissionId?heading ->
+	getAirSpeedCall.MainMissionId ->
+	getAirSpeedRet.MainMissionId?airSpeed ->
+	getAltitudeCall.MainMissionId ->
+	getAltitudeRet.MainMissionId?airSpeed ->
+
+    handleAsyncEventRet.navigationMonitorId ->
     SKIP  
 
 
--- BurnActivationHandler
-
-channel activateBurn : SchedulableID
-
-BurnActivationHandlerApp =
-(
-	Methods_bah
-)
-/\ (end_aperiodicEventHandler_app.BurnActivationHandlerId -> SKIP)
-
-Methods_bah =
-	handlerAsyncEvent_bah ; Methods_bah
-
-handlerAsyncEvent_bah =
-	handleAsyncEventCall.BurnActivationHandlerId -> 
-	isOkToCruiseCall.CruiseModeId ->
-	isOkToCruiseRet.CruiseModeId?okToCruise ->
-	if okToCruise == True then
-	(
-		activateBurn.BurnActivationHandlerId ->
-		SKIP
-	)
-	else
-	(
-		SKIP
-	)
-	;
-    handleAsyncEventRet.BurnActivationHandlerId ->
-    SKIP 
 
 --BeginLandingHandler
 
@@ -641,6 +815,8 @@ InitializePhase_lam =
   initializeCall.LandModeId  -> 
   register!GroundDistanceMonitorId!LandModeId ->   
   register!LandingGearHandlerId!LandModeId -> 
+  register!SafeLandingHandlerId!LandModeId -> 
+  register!InstrumentLandingSystemMonitorId!LandModeId -> 
   initializeRet.LandModeId -> 
   SKIP
 
@@ -649,17 +825,23 @@ CleanupPhase_lam =
  cleanupMissionRet.LandModeId!True ->
  SKIP
 
-UpdateGroundDistance_lam =
-	updateGroundDistance.LandModeId?newDistanceFromGround ->
-	if newDistanceFromGround == 50 then
-	(
-		release.LandingGearHandlerId ->
-		SKIP
-	)
-	else
-	(
-		SKIP
-	)
+StowLandingGear_tom =
+	stowLandingGear.TakeOffModeId ->
+	set_landingGearDeployed.TakeOffModeId!false ->
+	SKIP
+
+IsLandingGearDeployed_tom =
+	isLandingGearDeployedCall.TakeOffModeId ->
+	get_landingGearDeployed.TakeOffModeId?landingGearDeployed ->
+	isLandingGearDeployedRet.TakeOffModeId!landingGearDeployed ->
+	SKIP
+	
+DeployLandingGear_tom =
+	deployLandingGear.TakeOffModeId ->
+	set_landingGearDeployed.TakeOffModeId!true ->
+	SKIP
+
+
 
 Methods_lam = 
 ( 
@@ -684,32 +866,103 @@ Methods_gdm =
 
 handlerAsyncEvent_gdm =
 	handleAsyncEventCall.GroundDistanceMonitorId -> 
-	updateGroundDistance.LandModeId!50 ->
+	getAltitudeCall.MainMissionId ->
+	getAltitudeRet.MainMissionId -> 
+	(	
+		if distance == readingOnGround then
+		(
+			requestTermination.LandModeId ->
+			SKIP
+		)
+		else
+			SKIP
+	)
+	;	
     handleAsyncEventRet.GroundDistanceMonitorId ->
     SKIP  
 
 
--- LandingGearHandler
+-- LandingGearHandler2
 
-channel deployLandingGear : SchedulableID
 
-LandingGearHandlerApp =
+
+LandingGearHandlerApp2(mission) =
 (
-	Methods_lgh
+	Methods_lgh2(mission)
 )
-/\ (end_aperiodicEventHandler_app.LandingGearHandlerId -> SKIP)
+/\ (end_aperiodicEventHandler_app.LandingGearHandler2Id -> SKIP)
 
-Methods_lgh =
-	handlerAsyncEvent_lgh ; Methods_lgh
+Methods_lgh2(mission) =
+	handlerAsyncEvent_lgh2(mission) ; Methods_lgh2(mission)
 
-handlerAsyncEvent_lgh =
-	handleAsyncEventCall.LandingGearHandlerId -> 
-	deployLandingGear.LandingGearHandlerId ->
-	requestTermination.LandModeId.LandingGearHandlerId  ->
-    handleAsyncEventRet.LandingGearHandlerId ->
+handlerAsyncEvent_lgh2(mission) =
+	handleAsyncEventCall.LandingGearHandler2Id -> 
+	isLandingGearDeployedCall.mission ->
+	isLandingGearDeployedRet.mission?deployed ->
+	(
+		if landingGearIsDeployed == true then
+		(	
+			stowLandingGear.LandingGearHandler2Id.mission ->
+			SKIP
+		)
+		else
+		(		
+			deployLandingGear.LandingGearHandler2Id.mission ->
+			SKIP
+		)
+	)
+	;
+	requestTermination.LandModeId.LandingGearHandler2Id  ->
+    handleAsyncEventRet.LandingGearHandler2Id ->
     SKIP 
 
+-- InstrumentLandingSystemMonitor
+InstrumentLandingSystemMonitorApp =
+(
+	Methods_tlsm
+)
+/\ (end_periodicEventHandler_app.InstrumentLandingSystemMonitorId -> SKIP)
 
+Methods_tlsm =
+	handlerAsyncEvent_tlsm ; Methods_tlsm
+
+handlerAsyncEvent_tlsm =
+	handleAsyncEventCall.InstrumentLandingSystemMonitorId -> 
+	checkILS.InstrumentLandingSystemMonitorId ->
+    handleAsyncEventRet.InstrumentLandingSystemMonitorId ->
+    SKIP  
+
+
+
+-- SafeLandingHandler
+
+SafeLandingHandlerApp(threshold) =
+(
+	Methods_slh(threshold)
+)
+/\ (end_aperiodicEventHandler_app.SafeLandingHandlerId -> SKIP)
+
+Methods_slh(threshold) =
+	handlerAsyncEvent_slh(threshold) ; Methods_slh(threshold)
+
+handlerAsyncEvent_slh(threshold) =
+	handleAsyncEventCall.SafeLandingHandlerId -> 
+	getAltitudeCall.MainMissionId ->
+	getAltitudeRet.MainMissionId?altitude ->
+	(	
+		if altitude < threshold then
+		(	
+			PullUp.SafeLandingHandlerId ->
+			SKIP			
+		)
+		else
+		(
+			ContinueLanding.safeLandingHandlerId ->
+			SKIP
+		)
+	) ;
+    handleAsyncEventRet.SafeLandingHandlerId ->
+    SKIP  
 
 
 
@@ -757,7 +1010,7 @@ Aircraft =
 				TakeOffFailurehHandlerApp
 			)
 		)
-		[|{| getHeading, getAirSpeed, getAltitude |}|]
+		[|{| getHeading, getAirSpeed, getAltitude.navigationHalnderId |}|]
 		NavigationHandlerApp
 		|||
 		(
@@ -766,7 +1019,7 @@ Aircraft =
 			BeginLandingHandlerApp
 		)
 	)
-	[|{getAltitude}|]
+	[|{getAltitude.safeLandingHandlerId, getAltitude.groundDistanceMonitorId }|]
 	((SafeLandingHandler
 			|||	
 			GroundDistanceMonitorApp

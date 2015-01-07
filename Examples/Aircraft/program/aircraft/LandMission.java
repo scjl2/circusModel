@@ -119,7 +119,8 @@ public class LandMission extends ModeMission implements LandingGearUser
 	@Override
 	public boolean cleanUp()
 	{
-		return abort;
+		System.out.println("Land Mission Cleanup, Returning " + abort);
+		return !abort;
 	}
 
 }
