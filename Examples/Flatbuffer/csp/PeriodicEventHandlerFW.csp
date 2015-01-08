@@ -243,7 +243,8 @@ get_missedReleases.schedulable?missedReleases ->
      else
        set_missedReleases.schedulable!(missedReleases -1) ->
        SKIP
-   )   
+   )    
+
 )
 ;
 (
@@ -254,8 +255,7 @@ get_missedReleases.schedulable?missedReleases ->
   ) 
     [| {|handleAsyncEventRet|} |] 
   FireCatcher(schedulable) 
-) 
-;
+) ;
 (
   (
     get_periodicTerminating.schedulable?periodicTerminating:({False}) ->
@@ -301,7 +301,7 @@ DeadlineClock_PEH(schedulable, index, deadline, period, deadlineMissHandler) =
     (
         
         circwait.deadline ->
-        release.deadlineMissHandler ->
+        handleAsyncEventRet.deadlineMissHandler ->
         release_complete_PEH.schedulable.index ->
         SKIP
       ) 

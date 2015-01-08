@@ -1,24 +1,6 @@
 --GLOBALS
 
-
-datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
-                          | FirstMissionSequencerID| schedulableA|schedulableB | schedulableC
-                          | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
-
-datatype MissionID = nullMissionId|
-                      missionA|missionB 
-                    | TopMission1ID | MyMission1ID | MyMission2ID | MyMission3ID 
-
-datatype ExceptionType = interruptedException | 
-                          illegalMonitorStateException | 
-                          illegalArgumentException | 
-                          illegalThreadStateException | 
-                          illegalStateException | 
-                          ceilingViolationException
-nametype Bit = {0,1}
-datatype ObjectID = objectA | objectB
-maxNum = 10
-nametype num = {0..maxNum}
+include "Types.csp"
 
 
 channel a
@@ -26,6 +8,14 @@ Loop = a-> Loop
 
 channel circwait : num
 channel  throw : ExceptionType 
+
+
+nametype aperiodicParams = (SchedulableID, AperiodicType, Int, SchedulableID)
+nametype periodicParams = (SchedulableID, Int, Int, Int, SchedulableID)
+nametype oneShotParams = (SchedulableID, Int, Int, SchedulableID)
+nametype schedulableParams = ({SchedulableID},{aperiodicParams}, {oneShotParams}, {periodicParams}, {SchedulableID} )
+nametype cluster = (MissionID, schedulableParams )
+nametype tier = Set(cluster)
 
 include "SafeletFW.csp"
 

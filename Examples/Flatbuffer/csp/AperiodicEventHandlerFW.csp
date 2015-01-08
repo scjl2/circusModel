@@ -27,7 +27,7 @@ channel scheduleNextRelease : SchedulableID.num
 nametype APEHFWChanSet = union(
   union(ManagedSchedulableFWChanSet, APEHStateSync),
    {|done_safeletFW, releaseLong,release, handleAsyncLongEventCall, handleAsyncEventRet, 
-     releaseLong, end_releases, circwait, 
+      end_releases, circwait, 
      release_complete, done_schedulable, done_toplevel_sequencer |}  )
 
 nametype DeadlineSync_APEH =  {| end_releases, deschedule_handler, release_complete|}
@@ -306,6 +306,6 @@ Cleanup_APEH(schedulable) =
  SKIP 
 
 
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
+--assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
+--assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
+--assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 

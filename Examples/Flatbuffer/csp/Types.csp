@@ -1,11 +1,11 @@
 --GLOBALS
 transparent sbisim, diamond
 
-datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
-                          | ManagedThread1Id |   ManagedThread2Id     | ManagedThread3Id
+datatype SchedulableID = nullSequencerId|nullSchedulableId| FlatBufferSequencerId 
+                          | WriterId | ReaderId
 
 datatype MissionID = nullMissionId
-                    | MissionId                  
+                    | FlatBufferMissionId                  
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 
@@ -13,6 +13,9 @@ datatype ExceptionType = interruptedException |
                           illegalThreadStateException | 
                           illegalStateException | 
                           ceilingViolationException
+
+nametype ApplicationMissionIds = {FlatBufferMissionId}
+
 nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
 maxNum = 2
