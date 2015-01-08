@@ -1073,6 +1073,43 @@ TestProgram =
 				}			    																																			               
             )
 
+
+OneTierFramework(topLevelSequencerIDs, tier0IDS) =
+(  
+  SafeletTier(topLevelSequencerIDs)
+    [|TierSync|]
+  Tier0(tier0IDS) 
+)
+
+
+TakeOffCluster =
+	ACSafelet
+	|||
+	MainMissionSequencerApp
+	|||
+	(
+	(
+	(
+		TakeOffMissionApp
+		[|  {| requestTermination|} |]	
+		TakeOffMonitorApp(0, LandingGearHandler1Id)
+	)
+		[|  {| stowLandingGear.LandingGearHandler1Id, deployLandingGear.LandingGearHandler1Id|} |]	
+		LandingGearHandlerApp1
+	)
+		[|  {| abort, requestTermination|} |]	
+	TakeOffFailureHandlerApp(0)
+	)
+
+TestTakeOffMission =
+(
+	OneTierFramework({MainMissionSequencerId}, { (TakeOffModeId, ({}, {(LandingGearHandler1Id, aperiodic, 0, nullSchedulableId),(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId) }, {},  { (TakeOffMonitorId, 1, 0, 0, nullSchedulableId)}, {})  )})
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync, 
+		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, end_periodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+	TakeOffCluster
+
+)
+
 assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
 assert sbisim(diamond(TestProgram)) :[ divergence free ]
 assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
