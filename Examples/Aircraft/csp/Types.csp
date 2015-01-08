@@ -2,13 +2,13 @@
 transparent sbisim, diamond
 
 datatype SchedulableID = nullSequencerId|nullSchedulableId| MainMissionSequencerId 
-                          | ModeChangerId | EnvironmentMonitorId | ControlHandlerId | AirSpeedMonitorId
-                          | LaunchConditionsMonitorId | LaunchHandlerId | LaunchCountdownId
-                          | CruiseConditionsMonitorId | BurnActivationHandlerId | BeginLandingHandlerId
-                          | GroundDistanceMonitorId | LandingGearHandlerId  
+                          | ACModeChangerId | EnvironmentMonitorId | ControlHandlerId | FlightSensorsMonitorId | CommunicationsHandlerId
+                          | TakeOffMonitorId | TakeOffFailureHandlerId | LandingGearHandler1Id
+                          | NavigationMonitorId | BeginLandingHandlerId 
+                          | GroundDistanceMonitorId | LandingGearHandler2Id | SafeLandingHandlerId | InstrumentLandingSystemMonitorId 
 
 datatype MissionID = nullMissionId
-                    | MainMissionId | LaunchModeId | CruiseModeId |  LandModeId
+                    | MainMissionId | TakeOffModeId | CruiseModeId |  LandModeId
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 
@@ -16,6 +16,9 @@ datatype ExceptionType = interruptedException |
                           illegalThreadStateException | 
                           illegalStateException | 
                           ceilingViolationException
+
+nametype ApplicationMissionIds = {TakeOffModeId, CruiseModeId, LandModeId}
+
 nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
 maxNum = 2

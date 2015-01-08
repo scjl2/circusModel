@@ -225,7 +225,7 @@ ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS, tier1IDs) =
       [| union(
                   TierCommonChan, 
                   --{| start_mission.NestedMissionId, done_mission.NestedMissionId, initializeRet.NestedMissionId, requestTermination.NestedMissionId   |}
-                  {| start_mission.m, done_mission.m, initializeRet.m, requestTermination.m.ms  | m <- MissionID , member(m, {LaunchModeId, CruiseModeId, LandModeId}), ms<- SchedulableID, member(ms, {ModeChangerId})  |}
+                  {| start_mission.m, done_mission.m, initializeRet.m, requestTermination.m.ms  | m <- MissionID , member(m, ApplicationMissionIds), ms<- SchedulableID, member(ms, {ACModeChangerId})  |}
                ) 
       |]
     Tier(tier1IDs)
