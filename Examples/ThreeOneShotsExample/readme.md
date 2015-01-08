@@ -1,5 +1,5 @@
 ThreeOneShots Example
- =======
+=======
 
 Matt Luckcuck <ml881@york.ac.uk> 2014
 -----------------------------------
