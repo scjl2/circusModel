@@ -3,6 +3,10 @@
 
 include "FrameworkProcess.csp"
 
+channel wait : ObjectID
+channel notify : ObjectID
+
+
 --**********************************************
 --******************APLICATION******************
 --**********************************************
@@ -94,6 +98,11 @@ Methods_fbms =
 
 
 --FlatBUfferMission
+channel write : {FlatBufferMissionId}.Bit 
+channel readCall : {FlatBufferMissionId}  
+channel readRet : {FlatBufferMissionId}.Bit 
+channel bufferEmptyCall : {FlatBufferMissionId} 
+channel bufferEmptyRet : {FlatBufferMissionId}.Bool 
 
 channel get_bufferEmpty:{FlatBufferMissionId}.Bool
 channel set_bufferContents:{FlatBufferMissionId}.Bit
@@ -106,12 +115,32 @@ nametype FlatBufferMissionStateSync = {|get_bufferEmpty,set_bufferContents, get_
 FlatBufferMissionApp = 
 ( 
 	(
-		FlatBufferMissionState 
+		FlatBufferMissionState(0)
 			[| FlatBufferMissionStateSync |]  
 		Methods_fbm 
 	)
 	/\ 
 	(end_mission_app.FlatBufferMissionId -> SKIP )
+)
+
+FlatBufferMissionState(bufferContents) =
+(
+	if bufferContents == 0 then
+		get_bufferEmpty.FlatBufferMissionId!true -> 
+		FlatBufferMissionState(bufferContents)
+	else
+		get_bufferEmpty.FlatBufferMissionId!false ->	
+		FlatBufferMissionState(bufferContents)
+)
+[]
+(
+	set_bufferContents.FlatBufferMissionId?newBufferContents -> 
+	FlatBufferMissionState(newBufferContents)
+)
+[]
+(
+	get_bufferConetents.FlatBufferMissionId!bufferContents ->
+	FlatBufferMissionState(bufferContents) 
 )
 
 InitializePhase_fbm = 
@@ -179,23 +208,24 @@ Run_w =
 	SKIP
 
 Write = 
-  terminationPendingCall.FlatBufferMissionId ->
-  terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
-  if missionIsTerminating == false then
-	bufferEmptyCall.FlatBufferMissionId ->
-	bufferEmptyRet.FlatBufferMissionId?empty ->
-	if empty == true then
-	    write.FlatBufferMissionId!1 ->
-		notify.Reader ->
-    	Write
-	else
-		wait.WriterId -> notify.WriterId ->
-		Write else 
- 	SKIP
+	terminationPendingCall.FlatBufferMissionId ->
+	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+	if missionIsTerminating == false then
+		bufferEmptyCall.FlatBufferMissionId ->
+		bufferEmptyRet.FlatBufferMissionId?empty ->
+		if empty == true then
+	    	write.FlatBufferMissionId!1 ->
+			notify.ReaderObjectId ->
+    		Write
+		else
+			wait.WriterObjectId -> notify.WriterObjectId ->
+			Write 
+	else 
+ 		SKIP
 
 
 
- 	
+
 -- Reader
 
 ReaderApp = 
@@ -224,10 +254,10 @@ Read =
 		if empty == false then
 	    	readCall.FlatBufferMissionId -> 
     		readRet.FlatBufferMissionId?value ->
-			notify.Writer ->
+			notify.WriterObjectId ->
     		Read
 		else
-			wait.ReaderId -> notify.ReaderId ->
+			wait.ReaderObjectId -> notify.ReaderObjectId ->
 			Read
    	else 
 		SKIP 	
@@ -246,10 +276,12 @@ FlatBuffer =
 	FlatBufferSequencerApp
 	|||
 	FlatBufferMissionApp
-	|||
-	ReaderApp
-	|||
-	WriterApp	
+	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
+	(
+		ReaderApp
+			[|{|  notify |}|]
+		WriterApp
+	)	
 )	
 
 
@@ -260,7 +292,7 @@ Program(topLevelSequencerIDs, tier0) =
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, --OSEHSync , --APEHSync, 
-		 {|end_mission_app, end_managedThread_app, setCeilingPriority, requestTermination, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		 {|end_mission_app, end_managedThread_app, setCeilingPriority, requestTermination, terminationPendingCall, terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	FlatBuffer	
 )
 

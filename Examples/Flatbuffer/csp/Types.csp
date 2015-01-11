@@ -17,7 +17,7 @@ datatype ExceptionType = interruptedException |
 nametype ApplicationMissionIds = {FlatBufferMissionId}
 
 nametype Bit = {0,1}
-datatype ObjectID = objectA | objectB
+datatype ObjectID = WriterObjectId | ReaderObjectId
 maxNum = 2
 nametype num = {0..maxNum}
 

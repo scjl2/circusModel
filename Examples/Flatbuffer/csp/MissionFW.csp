@@ -329,10 +329,10 @@ DoneSchedulables(mission, activeSchedulables) =
 
 Methods_M(mission, registeredSchedulables) =
 (  
-  (TerminationPending_M(mission)
+  TerminationPending_M(mission)
     [| {|end_mission_terminations|} |] 
-  
-    RequestTerminationMeth(mission, registeredSchedulables)
+  (
+   RequestTerminationMeth(mission, registeredSchedulables)
       [| {|end_mission_terminations|} |] 
     (
       done_schedulables.mission ->
