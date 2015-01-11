@@ -23,6 +23,7 @@ nametype ApplicationMissionIds = {FlatBufferMissionId}
 
 nametype Bit = {0,1}
 datatype ObjectID = WriterObjectId | ReaderObjectId
+datatype ThreadID = WriterThreadID | ReaderThreadID
 maxNum = 2
 nametype num = {0..maxNum}
 

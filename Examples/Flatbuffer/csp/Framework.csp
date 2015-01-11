@@ -38,3 +38,5 @@ include "OneShotEventHandlerFW.csp"
 include "PeriodicEventHandlerFW.csp"
 
 include "ManagedThreadFW.csp" 
+
+include "ThreadFW.csp"
