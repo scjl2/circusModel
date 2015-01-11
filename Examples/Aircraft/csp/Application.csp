@@ -1111,5 +1111,5 @@ TestTakeOffMission =
 )
 
 assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(TestProgram)) :[ divergence free ]
-assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
+--assert sbisim(diamond(TestProgram)) :[ divergence free ]
+--assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
