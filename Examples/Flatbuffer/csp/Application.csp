@@ -95,15 +95,23 @@ Methods_fbms =
 
 --FlatBUfferMission
 
+channel get_bufferEmpty:{FlatBufferMissionId}.Bool
+channel set_bufferContents:{FlatBufferMissionId}.Bit
+channel get_bufferConetents:{FlatBufferMissionId}.Bit
+
+
 nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
+nametype FlatBufferMissionStateSync = {|get_bufferEmpty,set_bufferContents, get_bufferConetents |}
 
 FlatBufferMissionApp = 
 ( 
 	(
-		(Methods_fbm )
-		/\ 
-		(end_mission_app.FlatBufferMissionId -> SKIP )
-	) 
+		FlatBufferMissionState 
+			[| FlatBufferMissionStateSync |]  
+		Methods_fbm 
+	)
+	/\ 
+	(end_mission_app.FlatBufferMissionId -> SKIP )
 )
 
 InitializePhase_fbm = 
@@ -126,8 +134,31 @@ Methods_fbm =
 	InitializePhase_fbm
 	[] 
 	CleanupPhase_fbm
+	[]
+	BufferEmpty_fbm
+	[]
+	Write_fbm
+	[]
+	Read_fbm
 ) ; Methods_fbm
-  
+
+BufferEmpty_fbm =
+	bufferEmptyCall.FlatBufferMissionId ->
+	get_bufferEmpty.FlatBufferMissionId?bufferEmpty ->
+	bufferEmptyRet.FlatBufferMissionId!bufferEmpty ->
+	SKIP
+
+Write_fbm =
+	 write.FlatBufferMissionId?value ->
+	 set_bufferContents.FlatBufferMissionId!value ->
+	 SKIP
+
+Read_fbm =
+	readCall.FlatBufferMissionId -> 
+	get_bufferConetents.FlatBufferMissionId?bufferConetents ->
+    readRet.FlatBufferMissionId!bufferConetents ->
+    SKIP
+
 
 
 -- Writer
@@ -143,11 +174,28 @@ Methods_w =
 
 Run_w =
 	runCall.WriterId -> 
-		
+		Write ;
 	runRet.WriterId ->
 	SKIP
 
+Write = 
+  terminationPendingCall.FlatBufferMissionId ->
+  terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+  if missionIsTerminating == false then
+	bufferEmptyCall.FlatBufferMissionId ->
+	bufferEmptyRet.FlatBufferMissionId?empty ->
+	if empty == true then
+	    write.FlatBufferMissionId!1 ->
+		notify.Reader ->
+    	Write
+	else
+		wait.WriterId -> notify.WriterId ->
+		Write else 
+ 	SKIP
 
+
+
+ 	
 -- Reader
 
 ReaderApp = 
@@ -161,9 +209,29 @@ Methods_r =
 
 Run_r =
 	runCall.ReaderId -> 
-		
+
+	Read ;
+
 	runRet.ReaderId ->
 	SKIP
+
+Read =
+	terminationPendingCall.FlatBufferMissionId ->
+  	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+	if missionIsTerminating == false then
+		bufferEmptyCall.FlatBufferMissionId ->
+		bufferEmptyRet.FlatBufferMissionId?empty ->
+		if empty == false then
+	    	readCall.FlatBufferMissionId -> 
+    		readRet.FlatBufferMissionId?value ->
+			notify.Writer ->
+    		Read
+		else
+			wait.ReaderId -> notify.ReaderId ->
+			Read
+   	else 
+		SKIP 	
+
 
 
 nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}

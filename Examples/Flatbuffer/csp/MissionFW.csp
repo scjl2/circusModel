@@ -48,7 +48,8 @@ channel cleanupMissionRet : MissionID.Bool
 channel end_mission_app : MissionID
 channel done_mission : MissionID.Bool
 
-
+channel terminationPendingCall : MissionID
+channel terminationPendingRet :MissionID.Bool
 
 
 
@@ -328,15 +329,32 @@ DoneSchedulables(mission, activeSchedulables) =
 
 Methods_M(mission, registeredSchedulables) =
 (  
-  RequestTerminationMeth(mission, registeredSchedulables)
+  (TerminationPending_M(mission)
     [| {|end_mission_terminations|} |] 
-  (
-    done_schedulables.mission ->
-    end_mission_terminations.mission ->
-    SKIP
-  ) 
+  
+    RequestTerminationMeth(mission, registeredSchedulables)
+      [| {|end_mission_terminations|} |] 
+    (
+      done_schedulables.mission ->
+      end_mission_terminations.mission ->
+      SKIP
+    ) )
 ) \{| end_mission_terminations |}
 
+
+TerminationPending_M(mission) =
+(( 
+  terminationPendingCall.mission ->
+  get_missionTerminating.mission?missionIsTerminating ->
+  terminationPendingRet.mission!missionIsTerminating ->
+  TerminationPending_M(mission)
+)
+[]
+(
+    end_mission_terminations.mission -> 
+    SKIP
+)  
+)
 RequestTerminationMeth(mission, registeredSchedulables) =
 --get_registeredSchedulables.mission?registeredSchedulables ->
 get_controllingSequencer.mission?controllingSequencer ->
