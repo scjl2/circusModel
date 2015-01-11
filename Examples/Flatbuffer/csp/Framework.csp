@@ -40,3 +40,5 @@ include "PeriodicEventHandlerFW.csp"
 include "ManagedThreadFW.csp" 
 
 include "ThreadFW.csp"
+
+include "ObjectFW.csp"
