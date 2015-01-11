@@ -25,7 +25,7 @@
 	\Delta State  \\
 \where	
 	priorityStack' = \langle basePriority \rangle \\
-	interrupted' = \true 
+	interrupted' = \false 
 \end{schema}	
 %
 \begin{circusaction}

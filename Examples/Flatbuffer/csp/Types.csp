@@ -14,10 +14,16 @@ datatype ExceptionType = interruptedException |
                           illegalStateException | 
                           ceilingViolationException
 
+MaxPriority = 2
+MinPriority = 1
+
+nametype PriorityLevel = {MinPriority..MaxPriority}
+
 nametype ApplicationMissionIds = {FlatBufferMissionId}
 
 nametype Bit = {0,1}
 datatype ObjectID = WriterObjectId | ReaderObjectId
 maxNum = 2
 nametype num = {0..maxNum}
+
 

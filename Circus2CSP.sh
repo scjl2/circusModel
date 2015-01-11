@@ -59,12 +59,12 @@ sed -i 's/\\circelse/else/g' $1
 sed -i 's/\\circfi//g' $1
 #circdef
 sed -i 's/\\circdef/=/g' $1 
-#~.~
-sed -i 's/\~.~/./g' $1 
 #~?~
 sed -i 's/\~?~/?/g' $1 
 #~!~
 sed -i 's/\~!~/!/g' $1 
+#~.~
+sed -i 's/\~.~/./g' $1 
 #\Skip
 sed -i 's/\\Skip/SKIP/g' $1 
 #\prefixcolon
@@ -75,20 +75,12 @@ sed -i 's/\\neq/!=/g' $1
 sed -i 's/\\circseq/;/g' $1 
 #\extchoice
 sed -i 's/\\extchoice/[]/g' $1 
-#\lschexpract
-sed -i 's/\\lschexpract//g' $1
-#\rschexpract
-sed -i 's/\\rschexpract//g' $1
-# \circend
-sed -i 's/\\circend//g' $1
-#%
-sed -i 's/\%//g' $1
-#\\
-sed -i 's/\\\\//g' $1
-#~
-sed -i 's/~//g' $1
-#\also
-sed -i 's/\\also//g' $1
+
+
+#\interleave
+sed -i 's/\\interleave/|||/g' $1
+
+
 
 ############
 ###REMOVE###
@@ -118,6 +110,21 @@ sed -i 's/\\begin{circusaction}//g' $1
 
 #begin{circusaction}
 sed -i 's/\\end{circusaction}//g' $1 
+
+#\lschexpract
+sed -i 's/\\lschexpract//g' $1
+#\rschexpract
+sed -i 's/\\rschexpract//g' $1
+# \circend
+sed -i 's/\\circend//g' $1
+#%
+sed -i 's/\%//g' $1
+#\\
+sed -i 's/\\\\//g' $1
+#~
+sed -i 's/~//g' $1
+#\also
+sed -i 's/\\also//g' $1
 
 
   # sed "s/$OLD/$NEW/g" "$f" > $TFILE && mv $TFILE "$f"
