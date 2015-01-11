@@ -1,11 +1,20 @@
 #!/bin/bash
 #Author: Matt Luckcuck
-#Date 3rd October 2014
+#Script to help with converting Circus to CSP. It helps, but by no means automates the whole the process!
+
+#Original Date 3rd of October 2014
+#Last Update 11th of January 2015
 
 
 
 FILE=$1
 echo 'Converting...'
+
+
+################
+###SUBSTITUTE###
+################
+
 #Bool
 sed -i 's/\\boolean/Bool/g' $1 
 #True
@@ -39,16 +48,6 @@ sed -i 's/\\rchanset/|}/g' $1
 
 #lchanset
 sed -i 's/\\lchanset/{|/g' $1 
-
-
-
-
-
-#end{circusaction}
-sed -i 's/\\begin{circusaction}//g' $1 
-
-#begin{circusaction}
-sed -i 's/\\end{circusaction}//g' $1 
 
 #if
 sed -i 's/\\circif/if/g' $1 
@@ -90,6 +89,11 @@ sed -i 's/\\\\//g' $1
 sed -i 's/~//g' $1
 #\also
 sed -i 's/\\also//g' $1
+
+############
+###REMOVE###
+############
+
 #\begin{parser}
 sed -i 's/\\begin{parser}//g' $1
 #\end{parser}
@@ -99,6 +103,21 @@ sed -i 's/\\begin{schema}//g' $1
 #\end{schema}
 sed -i 's/\\end{schema}//g' $1
 
+#\begin{zsection}
+sed -i 's/\\begin{zsection}//g' $1
+#\end{zsection}
+sed -i 's/\\end{zsection}//g' $1
+
+#\begin{circus}
+sed -i 's/\\begin{circus}//g' $1
+#\end{circus}
+sed -i 's/\\end{circus}//g' $1
+
+#end{circusaction}
+sed -i 's/\\begin{circusaction}//g' $1 
+
+#begin{circusaction}
+sed -i 's/\\end{circusaction}//g' $1 
 
 
   # sed "s/$OLD/$NEW/g" "$f" > $TFILE && mv $TFILE "$f"

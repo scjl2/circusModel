@@ -1,0 +1,145 @@
+
+  \SECTION  ThreadFW  \parents  scj_prelude, GlobalTypes, ThreadChan, ObjectFWChan, FrameworkChan, 
+    Priority 
+
+
+
+  \circprocess Thread   =  thread : ThreadID ; basePriority : PriorityLevel  \circspot \circbegin
+
+
+{\circstateignore  State}
+	priorityStack : \seq_1 PriorityLevel 
+	activePriority : PriorityLevel 
+	interrupted : Bool
+\where
+	activePriority = lastpriorityStack
+
+
+
+
+\circstate State
+
+
+
+{Init}
+	\Delta State  
+\where	
+	priorityStack' = \langle basePriority \rangle 
+	interrupted' = True 
+	
+
+
+Execute = 
+ 	( 
+		(
+			(
+				Priority 
+				\linter { basePriority } | { interrupted } \rinter
+				Interrupts 
+			) 
+			\interleave 
+			GetPriorityLevel 
+		)
+	)
+	; \circinterrupt 
+		(
+			done_toplevel_sequencer -> 
+			SKIP 
+		)	
+
+
+
+Priority = 
+ if priorityStack = \langle basePriority \rangle then 
+	IncreasePriority
+ else priorityStack != \langle basePriority \rangle then 
+	(
+		IncreasePriority 
+		[]
+		DecreasePriority
+	)
+ 
+
+
+
+IncreasePriority = 
+	raise_thread_priority.thread.ceilingPriority -> 
+	activePriority := ceilingPriority ; 
+	IncreasePriority
+
+
+
+DecreasePriority = 
+	lower_thread_priority.thread -> 
+	activePriority := basePriority ; 
+ 	DecreasePriority 
+
+
+
+Interrupts = 
+ (
+	(
+		(
+			Interrupt 
+			 \linter \emptyset | \emptyset \rinter 
+			IsInterrupted
+		) 
+		 \linter \emptyset | \emptyset \rinter 
+		Interrupted
+	)
+	 \lpar \emptyset | {| set_interrupted, get_interrupted |} | \emptyset \rpar 
+	InterruptedController	
+    )
+
+
+
+Interrupt = 
+ interrupt.thread -> 
+ set_interrupted.thread.True -> 
+ SKIP
+
+
+
+IsInterrupted = 
+ isInterruptedCall.thread -> 
+ get_interrupted.thread.interrupted -> 
+ isInterruptedRet.thread.interrupted -> 
+ SKIP
+
+
+
+Interrupted = 
+ interruptedCall.thread -> 
+ get_interrupted.thread.interrupted -> 
+ interruptedRet.thread.interrupted -> 
+ set_interrupted.thread.False -> 
+ SKIP
+
+
+
+InterruptedController = 
+ (
+		get_interrupted.thread.interrupted -> 
+		InterruptedController
+	)
+ [] 
+ (
+		set_interrupted.thread.newInterrupted -> 
+		interrupted := newInterrupted ; 
+		InterruptedController
+	)
+
+
+
+GetPriorityLevel =
+ 	get_priorityLevel.thread.object.activePriority -> 
+ 	GetPriorityLevel
+
+
+
+\circspot (  Init  ; Execute)\circinterrupt (done_toplevel_sequencer -> SKIP)
+
+
+
+  
+
