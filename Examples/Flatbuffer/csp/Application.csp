@@ -278,9 +278,9 @@ FlatBuffer =
 	FlatBufferMissionApp
 	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
 	(
-		((ReaderApp [|{||}|] ThreadFW(ReaderThreadID, 1) ) [|{||}|] ObjectFW())
+		((ReaderApp [|{||}|] ThreadFW(ReaderThreadID, 1) ) [|{||}|] ObjectFW(ReaderObjectId))
 			[|{|  notify |}|]
-		((WriterApp [|{||}|] ThreadFW(WriterThreadID, 1))[|{||}|] ObjectFW())
+		((WriterApp [|{||}|] ThreadFW(WriterThreadID, 1))[|{||}|] ObjectFW(WriterObjectId))
 	)	
 )	
 

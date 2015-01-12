@@ -79,6 +79,19 @@ sed -i 's/\\extchoice/[]/g' $1
 
 #\interleave
 sed -i 's/\\interleave/|||/g' $1
+#\Interleave
+sed -i 's/\\Interleave/|||/g' $1
+#\Chaos
+sed -i 's/\\Chaos/Chaos(Events)/g' $1
+
+
+
+
+
+
+
+
+
 
 
 

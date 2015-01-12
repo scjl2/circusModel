@@ -151,7 +151,7 @@ Execute \circdef \\
 \t1 \lpar \{ waitQueue, waitForObjectThreads, queueForLock, previousLocks, locks, lockedBy \} | \\ \t2 CPCSync | \\ \t1 \{ ceilingPriority \} \rpar \\
  CeilingPriorityController \\
 ) \\ 
-%\t1 \circinterrupt (done\_toplevel\_sequencer \then \Skip)
+
 \end{circusaction}
 %
 \begin{circusaction}
