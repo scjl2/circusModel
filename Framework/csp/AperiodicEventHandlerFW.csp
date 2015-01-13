@@ -104,45 +104,43 @@ AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMiss
 
 (   
   Start_APEH(schedulable) ;
-  get_applicationTerminating.schedulable?applicationTerminating ->
-  ( 
-    if applicationTerminating == False then 
-    (
+ -- get_applicationTerminating.schedulable?applicationTerminating ->
+ -- ( 
+ --   if applicationTerminating == False then 
+ --   (
       Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) ; 
       Cleanup_APEH(schedulable)  ; 
-      reset_aperiodicEventHandlerState.schedulable ->
-      AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
-    )
-    else 
-      end_aperiodicEventHandlerState.schedulable ->
+    --  reset_aperiodicEventHandlerState.schedulable ->
+ --     AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
+--    )
+ --   else 
+      Terminate_apehfw(schedulable)
+   -- )
+)
+
+Terminate_apehfw(schedulable) =
+(  
+  (
+    done_safeletFW ->
+    set_applicationTerminating.schedulable!True ->
+    SKIP
+  )
+  [] 
+  ( 
+    done_toplevel_sequencer -> 
+    set_applicationTerminating.schedulable!True ->
+    SKIP
+  )
+);
+end_aperiodicEventHandlerState.schedulable ->
       end_aperiodicEventHandler_app.schedulable ->
       SKIP 
-    )
-)
 
 
 Start_APEH(schedulable) =
-  (
-    Register_APEH(schedulable) --; 
-   -- Activate_APEH(schedulable)
-  )  
-  []
-  (
-  done_safeletFW ->
-  set_applicationTerminating.schedulable!True ->
-  SKIP
-)
-[]
-  (
-    activate_schedulables?someMissionID -> 
-    Start_APEH(schedulable)
-  ) 
-  [] 
-  ( 
-  done_toplevel_sequencer -> 
-  set_applicationTerminating.schedulable!True ->
-  SKIP
-  )
+  Register_APEH(schedulable)   
+ -- []
+ 
 
 
 Register_APEH(schedulable) = 

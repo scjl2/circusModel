@@ -7,7 +7,7 @@ datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId
 
 datatype MissionID = nullMissionId|
                       missionA|missionB 
-                    | TopMission1ID | MyMission1ID | MyMission2ID | MyMission3ID 
+                    | TopMission1ID --| MyMission1ID | MyMission2ID | MyMission3ID 
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 
@@ -17,6 +17,7 @@ datatype ExceptionType = interruptedException |
                           ceilingViolationException
 nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
+datatype ThreadID = threadA | threadB
 maxNum = 10
 nametype num = {0..maxNum}
 
@@ -49,6 +50,6 @@ include "PeriodicEventHandlerFW.csp"
 
 include "ManagedThreadFW.csp" 
 
-include "ThreadFW.csp" 
+--include "ThreadFW.csp" 
 
-include "ObjectFW.csp"
+--include "ObjectFW.csp"

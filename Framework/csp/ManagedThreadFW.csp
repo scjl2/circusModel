@@ -1,11 +1,8 @@
 -- MANAGED THREAD
-
---MT Types
-
+-- Models javax.safetycritical.ManagedThread
 
 
 -- MT CHannels
-
 
 channel runCall : SchedulableID 
 channel runRet : SchedulableID
@@ -61,47 +58,39 @@ ManagedThreadFWState(schedulable, controllingMission, applicationTerminating) =
 ManagedThreadFWBehaviour(schedulable) =
 
 (
-    Start_MT(schedulable) ; 
-  get_applicationTerminating.schedulable?applicationTerminating ->
-  (
-    if applicationTerminating == False then 
-      (
+  Start_MT(schedulable) ; 
+--  get_applicationTerminating.schedulable?applicationTerminating ->
+-- (
+ --   if applicationTerminating == False then 
+--      (
           Execute_MT(schedulable) ; 
           Cleanup_MT(schedulable) ; 
-          ManagedThreadFWBehaviour(schedulable) 
-      ) 
-      else 
+ --         ManagedThreadFWBehaviour(schedulable) 
+--      ) 
+--      else 
     (
+      ((
+              done_safeletFW -> 
+              set_applicationTerminating.schedulable!True ->
+              SKIP 
+            )
+            [] 
+            (
+              done_toplevel_sequencer -> 
+              set_applicationTerminating.schedulable!True ->
+              SKIP 
+            ));
       end_managedThreadState.schedulable -> 
       end_managedThread_app.schedulable ->
       SKIP
     ) 
-  )
+ -- )
 )
 
 Start_MT(schedulable) =
-  (
-   Register_MT(schedulable) --; 
-  -- Activate_MT(schedulable)
-  ) 
-
-  []
-  (
-  done_safeletFW -> 
-  set_applicationTerminating.schedulable!True ->
-    SKIP 
-)
-[]
-  (
-    activate_schedulables?someMissionID -> 
-    Start_MT(schedulable)
-  ) 
-  [] 
-  (
-    done_toplevel_sequencer -> 
-    set_applicationTerminating.schedulable!True ->
-    SKIP 
-  )
+  Register_MT(schedulable)
+  --[]
+  
 
 Register_MT(schedulable) =
   register.schedulable?controllingMission ->
@@ -109,7 +98,6 @@ Register_MT(schedulable) =
 
 
 Activate_MT(schedulable, controllingMission) =
- -- get_controllingMission.schedulable?controllingMission ->  
   activate_schedulables.controllingMission ->  
   SKIP
 
@@ -139,11 +127,13 @@ Methods_MT(schedulable) =
 
 SignalTerminationMeth_MT(schedulable) = 
   signalTerminationCall.schedulable -> 
-  signalTerminationRet.schedulable -> SKIP
+  signalTerminationRet.schedulable -> 
+  SKIP
 
 Cleanup_MT(schedulable) = 
   cleanupSchedulableCall.schedulable ->
-  cleanupSchedulableRet.schedulable -> SKIP
+  cleanupSchedulableRet.schedulable -> 
+  SKIP
  
 assert ManagedThreadFW(schedulableA); Loop :[ deadlock free [FD] ]
 assert ManagedThreadFW(schedulableA) :[ divergence free ]

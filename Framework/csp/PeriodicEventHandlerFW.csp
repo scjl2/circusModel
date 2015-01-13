@@ -107,44 +107,48 @@ PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadline
 
 (
     Start_PEH(schedulable) ;
-    get_applicationTerminating.schedulable?applicationTerminating ->
-    (
-      if applicationTerminating == False then  
-      (
+ --   get_applicationTerminating.schedulable?applicationTerminating ->
+ --   (
+ --     if applicationTerminating == False then  
+ --     (
            Execute_PEH(schedulable, startTime, period, deadline, deadlineMissHandler)  ; 
            Cleanup_PEH(schedulable) ; 
-           reset_periodicEventHandlerState.schedulable ->
-           PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
-      )
-      else  
-         end_periodicEventHandlerState.schedulable ->
-         end_periodicEventHandler_app.schedulable ->
-         SKIP 
-    ) 
+           Terminate_pehfw(schedulable)
+
+ --          reset_periodicEventHandlerState.schedulable ->
+ --          PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
+ --     )
+ --     else  
+         
+ --   ) 
 )
 
-Start_PEH(schedulable) =
- (
-   Register_PEH(schedulable) --;
-   --Activate_PEH(schedulable)
- ) 
- []
- (
-  done_safeletFW ->
- set_applicationTerminating.schedulable!True ->
+
+Terminate_pehfw(schedulable) =
+(
+  (
+    done_safeletFW ->
+    set_applicationTerminating.schedulable!True ->
     SKIP
-)
-[]
- (
-    activate_schedulables?someMissionID ->
-    Start_PEH(schedulable)
- ) 
- []
- (
+  )
+  []
+  (
     done_toplevel_sequencer ->
     set_applicationTerminating.schedulable!True ->
     SKIP
-  )  
+  )
+);
+end_periodicEventHandlerState.schedulable ->
+         end_periodicEventHandler_app.schedulable ->
+         SKIP 
+
+Start_PEH(schedulable) =
+-- (
+   Register_PEH(schedulable) --;
+   --Activate_PEH(schedulable)
+ --) 
+ --[]
+ 
 
 Register_PEH(schedulable) =
    register.schedulable?controllingMission ->

@@ -84,44 +84,48 @@ OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler) =
 
 (
   Start_OSEH(schedulable) ;
-  get_applicationTerminating.schedulable?applicationTerminating ->
-  ( 
-    if applicationTerminating == False then  
-    (
+ -- get_applicationTerminating.schedulable?applicationTerminating ->
+--  ( 
+--    if applicationTerminating == False then  
+--    (
       Execute_OSEH(schedulable, deadline, deadlineMissHandler) ; 
       Cleanup_OSEH(schedulable) ; 
-      reset_oneshotEventHandlerState.schedulable ->
-      OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
-    )
-    else 
-      end_oneshotEventHandlerState.schedulable ->
-      end_oneshotEventHandler_app.schedulable ->
-      SKIP 
-  ) 
+      Terminate_osehfw(schedulable)
+--      reset_oneshotEventHandlerState.schedulable ->
+--      OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
+--    )
+--    else 
+--      end_oneshotEventHandlerState.schedulable ->
+--      SKIP 
+--  ) 
 )
 
+Terminate_osehfw(schedulable) =
+( 
+  (
+    done_safeletFW -> 
+    set_applicationTerminating.schedulable!True   ->
+    SKIP
+  )
+  [] 
+  (
+    done_toplevel_sequencer ->  
+    set_applicationTerminating.schedulable!True   ->
+    SKIP
+  )
+) ;
+end_oneshotEventHandlerState.schedulable ->
+      end_oneshotEventHandler_app.schedulable ->
+      SKIP 
+
+
 Start_OSEH(schedulable) =
-  ( 
+ -- ( 
     Register_OSEH(schedulable)-- ; 
    -- Activate_OSEH(schedulable)
-  )  
-  []
-  (
-  done_safeletFW -> 
- set_applicationTerminating.schedulable!True   ->
-  SKIP
-)
-[]
-  (
-    activate_schedulables?someMissionID -> 
-    Start_OSEH(schedulable)
-  ) 
-  [] 
- (
-  done_toplevel_sequencer ->  
-  set_applicationTerminating.schedulable!True   ->
-  SKIP
-  )
+  --)  
+  --[]
+  
 
 
 Register_OSEH(schedulable) = 

@@ -20,7 +20,7 @@ MinPriority = 1
 nametype PriorityLevel = {MinPriority..MaxPriority}
 
 datatype JTime = Bit.Bit
-nametype PriorityQueue = (| {MinPriority} =>  {|ThreadID|} , {MaxPriority} => {|ThreadID|} |)
+datatype PriorityQueue =  (|{PriorityLevel} =>  <ThreadID> |)
 
 nametype ApplicationMissionIds = {FlatBufferMissionId}
 

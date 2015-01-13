@@ -658,14 +658,14 @@ MonitorLockController \circdef \circval interruptedThreads : \power ThreadID \ci
 			lockAcquired~.~object~.~lockedBy \then \\
 			\circif lockedBy \in interruptedThreads \circthen \\
 			(
-				%lockAcquired~.~object~?~lockedBy\prefixcolon(lockedBy \in interruptedThreads) \then \\
+				
 				throw.interruptedException \then \\
 				\Chaos
 			) \\
 			%\extchoice \\
 			\circelse lockedBy \notin interruptedThreads \circthen
 			(
-				%lockAcquired~.~object~?~lockedBy\prefixcolon(lockedBy \notin interruptedThreads) \then \\
+				
 				MonitorLockController(interruptedThreads)
 								
 			) \\

@@ -87,43 +87,47 @@ SchedulableMissionSequencerBehaviour(sequencer) =
 
 (
   Start_SMS(sequencer) ; 
-  get_applicationTerminating.sequencer?applicationTerminating ->
-    (if applicationTerminating == False then 
-       (
+ -- get_applicationTerminating.sequencer?applicationTerminating ->
+  --  (if applicationTerminating == False then 
+  --     (
           Execute_SMS(sequencer) ; 
           Cleanup_SMS(sequencer) ; 
-          reset_schedulableMissionSequencerState.sequencer ->
-          SchedulableMissionSequencerBehaviour(sequencer) 
-        ) 
-     else  
-       end_schedulableMissionSequencerState.sequencer -> 
-       end_sequencer_app.sequencer -> 
-       SKIP
-     )
+          Terminate_smsfw(sequencer)
+    --      reset_schedulableMissionSequencerState.sequencer ->
+   --       SchedulableMissionSequencerBehaviour(sequencer) 
+   --     ) 
+   --  else  
+       
+   ---  )
 )
 
+Terminate_smsfw(sequencer)=
+(
+   (
+      done_safeletFW ->
+      set_applicationTerminating.sequencer!True ->
+      SKIP
+    )
+    []
+    (
+      done_toplevel_sequencer -> 
+      set_applicationTerminating.sequencer!True ->
+      SKIP
+    )
+);
+end_schedulableMissionSequencerState.sequencer -> 
+       end_sequencer_app.sequencer -> 
+       SKIP
+
+
 Start_SMS(sequencer) =  
- (
+ --(
       Register_SMS(sequencer) --;
       --Activate_SMS(sequencer)
-    )
- []
- (
-  done_safeletFW ->
-  set_applicationTerminating.sequencer!True ->
-  SKIP
-)
-[]
- (
-    done_toplevel_sequencer -> 
-    set_applicationTerminating.sequencer!True ->
-    SKIP
-  )
- []
- (
-    activate_schedulables?someMissionID -> 
-    Start_SMS(sequencer) 
-  ) 
+  --  )
+-- []
+
+
 
 Register_SMS(sequencer) = 
  register.sequencer?controllingMission ->
