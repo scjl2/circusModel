@@ -276,12 +276,12 @@ FlatBuffer =
 	FlatBufferSequencerApp
 	|||
 	FlatBufferMissionApp
-	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
-	(
-		((ReaderApp [|ThreadSync|] ThreadFW(ReaderThreadID, 1) ) [|ObjectSync|] ObjectFW(ReaderObjectId))
-			[|{|  notify |}|]
-		((WriterApp [|ThreadSync|] ThreadFW(WriterThreadID, 1))[|ObjectSync|] ObjectFW(WriterObjectId))
-	)	
+	--[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
+	--(
+		--((ReaderApp [|ThreadSync|] ThreadFW(ReaderThreadID, 1) ) [|ObjectSync|] ObjectFW(ReaderObjectId))
+		--	[|{|  notify |}|]
+		--((WriterApp [|ThreadSync|] ThreadFW(WriterThreadID, 1))[|ObjectSync|] ObjectFW(WriterObjectId))
+--	)	
 )	
 
 

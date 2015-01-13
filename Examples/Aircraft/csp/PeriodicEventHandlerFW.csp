@@ -1,7 +1,8 @@
 --PERIODIC EVENT HANDLER FW
+-- Models javax.safetycritical.PeriodicEventHandler
+
 
 -- PEH Channels
-
 channel get_missedReleases : SchedulableID.num
 channel set_missedReleases : SchedulableID.num
 channel get_periodicTerminating : SchedulableID.Bool
@@ -20,7 +21,7 @@ nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
                           get_missedReleases,set_missedReleases, 
                           get_periodicTerminating, set_periodicTerminating,
                           get_startTime, set_startTime,
-                          end_periodicEventHandlerState, reset_periodicEventHandlerState|}
+                          end_periodicEventHandlerState|}
 
 
 nametype PEHFWChanSet = union(
@@ -37,64 +38,39 @@ PeriodicEventHandlerFW(schedulable, period, startTime, deadline, deadlineMissHan
 ( 
   PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
     [|PEHStateSync|]
-  PeriodicEventHandlerState(schedulable, nullMissionId, False, period, startTime, deadline, deadlineMissHandler, 0, False)
+  PeriodicEventHandlerState(schedulable, period, startTime, deadline, deadlineMissHandler, 0, False)
 )\PEHStateSync
 
-PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) =
+PeriodicEventHandlerState(schedulable,  period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) =
 (
   (
-    get_controllingMission.schedulable!controllingMission ->
-    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
-  )
-  []
-  (
-    set_controllingMission.schedulable?newControllingMission ->
-    PeriodicEventHandlerState(schedulable, newControllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
-   )
-  []
-  (
-    get_applicationTerminating.schedulable!applicationTerminating ->
-    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
-  )
-  []
-  (
-    set_applicationTerminating.schedulable?newApplicationTerminating ->
-    PeriodicEventHandlerState(schedulable, controllingMission, newApplicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
-  )
-  []
-  (
     get_missedReleases.schedulable!missedReleases ->
-    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+    PeriodicEventHandlerState(schedulable, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
   )
   []
   (
     set_missedReleases.schedulable?newMissedReleases ->
-     PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, newMissedReleases, periodicTerminating)
+     PeriodicEventHandlerState(schedulable, period, startTime, deadline, deadlineMissHandler, newMissedReleases, periodicTerminating)
   )
   []
   (
     get_periodicTerminating.schedulable!periodicTerminating ->
-    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
+    PeriodicEventHandlerState(schedulable, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating)
   )
   []
   (
     set_periodicTerminating.schedulable?newPeriodicTerminating ->
-    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, newPeriodicTerminating)
+    PeriodicEventHandlerState(schedulable, period, startTime, deadline, deadlineMissHandler, missedReleases, newPeriodicTerminating)
   )
   []
   ( 
     get_startTime.schedulable!startTime ->
-    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) 
+    PeriodicEventHandlerState(schedulable, period, startTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) 
   )
   []
   (
     set_startTime.schedulable?newStartTime ->
-    PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminating, period, newStartTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) 
-  )
-  []
-  (
-    reset_periodicEventHandlerState.schedulable ->
-    PeriodicEventHandlerState(schedulable, nullMissionId, False, period, startTime, deadline, deadlineMissHandler, 0, False)
+    PeriodicEventHandlerState(schedulable, period, newStartTime, deadline, deadlineMissHandler, missedReleases, periodicTerminating) 
   )
   []
   (
@@ -104,47 +80,33 @@ PeriodicEventHandlerState(schedulable, controllingMission, applicationTerminatin
 )
 
 PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler) =
-
 (
-    Start_PEH(schedulable) ;
-    get_applicationTerminating.schedulable?applicationTerminating ->
-    (
-      if applicationTerminating == False then  
-      (
-           Execute_PEH(schedulable, startTime, period, deadline, deadlineMissHandler)  ; 
-           Cleanup_PEH(schedulable) ; 
-           reset_periodicEventHandlerState.schedulable ->
-           PeriodicEventHandlerBehaviour(schedulable, startTime, period, deadline, deadlineMissHandler)
-      )
-      else  
-         end_periodicEventHandlerState.schedulable ->
-         end_periodicEventHandler_app.schedulable ->
-         SKIP 
-    ) 
+  Start_PEH(schedulable) ;
+  Execute_PEH(schedulable, startTime, period, deadline, deadlineMissHandler)  ; 
+  Cleanup_PEH(schedulable) ; 
+  Terminate_pehfw(schedulable)
 )
+
+
+Terminate_pehfw(schedulable) =
+(
+  (
+    done_safeletFW ->
+    SKIP
+  )
+  []
+  (
+    done_toplevel_sequencer ->   
+    SKIP
+  )
+);
+end_periodicEventHandlerState.schedulable ->
+end_periodicEventHandler_app.schedulable ->
+SKIP 
 
 Start_PEH(schedulable) =
- (
-   Register_PEH(schedulable) --;
-   --Activate_PEH(schedulable)
- ) 
- []
- (
-  done_safeletFW ->
- set_applicationTerminating.schedulable!True ->
-    SKIP
-)
-[]
- (
-    activate_schedulables?someMissionID ->
-    Start_PEH(schedulable)
- ) 
- []
- (
-    done_toplevel_sequencer ->
-    set_applicationTerminating.schedulable!True ->
-    SKIP
-  )  
+   Register_PEH(schedulable)
+   
 
 Register_PEH(schedulable) =
    register.schedulable?controllingMission ->
@@ -243,8 +205,7 @@ get_missedReleases.schedulable?missedReleases ->
      else
        set_missedReleases.schedulable!(missedReleases -1) ->
        SKIP
-   )    
-
+   )   
 )
 ;
 (
@@ -255,7 +216,8 @@ get_missedReleases.schedulable?missedReleases ->
   ) 
     [| {|handleAsyncEventRet|} |] 
   FireCatcher(schedulable) 
-) ;
+) 
+;
 (
   (
     get_periodicTerminating.schedulable?periodicTerminating:({False}) ->
@@ -301,7 +263,7 @@ DeadlineClock_PEH(schedulable, index, deadline, period, deadlineMissHandler) =
     (
         
         circwait.deadline ->
-        handleAsyncEventRet.deadlineMissHandler ->
+        release.deadlineMissHandler ->
         release_complete_PEH.schedulable.index ->
         SKIP
       ) 
@@ -342,6 +304,6 @@ Cleanup_PEH(schedulable) =
   cleanupSchedulableRet.schedulable ->
   SKIP
 
---assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
---assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ divergence free ]
---assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]
+assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
+assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ divergence free ]
+assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]

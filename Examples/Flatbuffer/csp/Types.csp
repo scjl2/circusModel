@@ -18,13 +18,15 @@ MaxPriority = 2
 MinPriority = 1
 
 nametype PriorityLevel = {MinPriority..MaxPriority}
+nametype Bit = {0,1}
 
-datatype JTime = Bit.Bit
-datatype PriorityQueue =  (|{PriorityLevel} =>  <ThreadID> |)
+
+nametype JTime = Bit.Bit
+--datatype PriorityQueue =  (| {PriorityLevel} =>  <ThreadID> |)
 
 nametype ApplicationMissionIds = {FlatBufferMissionId}
 
-nametype Bit = {0,1}
+
 datatype ObjectID = WriterObjectId | ReaderObjectId
 datatype ThreadID = WriterThreadID | ReaderThreadID
 maxNum = 2

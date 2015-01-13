@@ -39,6 +39,6 @@ include "PeriodicEventHandlerFW.csp"
 
 include "ManagedThreadFW.csp" 
 
-include "ThreadFW.csp"
+--include "ThreadFW.csp"
 
-include "ObjectFW.csp"
+--include "ObjectFW.csp"

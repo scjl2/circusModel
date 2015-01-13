@@ -1,17 +1,15 @@
 --Aperiocidc EVENT HANDLER FW
- 
---APEH TYPES
+-- Models javax.safetycritical.AperiodicEventHandler
 
+
+--APEH TYPES
 datatype AperiodicType = aperiodic | aperiodicLong
 
 -- APEH Channels
-
-
 channel set_pending : SchedulableID . Bool
 channel get_pending : SchedulableID . Bool
 channel set_data : SchedulableID . num
 channel get_data : SchedulableID . num
-channel reset_aperiodicEventHandlerState : SchedulableID
 channel end_aperiodicEventHandlerState : SchedulableID
 channel end_aperiodicEventHandler_app : SchedulableID
 
@@ -27,71 +25,44 @@ channel scheduleNextRelease : SchedulableID.num
 nametype APEHFWChanSet = union(
   union(ManagedSchedulableFWChanSet, APEHStateSync),
    {|done_safeletFW, releaseLong,release, handleAsyncLongEventCall, handleAsyncEventRet, 
-      end_releases, circwait, 
+     releaseLong, end_releases, circwait, 
      release_complete, done_schedulable, done_toplevel_sequencer |}  )
 
 nametype DeadlineSync_APEH =  {| end_releases, deschedule_handler, release_complete|}
 nametype APEHStateSync = 
-  {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
-      get_pending, set_pending, get_data, set_data, end_aperiodicEventHandlerState, reset_aperiodicEventHandlerState|}
+  {| get_pending, set_pending, get_data, set_data, end_aperiodicEventHandlerState|}
 
 
 AperiodicEventHandlerFW(schedulable, aperiodicType, deadline, deadlineMissHandler) =
 
 (
-  AperiodicEventHandlerState(schedulable, nullMissionId, False, False, 0, deadline, deadlineMissHandler )
+  AperiodicEventHandlerState(schedulable, False, 0, deadline, deadlineMissHandler )
     [|APEHStateSync|]
   AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
 )\APEHStateSync
 
-AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler) =
-(
-  get_controllingMission.schedulable!controllingMission ->
-  AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
-)
-[]
-(
-  set_controllingMission.schedulable?newControllingMission ->
-  AperiodicEventHandlerState(schedulable, newControllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
-)
-[]
-(
-  get_applicationTerminating.schedulable!applicationTerminating ->
-  AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
-)
-[]
-(
-  set_applicationTerminating.schedulable?newApplicationTerminating ->
-  AperiodicEventHandlerState(schedulable, controllingMission, newApplicationTerminating, pending, data, deadline, deadlineMissHandler)
-)
-
-[]
+AperiodicEventHandlerState(schedulable, pending, data, deadline, deadlineMissHandler) =
 (
   set_pending.schedulable?newPending ->
-  AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, newPending, data, deadline, deadlineMissHandler)
+  AperiodicEventHandlerState(schedulable, newPending, data, deadline, deadlineMissHandler)
  )
 []
 (
   get_pending.schedulable!pending ->
-  AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+  AperiodicEventHandlerState(schedulable, pending, data, deadline, deadlineMissHandler)
 
 )
 []
 (
   get_data.schedulable!data ->
-  AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, data, deadline, deadlineMissHandler)
+  AperiodicEventHandlerState(schedulable, pending, data, deadline, deadlineMissHandler)
 
 )
 []
 (
   set_data.schedulable?newData ->
-  AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminating, pending, newData, deadline, deadlineMissHandler)
+  AperiodicEventHandlerState(schedulable, pending, newData, deadline, deadlineMissHandler)
 
-)
-[]
-(
-  reset_aperiodicEventHandlerState.schedulable ->
-  AperiodicEventHandlerState(schedulable, nullMissionId, False, False, 0, deadline, deadlineMissHandler )
 )
 []
 (
@@ -101,49 +72,33 @@ AperiodicEventHandlerState(schedulable, controllingMission, applicationTerminati
 
 
 AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler) =
-
 (   
   Start_APEH(schedulable) ;
-  get_applicationTerminating.schedulable?applicationTerminating ->
-  ( 
-    if applicationTerminating == False then 
-    (
-      Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) ; 
-      Cleanup_APEH(schedulable)  ; 
-      reset_aperiodicEventHandlerState.schedulable ->
-      AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler)
-    )
-    else 
-      end_aperiodicEventHandlerState.schedulable ->
-      end_aperiodicEventHandler_app.schedulable ->
-      SKIP 
-    )
+  Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) ; 
+  Cleanup_APEH(schedulable)  ; 
+  Terminate_apehfw(schedulable)
 )
+
+Terminate_apehfw(schedulable) =
+(  
+  (
+    done_safeletFW ->   
+    SKIP
+  )
+  [] 
+  ( 
+    done_toplevel_sequencer ->    
+    SKIP
+  )
+);
+end_aperiodicEventHandlerState.schedulable ->
+end_aperiodicEventHandler_app.schedulable ->
+SKIP 
 
 
 Start_APEH(schedulable) =
-  (
-    Register_APEH(schedulable) --; 
-   -- Activate_APEH(schedulable)
-  )  
-  []
-  (
-  done_safeletFW ->
-  set_applicationTerminating.schedulable!True ->
-  SKIP
-)
-[]
-  (
-    activate_schedulables?someMissionID -> 
-    Start_APEH(schedulable)
-  ) 
-  [] 
-  ( 
-  done_toplevel_sequencer -> 
-  set_applicationTerminating.schedulable!True ->
-  SKIP
-  )
-
+  Register_APEH(schedulable)   
+  
 
 Register_APEH(schedulable) = 
     register.schedulable?controllingMission -> 
@@ -151,7 +106,6 @@ Register_APEH(schedulable) =
   
 
 Activate_APEH(schedulable, controllingMission)  =  
- -- get_controllingMission.schedulable?controllingMission ->
     activate_schedulables.controllingMission -> 
     SKIP
 
@@ -306,6 +260,6 @@ Cleanup_APEH(schedulable) =
  SKIP 
 
 
---assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
---assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
---assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 

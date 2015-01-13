@@ -10,8 +10,6 @@ channel  getNextMissionCall : SchedulableID
 channel  getNextMissionRet : (SchedulableID . MissionID) 
 channel  requestSequenceTermination : (SchedulableID . Bool) 
 
-
-
 channel  end_sequencer_app:SchedulableID
 channel  end_methods : SchedulableID
 channel  end_terminations : SchedulableID

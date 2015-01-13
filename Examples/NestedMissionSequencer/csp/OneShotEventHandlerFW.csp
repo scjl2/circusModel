@@ -1,9 +1,8 @@
 --One SHot EVENT HANDLER FW
- 
+-- Models javax.safetycritical.OneShotEventHandler
 
 
 -- OSEH Channels
-
 channel end_oneshotEventHandlerState : SchedulableID
 channel end_oneshotEventHandler_app : SchedulableID
 
@@ -16,12 +15,9 @@ channel descheduleRet : SchedulableID.Bool
 
 
 nametype MethodsSync_OSEH =  {|end_releases, reschedule_handler, deschedule_handler|} 
-nametype ReleaseSync_OSEH = {|releaseCall, reschedule_handler, end_releases|}
-nametype DeadlineSync_OSEH =  {|releaseCall, end_releases, deschedule_handler, release_complete|}
-nametype OSEHStateSync = 
-  {|get_controllingMission, set_controllingMission, get_applicationTerminating, set_applicationTerminating,
-  get_startTime, set_startTime,
-  end_oneshotEventHandlerState|}
+nametype ReleaseSync_OSEH = {|handleAsyncEventCall, reschedule_handler, end_releases|}
+nametype DeadlineSync_OSEH =  {|handleAsyncEventCall, end_releases, deschedule_handler, release_complete|}
+nametype OSEHStateSync = {| get_startTime, set_startTime, end_oneshotEventHandlerState|}
 
 nametype OSEHFWChanSet = union(
   union(OSEHStateSync,ManagedSchedulableFWChanSet),
@@ -30,43 +26,22 @@ descheduleCall,descheduleRet, release_complete, end_releases, done_safeletFW,
 circwait, getNextReleaseTimeCall, getNextReleaseTimeRet, scheduleNextRelease, done_toplevel_sequencer |} )
 
 -- ONE SHOT EVENT HANDLER
-
 OneShotEventHandlerFW(schedulable, startTime, deadline, deadlineMissHandler) = 
 (
   OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
     [|OSEHStateSync |]
-  OneShotEventHandlerState(schedulable, nullMissionId, False, startTime, deadline, deadlineMissHandler)
+  OneShotEventHandlerState(schedulable, startTime, deadline, deadlineMissHandler)
 )\OSEHStateSync
 
-OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler) = 
-(
-  get_controllingMission.schedulable!controllingMission ->
-  OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
-)
-[]
-(
-  set_controllingMission.schedulable?newControllingMission ->
-  OneShotEventHandlerState(schedulable, newControllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
-)
-[]
-(
-  get_applicationTerminating.schedulable!applicationTerminating ->
-  OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
-)
-[]
-(
-  set_applicationTerminating.schedulable?newApplicationTerminating ->
-  OneShotEventHandlerState(schedulable, controllingMission, newApplicationTerminating, startTime, deadline, deadlineMissHandler)
-)
-[]
+OneShotEventHandlerState(schedulable, startTime, deadline, deadlineMissHandler) = 
 ( 
   get_startTime.schedulable!startTime ->
-  OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, startTime, deadline, deadlineMissHandler)
+  OneShotEventHandlerState(schedulable, startTime, deadline, deadlineMissHandler)
  )
 []
 (
   set_startTime.schedulable?newStartTime ->
-   OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating, newStartTime, deadline, deadlineMissHandler)
+   OneShotEventHandlerState(schedulable, newStartTime, deadline, deadlineMissHandler)
 )
 []
 (
@@ -75,56 +50,41 @@ OneShotEventHandlerState(schedulable, controllingMission, applicationTerminating
 )
 
 OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler) = 
-
 (
   Start_OSEH(schedulable) ;
-  get_applicationTerminating.schedulable?applicationTerminating ->
-  ( 
-    if applicationTerminating == False then  
-    (
-      Execute_OSEH(schedulable, deadline, deadlineMissHandler) ; 
-      Cleanup_OSEH(schedulable) ; 
-      OneShotEventHandlerBehaviour(schedulable, deadline, deadlineMissHandler)
-    )
-    else 
-      end_oneshotEventHandlerState.schedulable ->
-      end_oneshotEventHandler_app.schedulable ->
-      SKIP 
-  ) 
+  Execute_OSEH(schedulable, deadline, deadlineMissHandler) ; 
+  Cleanup_OSEH(schedulable) ; 
+  Terminate_osehfw(schedulable)
 )
 
-Start_OSEH(schedulable) =
-  ( 
-    Register_OSEH(schedulable)-- ; 
-   -- Activate_OSEH(schedulable)
-  )  
-  []
+Terminate_osehfw(schedulable) =
+( 
   (
-  done_safeletFW -> 
- set_applicationTerminating.schedulable!True   ->
-  SKIP
-)
-[]
-  (
-    activate_schedulables?someMissionID -> 
-    Start_OSEH(schedulable)
-  ) 
-  [] 
- (
-  done_toplevel_sequencer ->  
-  set_applicationTerminating.schedulable!True   ->
-  SKIP
+    done_safeletFW ->     
+    SKIP
   )
+  [] 
+  (
+    done_toplevel_sequencer ->    
+    SKIP
+  )
+) ;
+end_oneshotEventHandlerState.schedulable ->
+end_oneshotEventHandler_app.schedulable ->
+SKIP 
+
+
+Start_OSEH(schedulable) =
+    Register_OSEH(schedulable)
 
 
 Register_OSEH(schedulable) = 
-    register.schedulable?controllingMission -> 
-    Activate_OSEH(schedulable, controllingMission)
+  register.schedulable?controllingMission -> 
+  Activate_OSEH(schedulable, controllingMission)
 
 Activate_OSEH(schedulable, controllingMission)  =  
-  --get_controllingMission.schedulable?controllingMission ->
-    activate_schedulables.controllingMission -> 
-    SKIP
+  activate_schedulables.controllingMission -> 
+  SKIP
 
 Execute_OSEH(schedulable, deadline, deadlineMissHandler) =  
 (
@@ -159,14 +119,14 @@ Run_OSEH(schedulable, deadline, deadlineMissHandler) =
 ScheduleOrWait(schedulable) = 
  get_startTime.schedulable?startTime -> 
  if startTime != 0 then 
-        Scheduled(schedulable) 
+      Scheduled(schedulable) 
   else 
       NotScheduled(schedulable) 
 
 Release_OSEH(schedulable) = 
  ( 
-      releaseCall.schedulable -> 
-      releaseRet.schedulable ->   
+      handleAsyncEventCall.schedulable -> 
+      handleAsyncEventRet.schedulable ->   
       release_complete.schedulable -> 
       Release_OSEH(schedulable)
   ) 
@@ -186,12 +146,12 @@ Release_OSEH(schedulable) =
 
 DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) = 
 (
- releaseCall.schedulable ->  
+ handleAsyncEventCall.schedulable ->  
   (
     (   
       (
         circwait.deadline -> 
-        fire.deadlineMissHandler ->         
+        release.deadlineMissHandler ->         
         DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
       ) 
       [] 
@@ -221,7 +181,7 @@ Scheduled(schedulable) =
  (
   ( 
     circwait.startTime ->     
-    releaseCall.schedulable -> 
+    handleAsyncEventCall.schedulable -> 
     NotScheduled(schedulable)
      ) 
      [] 
@@ -333,6 +293,6 @@ Cleanup_OSEH(schedulable) =
   SKIP
 
 
--- assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
--- assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ divergence free ]
--- assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]  
+assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
+assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ divergence free ]
+assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]  
