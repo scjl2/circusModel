@@ -1,4 +1,7 @@
+--Thread
+--Models java.lang.Thread
 
+--Thread Channels
 channel get_priorityLevel : ThreadID . ObjectID . PriorityLevel 
 channel raise_thread_priority : ThreadID . PriorityLevel 
 channel lower_thread_priority : ThreadID  

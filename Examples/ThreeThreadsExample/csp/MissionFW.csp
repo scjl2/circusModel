@@ -1,7 +1,7 @@
 --MissionFW
+--Models javax.safetycritical.Mission
 
 --Mission Channels
-
 channel set_controllingSequencer : MissionID.SchedulableID
 channel set_applicationTerminating_M : MissionID.Bool 
 channel get_applicationTerminating_M : MissionID.Bool 
@@ -47,8 +47,6 @@ channel cleanupMissionCall : MissionID
 channel cleanupMissionRet : MissionID.Bool
 channel end_mission_app : MissionID
 channel done_mission : MissionID.Bool
-
-
 
 
 

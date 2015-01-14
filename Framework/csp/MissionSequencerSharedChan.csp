@@ -1,4 +1,4 @@
---MIssionSequencerShared
+--MissionSequencerShared
 channel get_currentMission :SchedulableID.MissionID
 channel set_currentMission : SchedulableID.MissionID
 channel get_continue : SchedulableID.Bool

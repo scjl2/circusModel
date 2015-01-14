@@ -293,6 +293,6 @@ Cleanup_OSEH(schedulable) =
   SKIP
 
 
-assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
-assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ divergence free ]
-assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]  
+--assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
+--assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ divergence free ]
+--assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]  

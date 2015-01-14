@@ -1,11 +1,8 @@
 --TopLevelMissionSequencer
-
+-- Models javax.safetycritical.MissionSequencer
 
 
 --TLMS CHANNELS
-
-
-
 channel  start_toplevel_sequencer:SchedulableID 
 
 channel  done_toplevel_sequencer 
@@ -88,9 +85,7 @@ Execute_TLS(sequencer)  =
 ) 
 
 RunMission_TLS(sequencer) = 
- GetNextMission_TLS(sequencer) --; 
--- StartMission_TLS(sequencer) ; 
--- Continue_TLS(sequencer)
+ GetNextMission_TLS(sequencer) 
 
 GetNextMission_TLS(sequencer)  =  
   getNextMissionCall.sequencer -> 
@@ -98,36 +93,22 @@ GetNextMission_TLS(sequencer)  =
   StartMission_TLS(sequencer, next)
 
 StartMission_TLS(sequencer, currentMission) = 
- -- get_currentMission.sequencer?currentMission ->
-  (
-    if currentMission != nullMissionId then
+(
+	if currentMission != nullMissionId then
     ( 
       start_mission.currentMission.sequencer ->
       done_mission.currentMission?returnedcontinue -> 
-  --  set_continue.sequencer.returnedcontinue -> 
-    --  SKIP
-    Continue_TLS(sequencer,returnedcontinue)
+      Continue_TLS(sequencer,returnedcontinue)
     )
      else 
-    ( 
-      --set_continue.sequencer!False ->
-      --SKIP
-      Continue_TLS(sequencer, False)
-    ) 
-  )    
+         Continue_TLS(sequencer, False)
+)    
  
 Continue_TLS(sequencer, continue) = 
 if continue == True then
-  (
- --   get_continue.sequencer?continue:({True}) -> 
     RunMission_TLS(sequencer) 
-  )
- -- []
 else
-  (
- --   get_continue.sequencer?continue:( {False}) -> 
     SKIP
-  )
 
 Finish_TLS(sequencer)   = 
   done_toplevel_sequencer ->  

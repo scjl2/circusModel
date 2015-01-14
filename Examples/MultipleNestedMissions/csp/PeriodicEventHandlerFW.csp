@@ -304,6 +304,6 @@ Cleanup_PEH(schedulable) =
   cleanupSchedulableRet.schedulable ->
   SKIP
 
-assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
-assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ divergence free ]
-assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]
+--assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
+--assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ divergence free ]
+--assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]

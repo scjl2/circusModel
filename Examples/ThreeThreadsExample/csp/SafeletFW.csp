@@ -1,7 +1,7 @@
 --SAFELET
+--Models javax.safetycritical.Safelet
 
 --SAFELET CHANNELS
-
 channel done_safeletFW
 
 channel initializeApplicationCall 

@@ -156,7 +156,7 @@ nametype TierSpecificChan = {|start_mission, done_mission, initializeRet, reques
 
 nametype MissionAndSchedulableChans = Union({MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet})
 
-nametype SchedulableEndApps =  {| end_managedThread_app, end_sequencer_app, end_periodic_app, end_aperiodicEventHandler_app, 
+nametype SchedulableEndApps =  {| end_managedThread_app, end_sequencer_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, 
                                   end_oneshotEventHandler_app  |} 
 missionsInCluster(cluster) = {m | m <- MissionID,   member( m, set(head(seq(cluster))))  } 
 
