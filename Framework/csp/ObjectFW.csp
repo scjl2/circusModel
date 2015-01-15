@@ -1,4 +1,5 @@
-
+--Object
+--Models java.lang.Object
 
 
 
@@ -12,8 +13,6 @@ datatype WaitType = wait | waitForObject
 	channel waitForObjectRet : ObjectID . ThreadID . Bool 
 	channel notify : ObjectID . ThreadID
 	channel notifyAll : ObjectID . ThreadID	
-
-
 
 	channel unlock_Monitor : ObjectID . ThreadID
 	channel relock: ObjectID . ThreadID
@@ -242,7 +241,7 @@ MonitorUnlocked =
 	get_ceilingPriority.object?ceilingPriority -> 
 	(
 		(
-			get_priorityLevel.lockingThread.object?priority:(priority \leq ceilingPriority) -> 
+			get_priorityLevel.lockingThread.object?priority:(priority <= ceilingPriority) -> 
 			raise_thread_priority.lockingThread!ceilingPriority ->  
 			MonitorLocked(lockingThread) 
 		)
@@ -250,7 +249,7 @@ MonitorUnlocked =
 		(
 			get_priorityLevel.lockingThread.object?priority:(priority > ceilingPriority) -> 
 			throw.ceilingViolationException -> 
-			Chaos(Events)
+			CHAOS(Events)
 		)
 		
 	)	
@@ -349,7 +348,7 @@ waitCall.object?someThread ->
 		(
 			get_lockedBy.object?lockedBy:( diff(ThreadID, someThread) ) -> 
 			throw.illegalMonitorStateException -> 
-			Chaos(Events)
+			CHAOS(Events)
 		) 
 	) 
 	) 
@@ -358,7 +357,7 @@ waitCall.object?someThread ->
        		isInterruptedCall.someThread -> 
        		isInterruptedRet.someThread.True -> 
        		throw.interruptedException -> 
-       		Chaos(Events)
+       		CHAOS(Events)
        )
 )
 	
@@ -382,7 +381,7 @@ TimedWaitHandler =
 		if ( (timeMillis(waitTime) < 0) or (timeNanos(waitTime) < 0 and timeNanos(waitTime) > maxNanos) ) then 
 		(
 			throw.illegalArgumentException ->  
-			Chaos(Events)
+			CHAOS(Events)
 		) 
 		else 
 		(
@@ -398,7 +397,7 @@ TimedWaitHandler =
 	(	
 		get_lockedBy.object?lockedBy:(diff(ThreadID, someThread) ) -> 
 		throw.illegalMonitorStateException -> 
-		Chaos(Events)
+		CHAOS(Events)
 	)
     )	
 
@@ -458,7 +457,7 @@ WaitForObjectHandler =
 		if ( (timeMillis(waitTime) < 0) or (timeNanos(waitTime) < 0) ) then 
 		(
 			throw.illegalArgumentException ->  
-			Chaos(Events)
+			CHAOS(Events)
 		 ) 
 		else ( (timeMillis(waitTime) >= 0) and (timeNanos(waitTime) >= 0) ) then 
 		(
@@ -474,7 +473,7 @@ WaitForObjectHandler =
 	(	
 		get_lockedBy.object?lockedBy:(diff(ThreadID, someThread) ) -> 
 		throw.illegalMonitorStateException -> 
-		Chaos(Events)
+		CHAOS(Events)
 	 )
      )	
 
@@ -539,7 +538,7 @@ Notify =
 	(
 		get_lockedBy.object?lockedBy:(diff(ThreadID, someThread)) -> 
 		throw.illegalMonitorStateException -> 
-		Chaos(Events)
+		CHAOS(Events)
 	) 
 ) 
 ) 
@@ -585,7 +584,7 @@ NotifyAll =
 		(
 			get_lockedBy.object?lockedBy:(diff(ThreadID, someThread)) -> 
 			throw.illegalMonitorStateException -> 
-			Chaos(Events)
+			CHAOS(Events)
 		) 
 	)
   )

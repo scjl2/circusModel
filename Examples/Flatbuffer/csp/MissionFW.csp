@@ -1,5 +1,5 @@
 --MissionFW
-
+--Models javax.safetycritical.Mission
 --Mission Channels
 
 channel set_controllingSequencer : MissionID.SchedulableID

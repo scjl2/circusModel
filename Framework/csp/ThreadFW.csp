@@ -26,8 +26,6 @@ ThreadFW(thread, basePriority) =
 		Execute(thread, basePriority)
 	)
 
-
-
   
 ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted) =
 	(
