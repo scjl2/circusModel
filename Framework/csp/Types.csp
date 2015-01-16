@@ -1,0 +1,50 @@
+--GLOBALS
+transparent sbisim, diamond
+
+datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
+                          | FirstMissionSequencerID| schedulableA|schedulableB | schedulableC
+                          | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
+
+datatype MissionID = nullMissionId|
+                      missionA|missionB 
+                    | TopMission1ID --| MyMission1ID | MyMission2ID | MyMission3ID 
+
+datatype ExceptionType = interruptedException | 
+                          illegalMonitorStateException | 
+                          illegalArgumentException | 
+                          illegalThreadStateException | 
+                          illegalStateException | 
+                          ceilingViolationException
+
+MaxPriority = 2
+MinPriority = 0
+
+nametype PriorityLevel = {MinPriority..MaxPriority}
+
+PriorityQueue = 
+	Map(PriorityLevel, Set(SThread))
+
+ThreadMap = 
+	Map(ThreadID, num)
+
+EmptyThreadMap 	=	
+	mapFromList(<(threadA, 0), (threadB, 0) >)
+
+nametype Bit = {0,1}
+
+
+nametype JTime = Bit.Bit
+--PriorityQueue = Map(PriorityLevel, ThreadID)
+--PriorityQueue2 =  emptyMap(PriorityQueue, PriorityLevel, ThreadID)
+
+
+--PriorityLevel \fun (\iseq ThreadID)
+
+
+--nametype ApplicationMissionIds = {FlatBufferMissionId}
+
+
+datatype ObjectID = objectA | objectB
+datatype ThreadID = threadA | threadB
+maxNum = 2
+nametype num = {0..maxNum}

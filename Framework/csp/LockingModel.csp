@@ -1,0 +1,20 @@
+--Locking Model
+
+include "PriorityQueue.csp"
+
+
+include "ThreadFW.csp"
+
+include "ObjectFW.csp"
+
+nametype LockingModelSync = {| |}
+
+nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_priority  |}
+
+
+
+
+
+LockingModel( lockingModelIds   ) =
+	||| (threadId, threadBasePriority, objectId) : lockingModelIds @
+			(ThreadFW(threadId, threadBasePriority) )--[|ObjectSync|] ObjectFW(objectId))
