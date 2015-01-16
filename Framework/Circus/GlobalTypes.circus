@@ -3,8 +3,16 @@
 \end{zsection}
 %
 \begin{zed}
-	ThreadID ::= Safelet |  MSO\ldata SchedulableID \rdata\\
+	[ThreadID]
 \end{zed}
+%
+\begin{axdef}
+	SafeletThreadId:ThreadID
+\end{axdef}
+%
+\begin{axdef}
+	nullThreadId : ThreadID
+\end{axdef}
 %
 \begin{zed}
 	[ObjectID] \\
