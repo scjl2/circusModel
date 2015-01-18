@@ -3,8 +3,8 @@
 
 include "FrameworkProcess.csp"
 
-channel wait : ObjectID
-channel notify : ObjectID
+--channel wait : ObjectID
+--channel notify : ObjectID
 
 
 --**********************************************

@@ -14,14 +14,14 @@ datatype ExceptionType = interruptedException |
                           illegalStateException | 
                           ceilingViolationException
 
-MaxPriority = 2
-MinPriority = 1
+--MaxPriority = 2
+--MinPriority = 1
 
-nametype PriorityLevel = {MinPriority..MaxPriority}
+--nametype PriorityLevel = {MinPriority..MaxPriority}
 nametype Bit = {0,1}
 
 
-nametype JTime = Bit.Bit
+--nametype JTime = Bit.Bit
 --datatype PriorityQueue =  (| {PriorityLevel} =>  <ThreadID> |)
 
 nametype ApplicationMissionIds = {FlatBufferMissionId}

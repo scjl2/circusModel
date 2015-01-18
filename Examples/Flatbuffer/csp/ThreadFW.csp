@@ -1,7 +1,10 @@
 --Thread
---Model java.lang.Thread
+--Models java.lang.Thread
+
+include "Thread.csp"
 
 
+--Thread Channels
 channel get_priorityLevel : ThreadID . ObjectID . PriorityLevel 
 channel raise_thread_priority : ThreadID . PriorityLevel 
 channel lower_thread_priority : ThreadID  
@@ -20,14 +23,12 @@ nametype ThreadFWStateSync = {|raise_thread_priority,lower_thread_priority,get_p
 		set_interrupted, get_interrupted, get_priorityStack, end_threadState    |}
 
 ThreadFW(thread, basePriority) =
-	( 
-		ThreadFWState(thread, basePriority, <basePriority>,basePriority, False)
+( 
+	ThreadFWState(thread, basePriority, <basePriority>,basePriority, False)
 		[| ThreadFWStateSync|] 
-		Execute(thread, basePriority)
-	)
-
-
-
+	Execute(thread, basePriority)
+)
+/\(done_toplevel_sequencer -> SKIP)
   
 ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted) =
 	(

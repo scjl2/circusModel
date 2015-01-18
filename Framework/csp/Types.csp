@@ -15,7 +15,7 @@ datatype ExceptionType = interruptedException |
                           illegalThreadStateException | 
                           illegalStateException | 
                           ceilingViolationException
-include "JTime.csp"
+
 
 nametype Bit = {0,1}
 

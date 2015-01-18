@@ -7,11 +7,11 @@ include "ThreadFW.csp"
 
 include "ObjectFW.csp"
 
-nametype LockingModelSync = 
-		{|waitCall, timedWaitCall, waitRet, waitForObjectCall, waitForObjectRet, notify, notifyAll,
-		interrupt,isInterruptedCall ,isInterruptedRet , interruptedCall, interruptedRet|}
+include "JTime.csp"
 
-nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_priority |}
+nametype LockingModelSync = {| |}
+
+nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_priority  |}
 
 
 
@@ -19,4 +19,4 @@ nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_p
 
 LockingModel( lockingModelIds   ) =
 	||| (threadId, threadBasePriority, objectId) : lockingModelIds @
-			(ThreadFW(threadId, threadBasePriority) [|ObjectSync|] ObjectFW(objectId) )
+			(ThreadFW(threadId, threadBasePriority) )--[|ObjectSync|] ObjectFW(objectId))
