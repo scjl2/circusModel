@@ -1,6 +1,9 @@
 --Thread
 --Models java.lang.Thread
 
+include "Thread.csp"
+
+
 --Thread Channels
 channel get_priorityLevel : ThreadID . ObjectID . PriorityLevel 
 channel raise_thread_priority : ThreadID . PriorityLevel 

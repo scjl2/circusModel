@@ -2,7 +2,13 @@
 
 nametype SThread = Seq(ThreadID)
 
+MaxPriority = 2
+MinPriority = 0
 
+nametype PriorityLevel = {MinPriority..MaxPriority}
+
+PriorityQueue = 
+	Map(PriorityLevel, SThread)
 
 
 EmptyPriorityQueue = 

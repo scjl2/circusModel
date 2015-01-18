@@ -1,8 +1,6 @@
 --Object
 --Models java.lang.Object
 
-
-
 datatype WaitType = wait | waitForObject
 
 
@@ -175,9 +173,9 @@ ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,  wa
  )
 
 
-nametype MonitorSync = {||}
-nametype MLCSync = {||}
-nametype CPCSync = {||}
+nametype MonitorSync = {|fully_unlock, relock, relock_this|}
+nametype MLCSync = {| relock_this, lock_request, lockAcquired, get_lockedBy, reset_lockedBy, fully_unlock |}
+nametype CPCSync = {|setCeilingPriority, get_ceilingPriority  |}
 
 
 Execute_Object(object, interruptedThreads, ceilingPriority ) = 
@@ -275,9 +273,9 @@ MonitorLocked(object, lockedBy)=
 		MonitorUnlocked(object)
 	) 
 
-nametype WaitSync = {||}
+nametype WaitSync = {|cancel_wait_timer, waitRet, waitForObjectRet  |}
 
-nametype InterruptSync = {||}
+nametype InterruptSync = {| remove_from_wait, get_waitQueue |}
 
 Synchronisation(object) = 
 (
