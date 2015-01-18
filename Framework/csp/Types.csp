@@ -22,7 +22,7 @@ MinPriority = 0
 nametype PriorityLevel = {MinPriority..MaxPriority}
 
 PriorityQueue = 
-	Map(PriorityLevel, Set(SThread))
+	Map(PriorityLevel, SThread)
 
 ThreadMap = 
 	Map(ThreadID, num)
@@ -32,8 +32,18 @@ EmptyThreadMap 	=
 
 nametype Bit = {0,1}
 
+maxNanos = 999999
 
 nametype JTime = Bit.Bit
+
+valueOf(mils.nanos) =
+  (mils*1000000)+nanos
+
+timeMillis( mils.nanos ) =
+	mils
+	
+timeNanos( mils.nanos ) =
+	nanos
 --PriorityQueue = Map(PriorityLevel, ThreadID)
 --PriorityQueue2 =  emptyMap(PriorityQueue, PriorityLevel, ThreadID)
 
@@ -45,6 +55,6 @@ nametype JTime = Bit.Bit
 
 
 datatype ObjectID = objectA | objectB
-datatype ThreadID = threadA | threadB
+datatype ThreadID = nullThreadId| threadA | threadB
 maxNum = 2
 nametype num = {0..maxNum}

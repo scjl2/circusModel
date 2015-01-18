@@ -27,5 +27,5 @@ timeOf : JTime \pfun \num \cross \num
 \begin{axdef}
 valueOf : JTime \pfun \num
 \where
-\exists j : JTime ; v : \num | j \neq NULL \land v = timeMillis(j)+timeNanos(j) @ valueOf(j) = v
+\exists j : JTime ; v : \num | j \neq NULL \land v = (timeMillis(j)*1000000)+timeNanos(j) @ valueOf(j) = v
 \end{axdef}

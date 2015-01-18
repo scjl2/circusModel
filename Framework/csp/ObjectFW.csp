@@ -31,9 +31,9 @@ datatype WaitType = wait | waitForObject
 	channel get_lockedBy : ObjectID . ThreadID 
 	channel get_waitQueue : ObjectID . PriorityQueue 
 	channel reset_lockedBy : ObjectID 
-	channel fully_unlock : ObjectID 
+	channel fully_unlock : ObjectID --.SchedulableID.Int 
 	channel increment_locks : ObjectID 
-	channel decrement_locks : ObjectID . Int
+	channel decrement_locks : ObjectID 
 	channel get_ceilingPriority : ObjectID . PriorityLevel  
 	channel start_waitForObject_timer : ObjectID . ThreadID  . PriorityLevel . JTime 
 	channel get_waitForObjectThreads : ObjectID . Set(ThreadID)
@@ -48,7 +48,8 @@ channel remove_most_eligible_from_wait_queue :ObjectID
 
 channel set_locks : ObjectID.Int
 channel get_locks : ObjectID.Int
-channel set_lockedBy : ObjectID.SchedulableID
+channel set_lockedBy : ObjectID.ThreadID
+channel get_queueForLock : ObjectID.PriorityQueue
 
 nametype ObjectStateSync = 
 	{|set_lockedBy, increment_locks, decrement_locks,get_locks,get_waitQueue, get_waitForObjectThreads,
@@ -57,26 +58,27 @@ nametype ObjectStateSync =
 
 ObjectFW(object) =
 ( 
-	ObjectState(object, EmptyPriorityQueue, nullSchedulableId, 0, EmptyThreadMap, EmptyPriorityQueue, MaxPriority, {}) 
+	ObjectState(object, EmptyPriorityQueue, nullThreadId, 0, EmptyThreadMap, EmptyPriorityQueue,  {}) 
 		[| ObjectStateSync|]
-	Execute_Object
-)\(done_toplevel_sequencer -> SKIP)
+	Execute_Object(object, {}, MaxPriority )
+)
+/\(done_toplevel_sequencer -> SKIP)
 
 
 
 
-ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads) =
+ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,  waitForObjectThreads) =
  --WaitQueueController =  
 -- (
 --	add_to_wait.object?someThread?priorityLevel?waitType -> 
 --	 AddToWaitQueue  ; 
---	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+--	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
 -- ) 
 -- []
 -- (                                                                                                                                   
 -- 	remove_from_wait.object?waitingThread?priorityLevel ->  
 -- 	 RemoveThreadFromWaitQueue   ;  	
---	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)	
+--	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)	
 --) 
 -- []
 --(
@@ -87,49 +89,54 @@ ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,ceil
 --
 --
 --	removed_thread.object!notified!waitType -> 
- --	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+ --	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  --) 
  --[]
  (
+ 	get_queueForLock.object!queueForLock ->
+ 	ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
+ )
+ []
+ (
  	set_lockedBy.object?newLockedBy ->
-	ObjectState(waitQueue, newLockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+	ObjectState(object,waitQueue, newLockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  )
  []
  (
  	increment_locks.object ->
- 	ObjectState(waitQueue, lockedBy, locks +1, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+ 	ObjectState(object,waitQueue, lockedBy, locks +1, previousLocks, queueForLock, waitForObjectThreads)
  )
  []
  (
  	decrement_locks.object ->
- 	ObjectState(waitQueue, lockedBy, locks -1, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+ 	ObjectState(object,waitQueue, lockedBy, locks -1, previousLocks, queueForLock, waitForObjectThreads)
  )
  []
  (
  	get_locks.object!locks ->
- 	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+ 	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  )
  []
  (
  	get_waitQueue.object!waitQueue -> 
- 	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+ 	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  ) 
  []
  (
  	get_waitForObjectThreads.object!waitForObjectThreads -> 
- 	ObjectState(waitQueue, lockedBy, locks, previousLocks, queueForLock,ceilingPriority, waitForObjectThreads)
+ 	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  ) 
  []
  (
- 	fully_unlock.object?lockedBy?locks ->
- 	ObjectState(waitQueue, nullSchedulableId, 0, mapUpdate(previousLocks, lockedBy, locks )  , queueForLock,ceilingPriority, waitForObjectThreads)
+ 	fully_unlock.object ->
+ 	ObjectState(object,waitQueue, nullThreadId, 0, mapUpdate(previousLocks, lockedBy, locks )  , queueForLock, waitForObjectThreads)
  ) 
  []
  (
  	--someThread? != nullSchedulableId 
 	--someThread? \notin ElementsOf (queueForLock ) 
  	add_to_queue_for_lock.object?someThread?priorityLevel ->
- 	ObjectState(waitQueue, lockedBy, locks, previousLocks, AddToPriorityQueue(queueForLock, someThread, priorityLevel) ,ceilingPriority, waitForObjectThreads)
+ 	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, AddToPriorityQueue(queueForLock, someThread, priorityLevel) , waitForObjectThreads)
  )
  []
  (
@@ -137,8 +144,10 @@ ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,ceil
 	--lockedBy' \notin \dom previousLocks \implies locks' = 1 
 
  	assign_eligible.object ->	
- 	let (queueForLock', lockedBy')= RemoveFromPriorityQueue(queueForLock) 
- 	within ObjectState(waitQueue, lockedBy', locks, previousLocks, queueForLock', ceilingPriority, waitForObjectThreads)
+ 	--let (queueForLock', lockedBy')= RemoveFromPriorityQueue(queueForLock) 
+ 	--within 
+
+ 	ObjectState(object,waitQueue, head(mapLookup(queueForLock, HighestPopulatedPriority(queueForLock))), locks, previousLocks, RemoveFromPriorityQueue(queueForLock) ,  waitForObjectThreads)
  )
  []
  (
@@ -146,22 +155,23 @@ ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,ceil
 	--someThread? \notin ElementsOf(waitQueue) 
 
  	add_to_wait_queue.object?someThread?priorityLevel?waitType ->
- 	ObjectState(AddToPriorityQueue(waitQueue, someThread, priorityLevel)  , lockedBy, locks, previousLocks, queueForLock, ceilingPriority, union(waitForObjectThreads, {someThread}))
+ 	ObjectState(object,AddToPriorityQueue(waitQueue, someThread, priorityLevel)  , lockedBy, locks, previousLocks, queueForLock,  union(waitForObjectThreads, {someThread}))
 
  )
  []
  (
  	--waitingThread? \in \ran(waitQueue(priorityLevel?)) 
  	remove_thread_from_wait_queue.object?waitingThread?priorityLevel ->
- 	ObjectState( RemoveThreadFromPriorityQueue(waitQueue, waitingThread, priorityLevel) , lockedBy, locks, previousLocks, queueForLock,ceilingPriority, diff(waitForObjectThreads, {waitingThread})  )
+ 	ObjectState(object, RemoveThreadFromPriorityQueue(waitQueue, waitingThread, priorityLevel) , lockedBy, locks, previousLocks, queueForLock, diff(waitForObjectThreads, {waitingThread})  )
  )
  []
  (
  	--notified! \in waitForObjectThreads \implies waitType! = waitForObject 
 	--notified! \notin waitForObjectThreads \implies waitType! = wait 
  	remove_most_eligible_from_wait_queue.object ->
- 	let (waitQueue', notified) =  RemoveFromPriorityQueue(waitQueue)  
- 	within ObjectState(waitQueue', lockedBy, locks, previousLocks, queueForLock,ceilingPriority, diff(waitForObjectThreads,{notified}))
+ 	--let (waitQueue', notified) =  RemoveFromPriorityQueue(waitQueue)  
+ 	--within 																					 														
+ 	ObjectState(object, RemoveFromPriorityQueue(waitQueue) , lockedBy, locks, previousLocks, queueForLock, diff(waitForObjectThreads, {head(mapLookup(waitQueue, HighestPopulatedPriority(waitQueue)))}	))
  )
 
 
@@ -170,7 +180,7 @@ nametype MLCSync = {||}
 nametype CPCSync = {||}
 
 
-Execute_Object(object, thread, interruptedThreads) = 
+Execute_Object(object, interruptedThreads, ceilingPriority ) = 
 (
 	(
 		( Monitor(object)
@@ -181,7 +191,7 @@ Execute_Object(object, thread, interruptedThreads) =
 	MonitorLockController(object, interruptedThreads)
 ) 
  [|   CPCSync |]
- CeilingPriorityController(object) 
+ CeilingPriorityController(object, ceilingPriority) 
 )  
 
 
@@ -203,17 +213,21 @@ MonitorUnlocked(object) =
 	lockAcquired.object?lockingThread -> 
 	get_ceilingPriority.object?ceilingPriority -> 
 	(
-		(
-			get_priorityLevel.lockingThread.object?priority:(priority <= ceilingPriority) -> 
+	--	(
+			get_priorityLevel.lockingThread.object?priority-> -- :(priority <= ceilingPriority) -> 
+			if (priority <= ceilingPriority) then
+			(
 			raise_thread_priority.lockingThread!ceilingPriority ->  
-			MonitorLocked(lockingThread) 
-		)
-		[]
-		(
-			get_priorityLevel.lockingThread.object?priority:(priority > ceilingPriority) -> 
-			throw.ceilingViolationException -> 
-			CHAOS(Events)
-		)
+			MonitorLocked(object, lockingThread) 
+			)
+	--	)
+	--	[]
+			else 
+			(
+			--	get_priorityLevel.lockingThread.object?priority:(priority > ceilingPriority) -> 
+				throw.ceilingViolationException -> 
+				CHAOS(Events)
+			)
 		
 	)	
 ) 
@@ -230,7 +244,7 @@ MonitorLocked(object, lockedBy)=
 	)	
 	[] 
 	(
-		startSynchMeth.object?someThread:(diff(ThreadID,lockedBy)) -> 	
+		startSynchMeth.object?someThread:(diff(ThreadID,{lockedBy})) -> 	
 		lock_request.object!someThread ->
 		MonitorLocked(object, lockedBy)
 
@@ -240,13 +254,13 @@ MonitorLocked(object, lockedBy)=
 		endSyncMeth.object.lockedBy -> 
 		(
 			(
-				decrement_locks.object.0 -> 
+				decrement_locks.object -> 
 				lower_thread_priority.lockedBy -> 	
 				MonitorUnlocked(object)
 			) 
 			[] 
 			(
-				decrement_locks.object?l:(diff(Int, 0)) -> 
+				decrement_locks.object -> 
 				MonitorLocked(object, lockedBy)
 
 			) 
@@ -310,7 +324,7 @@ waitCall.object?someThread ->
 		) 	
 		[]  
 		(
-			get_lockedBy.object?lockedBy:( diff(ThreadID, someThread) ) -> 
+			get_lockedBy.object?lockedBy:( diff(ThreadID, {someThread}) ) -> 
 			throw.illegalMonitorStateException -> 
 			CHAOS(Events)
 		) 
@@ -329,7 +343,7 @@ waitCall.object?someThread ->
 		
 
 TimedWait(object) = 
-	TimedWaitHandler
+	TimedWaitHandler(object)
 	[| {| start_timer |} |]
 	(||| t : ThreadID @ TimedWaitTimer(object, t))
 
@@ -359,7 +373,7 @@ TimedWaitHandler(object)  =
 	)			
  [] 
 	(	
-		get_lockedBy.object?lockedBy:(diff(ThreadID, someThread) ) -> 
+		get_lockedBy.object?lockedBy:(diff(ThreadID, {someThread}) ) -> 
 		throw.illegalMonitorStateException -> 
 		CHAOS(Events)
 	)
@@ -373,7 +387,7 @@ TimedWaitTimer(object, waitingThread) =
 	(
 	(
 		(
-			circwait.waitTime ->
+			circwait.valueOf(waitTime) ->
 			remove_from_wait.object!waitingThread!priorityLevel ->  			
 			waitRet.object!waitingThread ->
 			SKIP 
@@ -435,7 +449,7 @@ WaitForObjectHandler(object) =
 	 )			
  [] 
 	(	
-		get_lockedBy.object?lockedBy:(diff(ThreadID, someThread) ) -> 
+		get_lockedBy.object?lockedBy:(diff(ThreadID, {someThread}) ) -> 
 		throw.illegalMonitorStateException -> 
 		CHAOS(Events)
 	 )
@@ -449,7 +463,7 @@ WaitForObjectTimer(object, waitingThread) =
 	(
 	(
 		(
-			circwait.waitTime -> 
+			circwait.valueOf(waitTime) -> 
 			remove_from_wait.object!waitingThread!priorityLevel ->  			
 			waitForObjectRet.object!waitingThread!False ->
 			SKIP 
@@ -487,6 +501,7 @@ Notify(object) =
  (
 	(
 		get_lockedBy.object.someThread -> 
+		get_waitQueue.object?waitQueue ->
 		(
 			if  IsEmpty(waitQueue) == False  then 
 			(
@@ -500,7 +515,7 @@ Notify(object) =
 	)
  [] 
 	(
-		get_lockedBy.object?lockedBy:(diff(ThreadID, someThread)) -> 
+		get_lockedBy.object?lockedBy:(diff(ThreadID, {someThread})) -> 
 		throw.illegalMonitorStateException -> 
 		CHAOS(Events)
 	) 
@@ -508,9 +523,9 @@ Notify(object) =
 ) 
  [] 
  (
-	(waitRet.object?n -> Notify)
+	(waitRet.object?n -> Notify(object))
 	[] 
-	(waitForObjectRet.object?n?w -> Notify)
+	(waitForObjectRet.object?n?w -> Notify(object))
      
      )
 
@@ -546,7 +561,7 @@ NotifyAll(object) =
 		)  	
 		[] 
 		(
-			get_lockedBy.object?lockedBy:(diff(ThreadID, someThread)) -> 
+			get_lockedBy.object?lockedBy:(diff(ThreadID, {someThread})) -> 
 			throw.illegalMonitorStateException -> 
 			CHAOS(Events)
 		) 
@@ -554,18 +569,17 @@ NotifyAll(object) =
   )
  [] 
  (
-	(waitRet.object?n -> NotifyAll)
+	(waitRet.object?n -> NotifyAll(object))
 	[] 
-	(waitForObjectRet.object?n?w -> NotifyAll)
-     
-    )
-
+	(waitForObjectRet.object?n?w -> NotifyAll(object))
+ )
 
 
 NotifyAllHandler(object, notified) =
+get_waitQueue.object?waitQueue ->	
 	if  IsEmpty(waitQueue) == False then 
 	(
-		ResumeThread ;		
+		ResumeThread(object) ;		
 		NotifyAllHandler(object, notified)
 	 )  
 	else  
@@ -577,23 +591,28 @@ NotifyAllHandler(object, notified) =
 Interrupt_Object(object) = 
 
 interrupt?waitingThread -> 
-(
+get_waitQueue.object?retreivedWait -> 
 
 (
-	get_waitQueue.object?retreivedWait:( member(waitingThread, ElementsOf( retreivedWait ) ) ) -> 
+if ( member(waitingThread, ElementsOf( retreivedWait ) ) ) then
+(
+	--get_waitQueue.object?retreivedWait:( member(waitingThread, ElementsOf( retreivedWait ) ) ) -> 
  	cancel_wait_timer.object!waitingThread -> 
  	get_priorityLevel.waitingThread.object?priorityLevel -> 
  	remove_from_wait.object!waitingThread!priorityLevel -> 
 	relock_this.object!waitingThread -> 
-  	(
+	get_waitForObjectThreads.object?wfot -> 	
+	(
+		if ( not member(waitingThread, wfot) ) then
 		(
-			get_waitForObjectThreads.object?wfot:( not member(waitingThread, wfot) ) -> 					
+		--	get_waitForObjectThreads.object?wfot:( not member(waitingThread, wfot) ) -> 					
 			waitRet.object!waitingThread -> 
 			SKIP
 		)
-		[]
+		--[]
+		else
 		(
-			get_waitForObjectThreads.object?wfot:( member(waitingThread, wfot) ) -> 
+		--	get_waitForObjectThreads.object?wfot:( member(waitingThread, wfot) ) -> 
 			waitForObjectRet.object!waitingThread!True -> 
 			SKIP
 		)		 	
@@ -601,21 +620,25 @@ interrupt?waitingThread ->
  	
 	Interrupt_Object(object)
  ) 
- [] 
+-- [] 
+else
  (
- 	get_waitQueue.object?retreivedWait:( not member(waitingThread, ElementsOf( retreivedWait ) ) ) -> 
+ --	get_waitQueue.object?retreivedWait:( not member(waitingThread, ElementsOf( retreivedWait ) ) ) -> 
 	Interrupt_Object(object )
    )
- ) 
+) 
 
 
 
 
 MonitorLockController(object,interruptedThreads) = 
+get_queueForLock.object?queueForLock ->
+get_lockedBy.object?lockedBy ->
+(	
  (
 	lock_request.object?someThread ->
 	get_priorityLevel.someThread.object?priorityLevel -> 
-	add_to_queue_for_lock.object  ->
+	add_to_queue_for_lock.object.someThread!priorityLevel  -> 
 	MonitorLockController(object,interruptedThreads)  
 )    
  []
@@ -623,7 +646,7 @@ MonitorLockController(object,interruptedThreads) =
 	relock_this.object?someThread -> 
 	get_priorityLevel.someThread.object?priorityLevel -> 
 	(
-		add_to_queue_for_lock.object  ->
+		add_to_queue_for_lock.object.someThread!priorityLevel  ->
 		(
 			(	
 				isInterruptedCall.someThread -> 
@@ -642,11 +665,11 @@ MonitorLockController(object,interruptedThreads) =
 )
  []
  (	
- 	get_lockedBy.object?lockedBy ->
 
-		(IsEmpty(queueForLock) == False and lockedBy == nullSchedulableId) &
+ 	
+		(IsEmpty(queueForLock) == False and lockedBy == nullThreadId) &
 		(	
-			assign_eligible   ; 
+			assign_eligible.object   -> 
 			lockAcquired.object.lockedBy -> 
 			if member(lockedBy,interruptedThreads) then 
 			(				
@@ -658,11 +681,11 @@ MonitorLockController(object,interruptedThreads) =
 			
 		)	
 	)
- []
- (	
-	get_lockedBy.object!lockedBy -> 
-	MonitorLockController(object,interruptedThreads)
-	)	
+-- []
+-- (	
+--	get_lockedBy.object!lockedBy -> 
+--	MonitorLockController(object,interruptedThreads)
+ --)	
  []
  (	
 	increment_locks.object -> 
@@ -677,7 +700,7 @@ MonitorLockController(object,interruptedThreads) =
 		(
 			if locks == 0 then 
 			(
-				set_lockedBy.object!nullSchedulableId ->
+				set_lockedBy.object!nullThreadId ->
 				MonitorLockController(object,interruptedThreads) 
 			)
 			else 
@@ -688,10 +711,10 @@ MonitorLockController(object,interruptedThreads) =
  []
  (		
 	fully_unlock.object -> 
-	fully_unlock ->  
+--fully_unlock ->  
 	MonitorLockController(object,interruptedThreads) 
 )
-
+)
 
 
 CeilingPriorityController(object,ceilingPriority) = 
@@ -708,7 +731,7 @@ CeilingPriorityController(object,ceilingPriority) =
 
 GetCeilingPriority(object, ceilingPriority) =
 	get_ceilingPriority.object!ceilingPriority -> 
-	GetCeilingPriority(ceilingPriority)
+	GetCeilingPriority(object, ceilingPriority)
 
 
 
