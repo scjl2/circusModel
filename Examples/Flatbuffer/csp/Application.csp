@@ -215,10 +215,12 @@ Write =
 		bufferEmptyRet.FlatBufferMissionId?empty ->
 		if empty == true then
 	    	write.FlatBufferMissionId!1 ->
-			notify.ReaderObjectId ->
+			notify.ReaderObjectId.WriterThreadID ->
     		Write
 		else
-			wait.WriterObjectId -> notify.WriterObjectId ->
+			waitCall.WriterObjectId.WriterThreadID -> 
+			waitRet.WriterObjectId.WriterThreadID -> 
+			notify.WriterObjectId.WriterThreadID ->
 			Write 
 	else 
  		SKIP
@@ -254,10 +256,12 @@ Read =
 		if empty == false then
 	    	readCall.FlatBufferMissionId -> 
     		readRet.FlatBufferMissionId?value ->
-			notify.WriterObjectId ->
+			notify.WriterObjectId.ReaderThreadID ->
     		Read
 		else
-			wait.ReaderObjectId -> notify.ReaderObjectId ->
+			waitCall.ReaderObjectId.ReaderThreadID ->
+			waitRet.ReaderObjectId.ReaderThreadID ->
+			 notify.ReaderObjectId.ReaderThreadID ->
 			Read
    	else 
 		SKIP 	
