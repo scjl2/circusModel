@@ -3,9 +3,6 @@
 
 include "FrameworkProcess.csp"
 
---channel wait : ObjectID
---channel notify : ObjectID
-
 
 --**********************************************
 --******************APLICATION******************

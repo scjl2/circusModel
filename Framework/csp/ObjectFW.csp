@@ -59,9 +59,8 @@ ObjectFW(object) =
 	ObjectState(object, EmptyPriorityQueue, nullThreadId, 0, EmptyThreadMap, EmptyPriorityQueue,  {}) 
 		[| ObjectStateSync|]
 	Execute_Object(object, {}, MaxPriority )
-)
+) \ObjectStateSync
 /\(done_toplevel_sequencer -> SKIP)
-
 
 
 
@@ -181,16 +180,17 @@ nametype CPCSync = {|setCeilingPriority, get_ceilingPriority  |}
 Execute_Object(object, interruptedThreads, ceilingPriority ) = 
 (
 	(
-		( Monitor(object)
-		[|  MonitorSync |]
-	Synchronisation (object)
-	) 
+		( 
+			Monitor(object)
+			[|  MonitorSync |]
+			Synchronisation (object)
+		)\ MonitorSync
 	[|   MLCSync |]
 	MonitorLockController(object, interruptedThreads)
-) 
+) \MLCSync
  [|   CPCSync |]
  CeilingPriorityController(object, ceilingPriority) 
-)  
+)  \CPCSync
 
 
 
@@ -284,12 +284,12 @@ Synchronisation(object) =
 			WaitActions(object) 
 			[| WaitSync |]
 			NotifyActions (object)
-		) 
+		) \WaitSync
 
 
 	[| InterruptSync |]
 	Interrupt_Object(object)
-)
+)\InterruptSync
 
 
 
@@ -300,8 +300,6 @@ WaitActions(object) =
 
 NotifyActions(object) = 
 	Notify(object) ||| NotifyAll(object)
-
-
 
 
 
@@ -336,16 +334,12 @@ waitCall.object?someThread ->
        		CHAOS(Events)
        )
 )
-	
-
-		
+			
 
 TimedWait(object) = 
 	TimedWaitHandler(object)
 	[| {| start_timer |} |]
 	(||| t : ThreadID @ TimedWaitTimer(object, t))
-
-
 
 
 TimedWaitHandler(object)  = 
@@ -411,8 +405,7 @@ TimedWaitTimer(object, waitingThread) =
  (
 	(waitRet.object.waitingThread -> TimedWaitTimer(object, waitingThread))
 	[] 
-	(waitForObjectRet.object.waitingThread?w -> TimedWaitTimer(object, waitingThread))
-     
+	(waitForObjectRet.object.waitingThread?w -> TimedWaitTimer(object, waitingThread))     
 )
 
 	
@@ -524,8 +517,7 @@ Notify(object) =
 	(waitRet.object?n -> Notify(object))
 	[] 
 	(waitForObjectRet.object?n?w -> Notify(object))
-     
-     )
+ )
 
 
 
@@ -730,6 +722,3 @@ CeilingPriorityController(object,ceilingPriority) =
 GetCeilingPriority(object, ceilingPriority) =
 	get_ceilingPriority.object!ceilingPriority -> 
 	GetCeilingPriority(object, ceilingPriority)
-
-
-

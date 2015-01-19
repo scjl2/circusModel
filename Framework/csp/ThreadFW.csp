@@ -27,7 +27,7 @@ ThreadFW(thread, basePriority) =
 	ThreadFWState(thread, basePriority, <basePriority>,basePriority, False)
 		[| ThreadFWStateSync|] 
 	Execute(thread, basePriority)
-)
+)\ThreadFWStateSync
 /\(done_toplevel_sequencer -> SKIP)
   
 ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted) =
@@ -65,13 +65,13 @@ ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted) 
 
 
 Execute(thread, basePriority) = 
- 	( 
-		Priority (thread, basePriority)
-		|||
-		Interrupts(thread) 
-		|||
-		GetPriorityLevel(thread) 	
-	)
+(  
+	Priority (thread, basePriority)
+	|||
+	Interrupts(thread) 
+	|||
+	GetPriorityLevel(thread) 	
+)
 
 
 Priority(thread, basePriority) = 
@@ -84,7 +84,8 @@ get_priorityStack.thread?priorityStack ->
 		IncreasePriority(thread) 
 		[]
 		DecreasePriority(thread)
-	)) ;
+	)
+) ;
 Priority(thread, basePriority) 	
  
 
@@ -130,12 +131,3 @@ Interrupted(thread) =
 GetPriorityLevel(thread) =
  	get_priorityLevel.thread?object?activePriority -> 
  	GetPriorityLevel(thread)
-
-
-
-
-
-
-
-  
-
