@@ -1,0 +1,133 @@
+--Thread
+--Models java.lang.Thread
+
+include "Thread.csp"
+
+
+--Thread Channels
+channel get_priorityLevel : ThreadID . ObjectID . PriorityLevel 
+channel raise_thread_priority : ThreadID . PriorityLevel 
+channel lower_thread_priority : ThreadID  
+channel set_interrupted : ThreadID . Bool 
+channel get_interrupted : ThreadID . Bool 
+channel interrupt : ThreadID 
+channel isInterruptedCall : ThreadID 
+channel isInterruptedRet : ThreadID . Bool 
+channel interruptedCall : ThreadID 
+channel interruptedRet : ThreadID . Bool 
+
+channel get_priorityStack : ThreadID.Seq(PriorityLevel)
+channel end_threadState : ThreadID
+
+nametype ThreadFWStateSync = {|raise_thread_priority,lower_thread_priority,get_priorityLevel,
+		set_interrupted, get_interrupted, get_priorityStack, end_threadState    |}
+
+ThreadFW(thread, basePriority) =
+( 
+	ThreadFWState(thread, basePriority, <basePriority>,basePriority, False)
+		[| ThreadFWStateSync|] 
+	Execute(thread, basePriority)
+)\ThreadFWStateSync
+/\(done_toplevel_sequencer -> SKIP)
+  
+ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted) =
+	(
+		raise_thread_priority.thread?ceilingPriority ->
+		ThreadFWState(thread, basePriority, priorityStack^<ceilingPriority>, ceilingPriority, interrupted)
+	)
+	[]
+	(
+		lower_thread_priority.thread -> 
+		ThreadFWState(thread, basePriority, <basePriority>, basePriority, interrupted)
+	)
+	[]
+	(
+		get_priorityLevel.thread?object!activePriority -> 
+		ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted)
+	)
+	[]
+	(
+		set_interrupted.thread?newInterrupted -> 
+		ThreadFWState(thread, basePriority, priorityStack, activePriority, newInterrupted)
+	)
+	[]
+ 	(
+		get_interrupted.thread!interrupted -> 
+		ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted)
+	)
+	[]
+	(
+		get_priorityStack.thread!priorityStack -> 
+		ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted)
+	)
+	
+ 	
+
+
+Execute(thread, basePriority) = 
+(  
+	Priority (thread, basePriority)
+	|||
+	Interrupts(thread) 
+	|||
+	GetPriorityLevel(thread) 	
+)
+
+
+Priority(thread, basePriority) = 
+get_priorityStack.thread?priorityStack ->
+(
+ if priorityStack ==  <basePriority> then 
+	IncreasePriority(thread)
+ else 
+	(
+		IncreasePriority(thread) 
+		[]
+		DecreasePriority(thread)
+	)
+) ;
+Priority(thread, basePriority) 	
+ 
+
+IncreasePriority(thread) = 
+	raise_thread_priority.thread?ceilingPriority ->
+	SKIP
+
+DecreasePriority(thread) = 
+	lower_thread_priority.thread -> 
+	SKIP
+
+Interrupts(thread) = 
+(
+	Interrupt(thread) 
+	|||
+	IsInterrupted(thread)		 
+	|||
+	Interrupted(thread)
+)
+
+
+Interrupt(thread) = 
+ interrupt.thread -> 
+ set_interrupted.thread!True -> 
+ SKIP
+
+
+IsInterrupted(thread) = 
+ isInterruptedCall.thread -> 
+ get_interrupted.thread?interrupted -> 
+ isInterruptedRet.thread!interrupted -> 
+ SKIP
+
+
+Interrupted(thread) = 
+ interruptedCall.thread -> 
+ get_interrupted.thread?interrupted -> 
+ interruptedRet.thread!interrupted -> 
+ set_interrupted.thread!False -> 
+ SKIP
+
+
+GetPriorityLevel(thread) =
+ 	get_priorityLevel.thread?object?activePriority -> 
+ 	GetPriorityLevel(thread)
