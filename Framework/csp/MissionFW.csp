@@ -69,11 +69,13 @@ nametype TerminateSync =
 
 
 MissionFW(mission) = 
+sbisim(diamond(   
 (  
   MissionFWState(mission, {}, {}, False, False, nullSequencerId)
     [|MissionFWStateChan|]
   MissionFWBehaviour(mission)
 ) \ diff(MissionFWStateChan, {|activate_schedulables|})
+))
 
 
 MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, controllingSequencer) =
@@ -231,11 +233,13 @@ SetCeilingPriorityException(mission) =
  STOP
 
 MissionPhase(mission) =
+sbisim(diamond( 
 (
   Execute_M(mission)
 --   [|  {|done_schedulables|} |] 
 -- MissionExceptions(mission)
 )\{|done_schedulables|}
+))
 
 Execute_M(mission) =
  ( 
@@ -260,6 +264,7 @@ Execute_M(mission) =
 ) 
 
 TerminateAndDone(mission, activeSchedulables) =
+ sbisim(diamond( 
  (
     (
     SignalTermination_M(mission)              
@@ -269,6 +274,7 @@ TerminateAndDone(mission, activeSchedulables) =
   done_schedulables.mission ->
   SKIP
 )\TerminateSync
+))
  
 SignalTermination_M(mission) =
  (
@@ -328,6 +334,7 @@ DoneSchedulables(mission, activeSchedulables) =
 )
 
 Methods_M(mission, registeredSchedulables) =
+ sbisim(diamond( 
 (  
   TerminationPending_M(mission)
     [| {|end_mission_terminations|} |] 
@@ -340,6 +347,7 @@ Methods_M(mission, registeredSchedulables) =
       SKIP
     ) )
 ) \{| end_mission_terminations |}
+))
 
 
 TerminationPending_M(mission) =
@@ -452,5 +460,5 @@ Finish_M(mission, continueSequencer) =
 
 
 assert MissionFW(missionA); Loop :[ deadlock free [FD] ]
- assert MissionFW(missionA) :[ divergence free ]
- assert MissionFW(missionA) :[ deterministic  [FD] ]
+assert MissionFW(missionA) :[ divergence free ]
+assert MissionFW(missionA) :[ deterministic  [FD] ]

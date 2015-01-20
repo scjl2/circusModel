@@ -18,7 +18,8 @@ nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_p
 
 
 
-
+--simple synchronised meth? his wont work...
+-- (||| Threads(ids)   ) [|objectsync|] (||| Objects(ids))
 LockingModel( lockingModelIds   ) =
 	||| (threadId, threadBasePriority, objectId) : lockingModelIds @
 			(ThreadFW(threadId, threadBasePriority) [|ObjectSync|] ObjectFW(objectId) )

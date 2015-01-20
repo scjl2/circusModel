@@ -98,3 +98,8 @@ Cleanup_MT(schedulable) =
 assert ManagedThreadFW(schedulableA); Loop :[ deadlock free [FD] ]
 assert ManagedThreadFW(schedulableA) :[ divergence free ]
 assert ManagedThreadFW(schedulableA) :[ deterministic  [FD] ]  
+
+assert sbisim(diamond(ManagedThreadFW(schedulableA))); Loop :[ deadlock free [FD] ]
+assert sbisim(diamond(ManagedThreadFW(schedulableA))) :[ divergence free ]
+assert sbisim(diamond(ManagedThreadFW(schedulableA))) :[ deterministic  [FD] ]  
+

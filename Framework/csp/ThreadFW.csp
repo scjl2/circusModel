@@ -23,12 +23,14 @@ nametype ThreadFWStateSync = {|raise_thread_priority,lower_thread_priority,get_p
 		set_interrupted, get_interrupted, get_priorityStack, end_threadState    |}
 
 ThreadFW(thread, basePriority) =
+sbisim(diamond(   	
 ( 
 	ThreadFWState(thread, basePriority, <basePriority>,basePriority, False)
 		[| ThreadFWStateSync|] 
 	Execute(thread, basePriority)
 )\ThreadFWStateSync
 /\(done_toplevel_sequencer -> SKIP)
+))
   
 ThreadFWState(thread, basePriority, priorityStack, activePriority, interrupted) =
 	(

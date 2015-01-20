@@ -24,11 +24,13 @@ nametype TLMSStateSync = {|get_continue, set_continue, get_currentMission, set_c
 --TLMS
 
 TopLevelMissionSequencerFW(sequencer) =
-(
+sbisim(diamond(
+ (
     TopLevelMissionSequencerFWState(sequencer, nullMissionId, True )
       [| TLMSStateSync |]
     TopLevelMissionSequencerFWBehaviour(sequencer)
 )\ TLMSStateSync
+ ))
 
 
 TopLevelMissionSequencerFWState(sequencer, currentMission, continue) =
