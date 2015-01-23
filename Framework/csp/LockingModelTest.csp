@@ -15,7 +15,7 @@ channel set_bufferContents:{FlatBufferMissionId}.Bit
 channel get_bufferConetents:{FlatBufferMissionId}.Bit
 
 -- Writer
-
+--needs loop
 WriterApp = 
 (
 	Methods_w
@@ -32,7 +32,8 @@ Run_w =
 	SKIP
 
 Write = 
-	terminationPendingCall.FlatBufferMissionId ->
+	startSynchMeth.WriterObjectId.WriterThreadID ->
+(	terminationPendingCall.FlatBufferMissionId ->
 	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
 	if missionIsTerminating == false then
 		bufferEmptyCall.FlatBufferMissionId ->
@@ -47,13 +48,13 @@ Write =
 			notify.WriterObjectId.WriterThreadID ->
 			Write 
 	else 
- 		SKIP
-
+ 		SKIP);
+endSyncMeth.WriterObjectId.WriterThreadID -> SKIP
 
 
 
 -- Reader
-
+--Needs loop
 ReaderApp = 
 (
 	Methods_r
@@ -72,7 +73,8 @@ Run_r =
 	SKIP
 
 Read =
-	terminationPendingCall.FlatBufferMissionId ->
+	startSynchMeth.ReaderObjectId.ReaderThreadID ->
+(	terminationPendingCall.FlatBufferMissionId ->
   	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
 	if missionIsTerminating == false then
 		bufferEmptyCall.FlatBufferMissionId ->
@@ -88,8 +90,8 @@ Read =
 			notify.ReaderObjectId.ReaderThreadID ->
 			Read
    	else 
-		SKIP 	
-
+		SKIP 	);
+endSyncMeth.ReaderObjectId.ReaderThreadID -> SKIP
 
 
 nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}

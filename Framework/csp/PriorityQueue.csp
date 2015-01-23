@@ -12,7 +12,7 @@ PriorityQueue =
 
 
 EmptyPriorityQueue = 
-	mapFromList(< (0, <>), (1, <>), (2,<>)  >)
+	mapFromList(< (0, <>), (1, <>) , (2,<>)  >)
 
 --TestPQ = 
 --	mapFromList(< (0, <threadA>), (1, <>), (2,<>)  >)	

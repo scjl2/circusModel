@@ -11,7 +11,7 @@ include "JTime.csp"
 
 nametype LockingModelSync = 
 		{|waitCall, timedWaitCall, waitRet, waitForObjectCall, waitForObjectRet, notify, notifyAll,
-		interrupt,isInterruptedCall ,isInterruptedRet , interruptedCall, interruptedRet|}
+		interrupt,isInterruptedCall ,isInterruptedRet , interruptedCall, interruptedRet, startSynchMeth, endSyncMeth |}
 
 nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_priority |}
 
