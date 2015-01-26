@@ -197,6 +197,9 @@ Execute_Object(object, interruptedThreads, ceilingPriority,queueForLock, previou
 
 
 assert Monitor(WriterObjectId); Loop :[ deadlock free [FD] ]
+
+
+
 assert MonitorLockController(WriterObjectId,EmptyPriorityQueue, EmptyThreadMap, 0, nullThreadId, {} ); Loop :[ deadlock free [FD] ]
 assert CeilingPriorityController(WriterObjectId, 0); Loop :[ deadlock free [FD] ]
 
@@ -294,8 +297,17 @@ Synchronisation(object) =
 )\InterruptSync
 
 
-assert WaitActions(WriterObjectId); Loop :[ deadlock free [FD] ]
-assert NotifyActions(WriterObjectId); Loop :[ deadlock free [FD] ]
+--assert WaitActions(WriterObjectId); Loop :[ deadlock free [FD] ]
+
+assert Wait(WriterObjectId); Loop :[ deadlock free [FD] ]
+assert TimedWait(WriterObjectId); Loop :[ deadlock free [FD] ]
+assert WaitForObject(WriterObjectId); Loop :[ deadlock free [FD] ]
+
+
+--assert NotifyActions(WriterObjectId); Loop :[ deadlock free [FD] ]
+assert Notify(WriterObjectId); Loop :[ deadlock free [FD] ]
+assert NotifyAll(WriterObjectId); Loop :[ deadlock free [FD] ]
+
 assert Interrupt_Object(WriterObjectId); Loop :[ deadlock free [FD] ]
 
 

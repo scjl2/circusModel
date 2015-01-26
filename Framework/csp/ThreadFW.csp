@@ -71,12 +71,12 @@ Priority(thread, basePriority, priorityStack, activePriority) =
 
 IncreasePriority(thread, basePriority, priorityStack, activePriority) = 
 	raise_thread_priority.thread?ceilingPriority ->
-	Priority(thread, basePriority, priorityStack^<ceilingPriority>, ceilingPriority)
+	Priority(thread, basePriority, <ceilingPriority>^priorityStack, ceilingPriority)
 
 
 DecreasePriority(thread, basePriority, priorityStack, activePriority) = 
 	lower_thread_priority.thread -> 
-	Priority(thread, basePriority, <basePriority>, basePriority)
+	Priority(thread, basePriority, tail(priorityStack), basePriority)
 	
 
 GetPriorityLevel(thread, basePriority, priorityStack, activePriority) =
