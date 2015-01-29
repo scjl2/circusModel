@@ -1,11 +1,12 @@
 --Locking Model
 
 include "PriorityQueue.csp"
-
+--include "PriorityQueueNoMaps.csp"
 
 include "ThreadFW.csp"
 
 include "ObjectFW.csp"
+--include "ObjectFWNoMaps.csp"
 
 include "JTime.csp"
 
@@ -14,7 +15,6 @@ nametype LockingModelSync =
 		interrupt,isInterruptedCall ,isInterruptedRet , interruptedCall, interruptedRet, startSynchMeth, endSyncMeth |}
 
 nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_priority |}
-
 
 
 

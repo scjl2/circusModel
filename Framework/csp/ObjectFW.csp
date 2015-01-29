@@ -197,8 +197,8 @@ Execute_Object(object, interruptedThreads, ceilingPriority,queueForLock, previou
 
 
 assert Monitor(WriterObjectId); Loop :[ deadlock free [FD] ]
-
-
+assert StartSync_monitorUnlocked(WriterObjectId) :[ deadlock free [FD] ]
+assert LockAquired_monitorUnlocked(WriterObjectId) :[ deadlock free [FD] ]
 
 assert MonitorLockController(WriterObjectId,EmptyPriorityQueue, EmptyThreadMap, 0, nullThreadId, {} ); Loop :[ deadlock free [FD] ]
 assert CeilingPriorityController(WriterObjectId, 0); Loop :[ deadlock free [FD] ]
@@ -206,16 +206,15 @@ assert CeilingPriorityController(WriterObjectId, 0); Loop :[ deadlock free [FD] 
 Monitor(object) = 
 	MonitorUnlocked(object)
 
-
-
-MonitorUnlocked(object) = 
+StartSync_monitorUnlocked(object)=
  (
-	startSynchMeth.object?someThread -> 	
+	startSynchMeth.object?someThread:( diff(ThreadID, {nullThreadId}) ) -> 	
 	lock_request.object!someThread ->
 	MonitorUnlocked	(object)	
 ) 
- [] 
- (
+
+LockAquired_monitorUnlocked(object) =
+(
 	lockAcquired.object?lockingThread -> 
 	get_ceilingPriority.object?ceilingPriority -> 
 	(
@@ -237,6 +236,12 @@ MonitorUnlocked(object) =
 		
 	)	
 ) 
+
+
+MonitorUnlocked(object) = 
+StartSync_monitorUnlocked(object)
+ [] 
+LockAquired_monitorUnlocked(object)
 
 
 
