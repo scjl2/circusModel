@@ -12,6 +12,8 @@ channel release_complete_PEH : SchedulableID.num
 channel reset_periodicEventHandlerState : SchedulableID
 channel end_periodicEventHandler_app : SchedulableID
 
+channel getRequestedStartTime : SchedulableID.num 
+
 nametype ReleaseSync_PEH =  {|release, end_releases |}
 nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
 
@@ -119,22 +121,25 @@ Activate_PEH(schedulable, controllingMission) =
 Execute_PEH(schedulable, startTime, period, deadline, deadlineMissHandler) =
 circwait.startTime ->    
 (
-  ( 
-    (
-      if deadlineMissHandler != nullSchedulableId then
-        RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler)
-      else 
-        Running(schedulable, period)         
-    )
-    []
-    (
-      end_releases.schedulable ->
-      signalTerminationRet.schedulable ->
-      SKIP
-    )
-  )  
-    [|  {|end_releases, signalTerminationRet|} |] 
-  SignalTermination_PEH(schedulable)
+  (( 
+      (
+        if deadlineMissHandler != nullSchedulableId then
+          RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler)
+        else 
+          Running(schedulable, period)         
+      )
+      []
+      (
+        end_releases.schedulable ->
+        signalTerminationRet.schedulable ->
+        SKIP
+      )
+    )  
+      [|  {|end_releases, signalTerminationRet|} |] 
+    SignalTermination_PEH(schedulable)
+  )
+  [|  {|end_releases, signalTerminationRet|} |] 
+  GetRequestedStartTime(schedulable, startTime)
 )--\{|end_releases|}
   
 
@@ -217,7 +222,9 @@ get_missedReleases.schedulable?missedReleases ->
     [| {|handleAsyncEventRet|} |] 
   FireCatcher(schedulable) 
 ) 
+
 ;
+
 (
   (
     get_periodicTerminating.schedulable?periodicTerminating:({False}) ->
@@ -298,6 +305,17 @@ SignalTermination_PEH(schedulable) =
   signalTerminationRet.schedulable ->
   done_schedulable.schedulable ->
   SKIP
+
+GetRequestedStartTime(schedulable, startTime)=
+  (
+    getRequestedStartTime.schedulable!startTime ->
+    GetRequestedStartTime(schedulable, startTime)
+  )
+  []
+  (
+    end_releases.schedulable ->
+    SKIP
+  )
 
 Cleanup_PEH(schedulable) =
   cleanupSchedulableCall.schedulable ->

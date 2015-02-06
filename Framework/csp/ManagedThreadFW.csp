@@ -6,6 +6,7 @@
 
 channel runCall : SchedulableID 
 channel runRet : SchedulableID
+channel isAlive : SchedulableID.Bool
 
 channel end_managedThread_app : SchedulableID
 channel end_managedThreadState : SchedulableID
@@ -81,8 +82,19 @@ Methods_MT(schedulable) =
 )
 []
 (
+  IsAliveMeth(schedulable) ;
+  Methods_MT(schedulable)
+)
+[]
+(
   runRet.schedulable -> 
   SKIP  
+)
+
+IsAliveMeth(schedulable)=
+(
+  isAlive.schedulable!true ->
+  SKIP
 )
 
 SignalTerminationMeth_MT(schedulable) = 

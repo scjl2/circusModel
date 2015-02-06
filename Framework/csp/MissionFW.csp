@@ -1,14 +1,16 @@
 --MissionFW
 --Models javax.safetycritical.Mission
+
+
 --Mission Channels
 
 channel set_controllingSequencer : MissionID.SchedulableID
 channel set_applicationTerminating_M : MissionID.Bool 
 channel get_applicationTerminating_M : MissionID.Bool 
 channel set_missionTerminating : MissionID.Bool 
-channel set_activeSchedulables: MissionID.Set(SchedulableID) 
-channel get_activeSchedulables: MissionID.Set(SchedulableID) 
-channel add_schedulable: MissionID.SchedulableID
+channel set_activeSchedulables : MissionID.Set(SchedulableID) 
+channel get_activeSchedulables : MissionID.Set(SchedulableID) 
+channel add_schedulable : MissionID.SchedulableID
 channel remove_activeSchedulables : MissionID.SchedulableID
 channel get_missionTerminating : MissionID.Bool
 channel get_registeredSchedulables : MissionID.Set(SchedulableID)
@@ -49,8 +51,8 @@ channel end_mission_app : MissionID
 channel done_mission : MissionID.Bool
 
 channel terminationPendingCall : MissionID
-channel terminationPendingRet :MissionID.Bool
-
+channel terminationPendingRet : MissionID.Bool
+channel getSequencer : MissionID.SchedulableID 
 
 
 nametype MissionFWCHanSet = union(
@@ -68,13 +70,15 @@ nametype TerminateSync =
   {| schedulables_terminated, schedulables_stopped |}
 
 
+nametype MissionFWHideChan = diff(MissionFWStateChan, {|activate_schedulables|})
+
 MissionFW(mission) = 
 sbisim(diamond(   
 (  
   MissionFWState(mission, {}, {}, False, False, nullSequencerId)
     [|MissionFWStateChan|]
   MissionFWBehaviour(mission)
-) \ diff(MissionFWStateChan, {|activate_schedulables|})
+) \ MissionFWHideChan
 ))
 
 
@@ -253,10 +257,11 @@ Execute_M(mission) =
   ( 
      activate_schedulables.mission ->
     -- set_activeSchedulables.mission!registeredSchedulables ->
+    get_controllingSequencer.mission?controllingSequencer ->
      (
         TerminateAndDone(mission, registeredSchedulables) 
           [| {| stop_schedulables, done_schedulables |} |]          
-        Methods_M(mission, registeredSchedulables)
+        MethodsExtChoice_M(mission, registeredSchedulables, controllingSequencer)
       );
      CleanupPhase(mission, registeredSchedulables)
 
@@ -333,19 +338,40 @@ DoneSchedulables(mission, activeSchedulables) =
   )
 )
 
-Methods_M(mission, registeredSchedulables) =
+MethodsExtChoice_M(mission, registeredSchedulables, controllingSequencer) =
+(  
+  RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
+  []
+  (
+    done_schedulables.mission ->
+    end_mission_terminations.mission ->
+    SKIP
+  )
+  []
+  GetSequencer(mission, controllingSequencer)
+) 
+
+
+Methods_M(mission, registeredSchedulables, controllingSequencer) =
  sbisim(diamond( 
 (  
-  TerminationPending_M(mission)
+  (
+    (
+    TerminationPending_M(mission)
     [| {|end_mission_terminations|} |] 
   (
-   RequestTerminationMeth(mission, registeredSchedulables)
+   RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
       [| {|end_mission_terminations|} |] 
     (
       done_schedulables.mission ->
       end_mission_terminations.mission ->
       SKIP
-    ) )
+    ) 
+  )
+  )
+  [| {|end_mission_terminations|} |] 
+  GetSequencer(mission, controllingSequencer)
+  )
 ) \{| end_mission_terminations |}
 ))
 
@@ -363,9 +389,8 @@ TerminationPending_M(mission) =
     SKIP
 )  
 )
-RequestTerminationMeth(mission, registeredSchedulables) =
---get_registeredSchedulables.mission?registeredSchedulables ->
-get_controllingSequencer.mission?controllingSequencer ->
+
+RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer) =
 (  
   (
     end_mission_terminations.mission -> 
@@ -383,15 +408,23 @@ get_controllingSequencer.mission?controllingSequencer ->
         get_missionTerminating.mission?missionTerminating:({False}) ->
         set_missionTerminating.mission!True ->
         stop_schedulables.mission ->
-        RequestTerminationMeth(mission, registeredSchedulables)
+        RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
       )
       []
       (
         get_missionTerminating.mission?missionTerminating:({True}) ->
-        RequestTerminationMeth(mission, registeredSchedulables)
+        RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
       )
     ) 
   )
+)
+
+GetSequencer(mission, controllingSequencer)=
+(
+ ( getSequencer.mission!controllingSequencer ->
+   GetSequencer(mission, controllingSequencer))
+  []
+ ( end_mission_terminations.mission -> SKIP)
 )
 
 MissionExceptions(mission) =
