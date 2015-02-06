@@ -32,4 +32,4 @@ include "PeriodicEventHandlerFW.csp"
 
 include "ManagedThreadFW.csp" 
 
-include "LockingModel.csp"
+--include "LockingModel.csp"

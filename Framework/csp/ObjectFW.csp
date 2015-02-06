@@ -49,9 +49,12 @@ channel get_locks : ObjectID.Int
 channel set_lockedBy : ObjectID.ThreadID
 channel get_queueForLock : ObjectID.PriorityQueue
 
+
+
+
 nametype ObjectStateSync = 
 	{|set_lockedBy, increment_locks, decrement_locks,get_locks,get_waitQueue, get_waitForObjectThreads,
-	  fully_unlock, add_to_queue_for_lock, assign_eligible, add_to_wait_queue, 
+	  add_to_queue_for_lock, assign_eligible, add_to_wait_queue, 
 		remove_thread_from_wait_queue, remove_most_eligible_from_wait_queue    |}
 
 ObjectFW(object) =
