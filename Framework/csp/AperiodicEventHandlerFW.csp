@@ -134,7 +134,7 @@ else
     else 
       ReadyLong(schedulable)    
   )
-    [|{| end_releases |}|]
+    [|{| end_releases, release |}|]
   SignalTermination_APEH(schedulable)
 )\{| end_releases |}
 
@@ -196,6 +196,21 @@ SignalTermination_APEH(schedulable) =
     signalTerminationRet.schedulable ->
     done_schedulable.schedulable ->
     SKIP 
+  )
+  [| {|end_releases, done_schedulable |} |]
+  (
+    end_releases.schedulable ->
+    NuetralRelease_APEH(schedulable)
+  )
+
+NuetralRelease_APEH(schedulable)=
+  (
+    release.schedulable ->
+    NuetralRelease_APEH(schedulable)
+  )
+  []
+  (
+    done_schedulable.schedulable -> SKIP
   )
 
 Release_APEH(schedulable, pending) =  
