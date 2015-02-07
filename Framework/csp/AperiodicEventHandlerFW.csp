@@ -134,7 +134,7 @@ else
     else 
       ReadyLong(schedulable)    
   )
-    [|{| end_releases, release |}|]
+    [|{| end_releases |}|]
   SignalTermination_APEH(schedulable)
 )\{| end_releases |}
 
@@ -278,3 +278,17 @@ Cleanup_APEH(schedulable) =
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
+
+
+assert 
+    (
+        (AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId))
+        [|{| release, signalTerminationCall, signalTerminationRet |}|]
+        (
+            signalTerminationCall.schedulableA ->
+            release.schedulableA ->
+            signalTerminationRet.schedulableA ->
+            SKIP
+        )
+)
+; Loop :[ deadlock free [FD] ]
