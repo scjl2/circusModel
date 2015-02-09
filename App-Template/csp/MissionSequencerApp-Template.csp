@@ -1,5 +1,4 @@
 
-
 nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
 nametype MySequencerAppChanSet = MissionSequencerAppSync
