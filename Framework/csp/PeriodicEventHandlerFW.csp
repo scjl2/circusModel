@@ -131,11 +131,12 @@ circwait.startTime ->
       []
       (
         end_releases.schedulable ->
-        signalTerminationRet.schedulable ->
+        --signalTerminationRet.schedulable ->
         SKIP
       )
     )  
-      [|  {|end_releases, signalTerminationRet|} |] 
+      [|  {|end_releases --, signalTerminationRet
+      |} |] 
     SignalTermination_PEH(schedulable)
   )
   [|  {|end_releases, signalTerminationRet|} |] 
@@ -145,9 +146,17 @@ circwait.startTime ->
 
 Running(schedulable, period)  =
 ( 
- ( (release.schedulable -> PeriodicClock(schedulable, period))
-   []
-   (end_releases.schedulable -> SKIP)  )
+  ( 
+    (
+      release.schedulable -> 
+      PeriodicClock(schedulable, period)
+    )
+    []
+    (
+      end_releases.schedulable -> 
+      SKIP
+    )  
+  )
     [| ReleaseSync_PEH |] 
   Release_PEH(schedulable,0)
 )
@@ -155,12 +164,12 @@ Running(schedulable, period)  =
 RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler) =
 (
   Running(schedulable, period)
-    [| {|release_complete, end_releases|} |] 
+    [| {|release_complete_PEH, end_releases|} |] 
   DeadlineClock_PEH(schedulable, 0, deadline, period, deadlineMissHandler) 
 )
 
 PeriodicClock(schedulable, period) =
- (
+(
   ( 
     circwait.period ->
     (  
@@ -171,7 +180,7 @@ PeriodicClock(schedulable, period) =
       []
       (
         end_releases.schedulable ->
-       SKIP 
+        SKIP 
       )
     )
   )

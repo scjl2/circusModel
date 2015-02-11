@@ -179,24 +179,24 @@ DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) =
 Scheduled(schedulable) = 
  get_startTime.schedulable?startTime -> 
  (
-  ( 
-    circwait.startTime ->     
-    handleAsyncEventCall.schedulable -> 
-    NotScheduled(schedulable)
+    ( 
+        circwait.startTime ->     
+        handleAsyncEventCall.schedulable -> 
+        NotScheduled(schedulable)
      ) 
      [] 
-  (  
-      ( 
-          deschedule_handler.schedulable -> 
-          NotScheduled(schedulable)
-        )
-      [] 
-      ( 
-        reschedule_handler.schedulable?newStartTime -> 
-        set_startTime.schedulable!newStartTime -> 
-        Scheduled(schedulable)   
-      ) 
-   )   
+      (  
+          ( 
+              deschedule_handler.schedulable -> 
+              NotScheduled(schedulable)
+            )
+          [] 
+          ( 
+            reschedule_handler.schedulable?newStartTime -> 
+            set_startTime.schedulable!newStartTime -> 
+            Scheduled(schedulable)   
+          ) 
+       )   
  )
 
 
