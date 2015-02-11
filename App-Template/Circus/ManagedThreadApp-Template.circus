@@ -1,15 +1,22 @@
+\begin{circus}
+\circprocess ManagedThreadApp \circdef
+\end{circus}
 
-ManagedThreadApp = 
-(
-	Methods_
-)
-/\ (end_managedThread_app.[ManagedThread] -> SKIP)
+\begin{circusaction}
+Methods \circdef \\
+	Run \circseq Methods
+\end{circusaction}
 
-Methods_ =
-	Run_ ; Methods_
-
-Run_ =
-	runCall.[ManagedThread] -> 
+\begin{circusaction}
+Run \circdef \\
+\circblockopen
+	runCall~.~[ManagedThread] \then \\
 		
-	runRet.[ManagedThread] ->
-	SKIP
+	runRet~.~[ManagedThread] \then \\
+	\Skip
+\circblockclose
+\end{circusaction}	
+	
+\begin{circus}
+\circspot (Methods) \circinterrupt (end\_managedThread\_app~.~[ManagedThread] \then \Skip)
+\end{circus}

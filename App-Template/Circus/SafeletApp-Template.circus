@@ -1,30 +1,46 @@
--- SAFELET: MY APP
+\begin{circus}
+\circchannelset SafeltAppSync == \\
+   \lchanset getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end\_safelet\_app \rchanset
+\end{circus}    
+    
+\begin{circus}
+\circchannelset MyAppChanSet == \\
+  \lchanset getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end\_safelet\_app \rchanset
+\end{circus}     
+  
+\begin{circus}
+\circprocess MyApp  \circdef
+\end{circus}
 
-nametype SafeltAppSync = 
-    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
-nametype MyAppChanSet =
-  {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
+\begin{circusaction}
+InitializeApplication \circdef \\
+\circblockopen
+     initializeApplicationCall \then \\
+     initializeApplicationRet \then \\
+     \Skip
+\circblockclose
+\end{circusaction}
 
-MyApp  = 
-	(
-	 	Methods_s 
-	)		
- /\	(end_safelet_app -> SKIP)
+\begin{circusaction}
+GetSequencer \circdef \\
+\circblockopen
+	getSequencerCall \then \\
+	getSequencerRet~!~[top level sequencer]  \then \\
+	\Skip 
+\circblockclose
+\end{circusaction}
 
-InitializeApplication_s =  
-     initializeApplicationCall -> 
-     initializeApplicationRet ->
-     SKIP
-
-GetSequencer_s = 
-	getSequencerCall -> 
-	getSequencerRet![top level sequencer]  ->
-	SKIP
-
-Methods_s = 
- ( 
-	GetSequencer_s
-	[] 
-	InitializeApplication_s 
- ); Methods_s
+\begin{circusaction}
+Methods \circdef \\
+\circblockopen
+	GetSequencer \\
+	\extchoice  \\
+	InitializeApplication  \\
+\circblockclose
+\circseq Methods_s
+\end{circusaction}
+ 
+ \begin{circus}
+\circspot (Methods) \circinterrupt (end\_safelet\_app \then \Skip) 
+\end{circus}

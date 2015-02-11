@@ -1,26 +1,35 @@
 
+\begin{circus}
+\circchannelset MissionSequencerAppSync == \\ \lchanset getNextMissionCall, getNextMissionRet,end\_sequencer\_app \rchanset
+\end{circus}
 
-nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
+\begin{circus}
+\circchannelset MySequencerAppChanSet == MissionSequencerAppSync
+\end{circus}
 
-nametype MySequencerAppChanSet = MissionSequencerAppSync
-
-
-MainSequencerApp = 
-(
-  Methods_tlms 
- 
-)\ MissionSequencerAppStateSync
-/\ (end_sequencer_app.[Top Level Sequencer ] -> SKIP)
+\begin{circus}
+\circprocess MainSequencerApp \circdef \\ 
+\end{circus}
    
-
-GetNextMission_tlms = 
-    getNextMissionCall.[Top Level Sequencer ] -> 
+\begin{circusaction}
+GetNextMission \circdef \\
+\circblockopen
+    getNextMissionCall~.~[Top Level Sequencer ] \then \\
 	
-	getNextMissionRet.[Top Level Sequencer ]![Main Mission]  ->
-	SKIP
+	getNextMissionRet~.~[Top Level Sequencer ]~!~[Main Mission]  \then \\
+	\Skip
+\circblockclose	
+\end{circusaction}
 
-
-Methods_tlms = 
- (
-	GetNextMission_tlms 
- ) ; Methods_tlms  
+\begin{circusaction}
+Methods \circdef  \\
+\circblockopen
+	GetNextMission \\
+\circblockclose 
+\circseq Methods
+\end{circusaction}
+ 
+\begin{circus}
+\circspot (Methods) \circhide MissionSequencerAppStateSync
+\circinterrupt (end\_sequencer\_app~.~[Top Level Sequencer ] \then \Skip)
+\end{circus}
