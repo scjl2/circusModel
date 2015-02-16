@@ -135,7 +135,7 @@ circwait.startTime ->
         SKIP
       )
     )  
-      [|  {|end_releases signalTerminationRet
+      [|  {|end_releases , signalTerminationRet
       |} |] 
     SignalTermination_PEH(schedulable)
   )

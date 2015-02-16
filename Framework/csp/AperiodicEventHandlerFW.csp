@@ -120,8 +120,21 @@ if deadlineMissHandler != nullSchedulableId then
       else 
         ReadyLong(schedulable)    
     )
-      [| union(DeadlineSync_APEH, {|release.schedulable|}) |]
-    DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
+      [| union(DeadlineSync_APEH, {|release.schedulable, releaseLong.schedulable|}) |]
+   ( 
+   		(
+   			(
+   		    	release.schedulable ->  SKIP
+   		     	[]
+   		     	releaseLong.schedulable?data -> SKIP
+   		    ); DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
+   		) 
+   		/\
+	    (
+	        end_releases.schedulable -> 	         
+	        SKIP
+	    )
+    )
   )
     [|{| end_releases |}|]
   SignalTermination_APEH(schedulable)
@@ -140,34 +153,43 @@ else
 
 DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) = 
 (
- release.schedulable ->  
+ 	
   (
     (   
       (
         circwait.deadline -> 
-        release.deadlineMissHandler ->         
+        release.deadlineMissHandler ->  
         DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
       ) 
       [] 
       (
         release_complete.schedulable -> 
+        (
+    		release.schedulable ->  SKIP
+    	 	[]
+    	 	releaseLong.schedulable?data -> SKIP
+    	)
+    	;
         DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
       )       
     )
   )
 ) 
-    /\
-    (
-        end_releases.schedulable -> 
-        release_complete.schedulable -> 
-        SKIP
-    )
-
+    
 Ready_APEH(schedulable) = 
 (
   release.schedulable -> 
-  handleAsyncEventCall.schedulable -> 
-  Release_APEH(schedulable, False)
+  	(
+	  	(
+	    	end_releases.schedulable ->
+	    	SKIP
+	    )
+	    []
+	    (
+	    	handleAsyncEventCall.schedulable -> 
+	    	Release_APEH(schedulable, False)
+	    )
+	)
 )
 []
 (
@@ -178,9 +200,17 @@ Ready_APEH(schedulable) =
 ReadyLong(schedulable) = 
  (  
   releaseLong.schedulable?data -> 
-  --set_data.schedulable!data ->
-  handleAsyncLongEventCall.schedulable.data -> 
-  ReleaseLong(schedulable, data, False) 
+  	(
+	  	(
+	    	end_releases.schedulable ->
+	    	SKIP
+	    )
+	    []
+	    (
+	    	handleAsyncLongEventCall.schedulable.data -> 
+  			ReleaseLong(schedulable, data, False) 
+	    )
+	)
  )
  []
  (
@@ -223,21 +253,17 @@ Release_APEH(schedulable, pending) =
   []
   (
     handleAsyncEventRet.schedulable -> 
+    release_complete.schedulable -> 
     --get_pending.schedulable?pending ->
     if pending == True then
     ( 
      -- set_pending.schedulable!False ->
-      release_complete.schedulable -> 
+      
       handleAsyncEventCall.schedulable -> 
       Release_APEH(schedulable, False)
     )
     else 
        Ready_APEH(schedulable)   
-  )
-  []
-  (
-    end_releases.schedulable -> 
-    SKIP
   )
 
 ReleaseLong(schedulable, data, pending ) =  
@@ -263,11 +289,7 @@ ReleaseLong(schedulable, data, pending ) =
        ReadyLong(schedulable) 
     
   )
-   []
-  (
-    end_releases.schedulable -> 
-    SKIP
-  )
+
 
 Cleanup_APEH(schedulable) = 
  cleanupSchedulableCall.schedulable ->
