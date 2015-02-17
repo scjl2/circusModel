@@ -16,7 +16,7 @@ channel descheduleRet : SchedulableID.Bool
 
 nametype MethodsSync_OSEH =  {|end_releases, reschedule_handler, deschedule_handler|} 
 nametype ReleaseSync_OSEH = {|handleAsyncEventCall, reschedule_handler, end_releases|}
-nametype DeadlineSync_OSEH =  {|handleAsyncEventCall, end_releases, deschedule_handler, release_complete|}
+nametype DeadlineSync_OSEH =  {| end_releases, deschedule_handler, release_complete |}
 nametype OSEHStateSync = {| get_startTime, set_startTime, end_oneshotEventHandlerState|}
 
 nametype OSEHFWChanSet = union(
@@ -95,10 +95,10 @@ Execute_OSEH(schedulable, deadline, deadlineMissHandler) =
   )
     [| {| end_releases |} |]
   SignalTermination_OSEH(schedulable)
-)\{| end_releases |} 
+)--\MethodsSync_OSEH
 
 Run_OSEH(schedulable, deadline, deadlineMissHandler) = 
-  
+(  
   if deadlineMissHandler == nullSchedulableId then 
   ( 
     ScheduleOrWait(schedulable) 
@@ -112,9 +112,10 @@ Run_OSEH(schedulable, deadline, deadlineMissHandler) =
         [| ReleaseSync_OSEH |]
       Release_OSEH(schedulable)
     )
-      [| DeadlineSync_OSEH |]
-      DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+      [| union(DeadlineSync_OSEH, {| release.schedulable|}) |]
+    DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler)
   )
+)-- \ {|release_complete|}
 
 ScheduleOrWait(schedulable) = 
  get_startTime.schedulable?startTime -> 
@@ -142,11 +143,21 @@ Release_OSEH(schedulable) =
     SKIP
   )
 
-
+DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler) =
+  (
+    release.schedulable -> 
+    DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+  )
+  []
+  (
+    end_releases.schedulable -> 
+    --release_complete.schedulable -> 
+    SKIP
+  )
 
 DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) = 
 (
- handleAsyncEventCall.schedulable ->  
+-- handleAsyncEventCall.schedulable ->  
   (
     (   
       (
@@ -157,12 +168,15 @@ DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) =
       [] 
       (
         release_complete.schedulable -> 
-        DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+        --Shouldn't just recurse here, only one release at a time. Could be rescheduled.
+        DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler)
+               
       ) 
       [] 
       (
         deschedule_handler.schedulable -> 
-        DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
+        DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler)
+                 
       )
     )
   )
@@ -170,7 +184,7 @@ DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) =
  []
     (
         end_releases.schedulable -> 
-        release_complete.schedulable -> 
+        --release_complete.schedulable -> 
         SKIP
     )
 
@@ -179,24 +193,28 @@ DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) =
 Scheduled(schedulable) = 
  get_startTime.schedulable?startTime -> 
  (
-    ( 
-        circwait.startTime ->     
-        handleAsyncEventCall.schedulable -> 
-        NotScheduled(schedulable)
-     ) 
-     [] 
+      ( 
+        circwait.startTime ->
+        release.schedulable ->
+        handleAsyncEventCall.schedulable ->
+        NotScheduled(schedulable)        
+      ) 
+      [] 
       (  
-          ( 
-              deschedule_handler.schedulable -> 
-              NotScheduled(schedulable)
-            )
-          [] 
-          ( 
-            reschedule_handler.schedulable?newStartTime -> 
-            set_startTime.schedulable!newStartTime -> 
-            Scheduled(schedulable)   
-          ) 
-       )   
+        deschedule_handler.schedulable -> 
+        NotScheduled(schedulable)
+      )
+      [] 
+      ( 
+        reschedule_handler.schedulable?newStartTime -> 
+        set_startTime.schedulable!newStartTime -> 
+        Scheduled(schedulable)   
+      ) 
+      []
+      (
+        end_releases.schedulable -> 
+        SKIP
+      )
  )
 
 
