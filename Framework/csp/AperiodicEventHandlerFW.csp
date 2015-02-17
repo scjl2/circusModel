@@ -101,14 +101,12 @@ Start_APEH(schedulable) =
   
 
 Register_APEH(schedulable) = 
-    register.schedulable?controllingMission -> 
-    Activate_APEH(schedulable, controllingMission)  
+  register.schedulable?controllingMission -> 
+  Activate_APEH(schedulable, controllingMission)  
   
-
 Activate_APEH(schedulable, controllingMission)  =  
-    activate_schedulables.controllingMission -> 
-    SKIP
-
+  activate_schedulables.controllingMission -> 
+  SKIP
 
 Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) =  
 if deadlineMissHandler != nullSchedulableId then 
@@ -152,8 +150,7 @@ else
 )\{| end_releases |}
 
 DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) = 
-(
- 	
+( 	
   (
     (   
       (
@@ -179,16 +176,16 @@ DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) =
 Ready_APEH(schedulable) = 
 (
   release.schedulable -> 
-  	(
-	  	(
-	    	end_releases.schedulable ->
-	    	SKIP
-	    )
-	    []
-	    (
-	    	handleAsyncEventCall.schedulable -> 
-	    	Release_APEH(schedulable, False)
-	    )
+  (
+		(
+	   	end_releases.schedulable ->
+	   	SKIP
+	  )
+	  []
+	  (
+	   	handleAsyncEventCall.schedulable -> 
+	   	Release_APEH(schedulable, False)
+	  )
 	)
 )
 []
@@ -198,109 +195,98 @@ Ready_APEH(schedulable) =
 )
 
 ReadyLong(schedulable) = 
- (  
+(  
   releaseLong.schedulable?data -> 
-  	(
-	  	(
-	    	end_releases.schedulable ->
-	    	SKIP
-	    )
-	    []
-	    (
-	    	handleAsyncLongEventCall.schedulable.data -> 
-  			ReleaseLong(schedulable, data, False) 
-	    )
+  (
+		(
+	   	end_releases.schedulable ->
+	   	SKIP
+	  )
+	  []
+	  (
+	  	handleAsyncLongEventCall.schedulable.data -> 
+  		ReleaseLong(schedulable, data, False) 
+	  )
 	)
- )
- []
- (
+)
+[]
+(
   end_releases.schedulable ->
   SKIP
- )
+)
 
 
 SignalTermination_APEH(schedulable) = 
-  ( 
-    signalTerminationCall.schedulable ->
-    end_releases.schedulable ->
-    signalTerminationRet.schedulable ->
-    done_schedulable.schedulable ->
-    SKIP 
-  )
+( 
+  signalTerminationCall.schedulable ->
+  end_releases.schedulable ->
+  signalTerminationRet.schedulable ->
+  done_schedulable.schedulable ->
+  SKIP 
+)
   [| {|end_releases, done_schedulable |} |]
-  (
-    end_releases.schedulable ->
-    NuetralRelease_APEH(schedulable)
-  )
+(
+  end_releases.schedulable ->
+  NuetralRelease_APEH(schedulable)
+)
 
 NuetralRelease_APEH(schedulable)=
-  (
-    release.schedulable ->
-    NuetralRelease_APEH(schedulable)
-  )
-  []
-  (
-    done_schedulable.schedulable -> SKIP
-  )
+(
+  release.schedulable ->
+  NuetralRelease_APEH(schedulable)
+)
+[]
+(
+  done_schedulable.schedulable -> 
+  SKIP
+)
 
 Release_APEH(schedulable, pending) =  
-  
+( 
+  release.schedulable -> 
+  Release_APEH(schedulable, True)
+)
+[]
+(
+  handleAsyncEventRet.schedulable -> 
+  release_complete.schedulable -> 
+  if pending == True then
   ( 
-    release.schedulable -> 
-    --set_pending.schedulable!True ->
-    Release_APEH(schedulable, True)
+    handleAsyncEventCall.schedulable -> 
+    Release_APEH(schedulable, False)
   )
-  []
-  (
-    handleAsyncEventRet.schedulable -> 
-    release_complete.schedulable -> 
-    --get_pending.schedulable?pending ->
-    if pending == True then
-    ( 
-     -- set_pending.schedulable!False ->
-      
-      handleAsyncEventCall.schedulable -> 
-      Release_APEH(schedulable, False)
-    )
-    else 
-       Ready_APEH(schedulable)   
-  )
+  else 
+    Ready_APEH(schedulable)   
+)
 
 ReleaseLong(schedulable, data, pending ) =  
- ( 
-    releaseLong.schedulable?data -> 
-   -- set_data.schedulable!data ->
-   -- set_pending.schedulable!True ->
-    ReleaseLong(schedulable, data, True)
+( 
+  releaseLong.schedulable?data -> 
+  ReleaseLong(schedulable, data, True)
+)
+[]
+(
+  handleAsyncLongEventRet.schedulable -> 
+  if pending == True then
+  ( 
+    release_complete.schedulable -> 
+    handleAsyncLongEventCall.schedulable.data -> 
+    ReleaseLong(schedulable, data, False)
   )
-  []
-  (
-    handleAsyncLongEventRet.schedulable -> 
-   -- get_pending.schedulable?pending ->
-    if pending == True then
-    ( 
-     -- set_pending.schedulable!False ->
-      release_complete.schedulable -> 
-     -- get_data.schedulable?data ->
-      handleAsyncLongEventCall.schedulable.data -> 
-      ReleaseLong(schedulable, data, False)
-    )
-    else 
-       ReadyLong(schedulable) 
-    
-  )
-
+  else 
+    ReadyLong(schedulable) 
+)
 
 Cleanup_APEH(schedulable) = 
- cleanupSchedulableCall.schedulable ->
- cleanupSchedulableRet.schedulable -> 
- SKIP 
-
+(
+  cleanupSchedulableCall.schedulable ->
+  cleanupSchedulableRet.schedulable -> 
+  SKIP 
+)
 
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
-
 
 assert 
     (

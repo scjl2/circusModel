@@ -75,7 +75,7 @@ SKIP
 
 
 Start_OSEH(schedulable) =
-    Register_OSEH(schedulable)
+  Register_OSEH(schedulable)
 
 
 Register_OSEH(schedulable) = 
@@ -95,7 +95,7 @@ Execute_OSEH(schedulable, deadline, deadlineMissHandler) =
   )
     [| {| end_releases |} |]
   SignalTermination_OSEH(schedulable)
-)--\MethodsSync_OSEH
+)\MethodsSync_OSEH
 
 Run_OSEH(schedulable, deadline, deadlineMissHandler) = 
 (  
@@ -115,28 +115,28 @@ Run_OSEH(schedulable, deadline, deadlineMissHandler) =
       [| union(DeadlineSync_OSEH, {| release.schedulable|}) |]
     DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler)
   )
-)-- \ {|release_complete|}
+) \ {|release_complete|}
 
 ScheduleOrWait(schedulable) = 
  get_startTime.schedulable?startTime -> 
  if startTime != 0 then 
-      Scheduled(schedulable) 
+    Scheduled(schedulable) 
   else 
-      NotScheduled(schedulable) 
+    NotScheduled(schedulable) 
 
 Release_OSEH(schedulable) = 
  ( 
-      handleAsyncEventCall.schedulable -> 
-      handleAsyncEventRet.schedulable ->   
-      release_complete.schedulable -> 
-      Release_OSEH(schedulable)
+    handleAsyncEventCall.schedulable -> 
+    handleAsyncEventRet.schedulable ->   
+    release_complete.schedulable -> 
+    Release_OSEH(schedulable)
   ) 
  []
  (
     reschedule_handler.schedulable?newStartTime -> 
     set_startTime.schedulable!newStartTime -> 
     Release_OSEH(schedulable)
-    )
+  )
  []
  (
     end_releases.schedulable -> 
@@ -151,13 +151,11 @@ DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler) =
   []
   (
     end_releases.schedulable -> 
-    --release_complete.schedulable -> 
     SKIP
   )
 
 DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) = 
 (
--- handleAsyncEventCall.schedulable ->  
   (
     (   
       (
@@ -168,7 +166,6 @@ DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) =
       [] 
       (
         release_complete.schedulable -> 
-        --Shouldn't just recurse here, only one release at a time. Could be rescheduled.
         DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler)
                
       ) 
@@ -181,102 +178,97 @@ DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler) =
     )
   )
 ) 
- []
-    (
-        end_releases.schedulable -> 
-        --release_complete.schedulable -> 
-        SKIP
-    )
-
- 
+[]
+(
+  end_releases.schedulable -> 
+  SKIP
+)
 
 Scheduled(schedulable) = 
  get_startTime.schedulable?startTime -> 
  (
-      ( 
-        circwait.startTime ->
-        release.schedulable ->
-        handleAsyncEventCall.schedulable ->
-        NotScheduled(schedulable)        
-      ) 
-      [] 
-      (  
-        deschedule_handler.schedulable -> 
-        NotScheduled(schedulable)
-      )
-      [] 
-      ( 
-        reschedule_handler.schedulable?newStartTime -> 
-        set_startTime.schedulable!newStartTime -> 
-        Scheduled(schedulable)   
-      ) 
-      []
-      (
-        end_releases.schedulable -> 
-        SKIP
-      )
- )
-
-
-NotScheduled(schedulable) =
     ( 
-          deschedule_handler.schedulable -> 
-          NotScheduled(schedulable)
-       )
-    []
+      circwait.startTime ->
+      release.schedulable ->
+      handleAsyncEventCall.schedulable ->
+      NotScheduled(schedulable)        
+    ) 
+    [] 
+    (  
+      deschedule_handler.schedulable -> 
+      NotScheduled(schedulable)
+    )
+    [] 
     ( 
-          reschedule_handler.schedulable?newStartTime -> 
-          set_startTime.schedulable!newStartTime -> 
-          Scheduled(schedulable)        
-        )     
+      reschedule_handler.schedulable?newStartTime -> 
+      set_startTime.schedulable!newStartTime -> 
+      Scheduled(schedulable)   
+    ) 
     []
     (
-    end_releases.schedulable -> 
-    SKIP
-  )
+      end_releases.schedulable -> 
+      SKIP
+    )
+ )
 
+NotScheduled(schedulable) =
+( 
+  deschedule_handler.schedulable -> 
+  NotScheduled(schedulable)
+)
+[]
+( 
+  reschedule_handler.schedulable?newStartTime -> 
+  set_startTime.schedulable!newStartTime -> 
+  Scheduled(schedulable)        
+)     
+[]
+(
+  end_releases.schedulable -> 
+  SKIP
+)
 
 Methods_OSEH(schedulable) = 
- (
-   Deschedule(schedulable) ; 
-   Methods_OSEH(schedulable)
- ) 
- [] 
- (
-   GetNextReleaseTime(schedulable) ; 
-   Methods_OSEH(schedulable)
- ) 
- [] 
- (
-    ScheduleNextRelease(schedulable); 
-   Methods_OSEH(schedulable)
- ) 
- []
- (
-   end_releases.schedulable -> 
-   SKIP
-  )
-
+(
+  Deschedule(schedulable) ; 
+  Methods_OSEH(schedulable)
+) 
+[] 
+(
+  GetNextReleaseTime(schedulable) ; 
+  Methods_OSEH(schedulable)
+) 
+[] 
+(
+  ScheduleNextRelease(schedulable); 
+  Methods_OSEH(schedulable)
+) 
+[]
+(
+  end_releases.schedulable -> 
+  SKIP
+)
 
 Deschedule(schedulable) = 
- 
+( 
   descheduleCall.schedulable ->
   deschedule_handler.schedulable ->
   get_startTime.schedulable?startTime -> 
- (
-  if startTime == 0 then
-  --set_wasScheduled.schedulable!False ->
-  set_startTime.schedulable.0 ->  
-    descheduleRet.schedulable.False -> 
-  SKIP
- 
- else 
-  --set_wasScheduled.schedulable!True->
-  set_startTime.schedulable.0 ->  
-    descheduleRet.schedulable.True -> 
-  SKIP
-  
- )  
+  (
+    if startTime == 0 then
+    (
+      set_startTime.schedulable.0 ->  
+      descheduleRet.schedulable.False -> 
+      SKIP
+    ) 
+    else 
+    (
+      set_startTime.schedulable.0 ->  
+      descheduleRet.schedulable.True -> 
+      SKIP
+    )  
+  )
+)
 
 GetNextReleaseTime(schedulable) = 
   getNextReleaseTimeCall.schedulable -> 
@@ -285,6 +277,7 @@ GetNextReleaseTime(schedulable) =
   SKIP
 
 ScheduleNextRelease(schedulable) = 
+(
  scheduleNextRelease.schedulable?newStartTime -> 
  set_startTime.schedulable!newStartTime -> 
  if newStartTime == 0 then 
@@ -297,18 +290,23 @@ ScheduleNextRelease(schedulable) =
     reschedule_handler.schedulable!newStartTime -> 
     SKIP 
   ) 
+)
 
 SignalTermination_OSEH(schedulable) =
+(
  signalTerminationCall.schedulable ->
  end_releases.schedulable ->
  signalTerminationRet.schedulable ->
  done_schedulable.schedulable ->
  SKIP
+)
 
 Cleanup_OSEH(schedulable) = 
+(
   cleanupSchedulableCall.schedulable ->
   cleanupSchedulableRet.schedulable -> 
   SKIP
+)
 
 
 assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
