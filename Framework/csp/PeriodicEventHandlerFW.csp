@@ -20,7 +20,7 @@ channel end_periodicEventHandler_app : SchedulableID
 channel getRequestedStartTime : SchedulableID.num 
 
 nametype ReleaseSync_PEH =  {|release, end_releases |}
-nametype  PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
+nametype PTCSYnc =  {| get_periodicTerminating, set_periodicTerminating |}
 
 
  nametype PEHStateSync = {|get_controllingMission, set_controllingMission, 
@@ -112,16 +112,16 @@ end_periodicEventHandler_app.schedulable ->
 SKIP 
 
 Start_PEH(schedulable) =
-   Register_PEH(schedulable)
+  Register_PEH(schedulable)
    
 
 Register_PEH(schedulable) =
-   register.schedulable?controllingMission ->
-   Activate_PEH(schedulable, controllingMission)
+  register.schedulable?controllingMission ->
+  Activate_PEH(schedulable, controllingMission)
 
 Activate_PEH(schedulable, controllingMission) =
-    activate_schedulables.controllingMission ->
-    SKIP
+  activate_schedulables.controllingMission ->
+  SKIP
 
 Execute_PEH(schedulable, startTime, period, deadline, deadlineMissHandler) =
 circwait_startTime.startTime ->    
@@ -141,13 +141,12 @@ circwait_startTime.startTime ->
         SKIP
       )
     )  
-      [|  {|end_releases , signalTerminationRet
-      |} |] 
+      [|  {|end_releases, signalTerminationRet |} |] 
     SignalTermination_PEH(schedulable)
   )
   [|  {|end_releases|} |] 
   GetRequestedStartTime(schedulable, startTime)
-)--\{|end_releases|}
+)\{|end_releases, release_complete_PEH|}
   
 
 Running(schedulable, period)  =
@@ -171,7 +170,13 @@ RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler)
 (
   Running(schedulable, period)
     [| {|release_complete_PEH, end_releases, circwait_period |} |] 
-  DeadlineClock_PEH(schedulable, 0, deadline, period, deadlineMissHandler) 
+  (DeadlineClock_PEH(schedulable, 0, deadline, period, deadlineMissHandler) 
+    /\ 
+    (
+      end_releases.schedulable ->   
+      SKIP
+    )
+  )
 )
 
 PeriodicClock(schedulable, period) =
@@ -203,7 +208,6 @@ get_missedReleases.schedulable?missedReleases ->
 (
   (   
       end_releases.schedulable ->
-      release_complete_PEH.schedulable.index ->
       signalTerminationRet.schedulable ->
       SKIP 
   ) 
@@ -240,12 +244,13 @@ get_missedReleases.schedulable?missedReleases ->
     (
       (
         get_periodicTerminating.schedulable?periodicTerminating:({False}) ->
-        if index + 1 > maxNum then 
+        --This is just to help FDR by limiting the amount of times this will recurse.
+        if index + 1 > maxNum then
           signalTerminationRet.schedulable ->
           SKIP 
         else
           Release_PEH(schedulable, index + 1)
-       )
+      )
       []
       (
         get_periodicTerminating.schedulable?periodicTerminating:({True}) ->
@@ -278,36 +283,33 @@ FireCatcher(schedulable) =
 DeadlineClock_PEH(schedulable, index, deadline, period, deadlineMissHandler) =
 (
   (
-  (   
-    (
-      circwait_deadline.deadline ->
-      release.deadlineMissHandler ->
-      release_complete_PEH.schedulable.index ->
-      SKIP
-    ) 
-    []
-    (
-      release_complete_PEH.schedulable.index ->
-      SKIP
-    )
-  )
-  |||
-  (
-    (
-      circwait_period.period ->
-      if index +1 > maxNum then
+    (   
+      (
+        circwait_deadline.deadline ->
+        release.deadlineMissHandler ->
+        release_complete_PEH.schedulable.index ->
         SKIP
-      else 
-        DeadlineClock_PEH(schedulable, index + 1, deadline, period, deadlineMissHandler)
-    )       
-  )
-) 
-/\ 
-  (
-    end_releases.schedulable ->   
-    SKIP
-  )
+      ) 
+      []
+      (
+        release_complete_PEH.schedulable.index ->
+        SKIP
+      )
+    )
+    |||
+    (
+      (
+        circwait_period.period ->
+        if index +1 > maxNum then
+          SKIP
+        else 
+          DeadlineClock_PEH(schedulable, index + 1, deadline, period, deadlineMissHandler)
+      )       
+    )
+  ) 
 )
+  
+
 
 SignalTermination_PEH(schedulable) =
 (
