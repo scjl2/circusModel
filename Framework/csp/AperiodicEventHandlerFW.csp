@@ -288,6 +288,14 @@ assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; 
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
 assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
 
+assert AperiodicEventHandlerFW(schedulableA, aperiodicLong, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodicLong, 2, nullSchedulableId) :[ divergence free ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodicLong, 2, nullSchedulableId) :[ deterministic  [FD] ] 
+
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) ; Loop :[ deadlock free [FD] ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ divergence free ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ deterministic  [FD] ] 
+
 assert 
     (
         (AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId))

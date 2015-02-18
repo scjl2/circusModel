@@ -146,7 +146,7 @@ circwait_startTime.startTime ->
   )
   [|  {|end_releases|} |] 
   GetRequestedStartTime(schedulable, startTime)
-)\{|end_releases, release_complete_PEH|}
+)\{|end_releases|}
   
 
 Running(schedulable, period)  =
@@ -177,7 +177,7 @@ RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler)
       SKIP
     )
   )
-)
+) \ {|release_complete_PEH|}
 
 PeriodicClock(schedulable, period) =
 (
@@ -341,6 +341,10 @@ Cleanup_PEH(schedulable) =
   SKIP
 )
 
-assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
-assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ divergence free ]
-assert PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]
+assert sbdia( PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) ); Loop :[ deadlock free [FD] ]
+assert sbdia( PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) ) :[ divergence free ]
+assert sbdia( PeriodicEventHandlerFW(schedulableA, 1, 0, 2, nullSchedulableId) ) :[ deterministic  [FD] ]
+
+assert sbdia( PeriodicEventHandlerFW(schedulableA, 1, 1, 2, schedulableB) ); Loop :[ deadlock free [FD] ]
+assert sbdia( PeriodicEventHandlerFW(schedulableA, 1, 1, 2, schedulableB) ) :[ divergence free ]
+assert sbdia( PeriodicEventHandlerFW(schedulableA, 1, 1, 2, schedulableB) ) :[ deterministic  [FD] ]

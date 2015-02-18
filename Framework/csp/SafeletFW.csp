@@ -75,6 +75,6 @@ Execute_S =
     deregister?schedulables -> 
     Methods_S(diff(globallyRegistered,schedulables), sequencerID) 
 
-assert SafeletFW; Loop :[ deadlock free [FD] ]
-assert SafeletFW :[ divergence free ]
-assert SafeletFW :[ deterministic  [FD] ]
+assert sbdia( SafeletFW ); Loop :[ deadlock free [FD] ]
+assert sbdia( SafeletFW ) :[ divergence free ]
+assert sbdia( SafeletFW ) :[ deterministic  [FD] ]

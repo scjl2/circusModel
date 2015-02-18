@@ -492,6 +492,6 @@ Finish_M(mission, continueSequencer) =
    SKIP
 
 
-assert MissionFW(missionA); Loop :[ deadlock free [FD] ]
-assert MissionFW(missionA) :[ divergence free ]
-assert MissionFW(missionA) :[ deterministic  [FD] ]
+assert sbdia( MissionFW(missionA) ); Loop :[ deadlock free [FD] ]
+assert sbdia( MissionFW(missionA) ) :[ divergence free ]
+assert sbdia( MissionFW(missionA) ) :[ deterministic  [FD] ]

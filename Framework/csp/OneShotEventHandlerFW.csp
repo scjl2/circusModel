@@ -148,6 +148,16 @@ DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler) =
     release.schedulable -> 
     DeadlineClock_OSEH(schedulable, deadline, deadlineMissHandler)
   )
+  [] 
+  (
+    deschedule_handler.schedulable -> 
+    DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler)
+  )
+  [] 
+  (
+    release_complete.schedulable -> 
+    DeadlineClockPause_OSEH(schedulable, deadline, deadlineMissHandler)
+  ) 
   []
   (
     end_releases.schedulable -> 
@@ -309,6 +319,10 @@ Cleanup_OSEH(schedulable) =
 )
 
 
-assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
-assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ divergence free ]
-assert OneShotEventHandlerFW(schedulableA, 0, 2, nullSchedulableId) :[ deterministic  [FD] ]  
+assert OneShotEventHandlerFW(schedulableA, 1, 2, nullSchedulableId); Loop :[ deadlock free [FD] ]
+assert OneShotEventHandlerFW(schedulableA, 1, 2, nullSchedulableId) :[ divergence free ]
+assert OneShotEventHandlerFW(schedulableA, 1, 2, nullSchedulableId) :[ deterministic  [FD] ]  
+
+assert OneShotEventHandlerFW(schedulableA, 1, 2, schedulableB); Loop :[ deadlock free [FD] ]
+assert OneShotEventHandlerFW(schedulableA, 1, 2, schedulableB) :[ divergence free ]
+assert OneShotEventHandlerFW(schedulableA, 1, 2, schedulableB) :[ deterministic  [FD] ]  
