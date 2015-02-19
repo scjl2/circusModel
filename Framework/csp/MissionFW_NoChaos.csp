@@ -214,31 +214,33 @@ register?s!mission ->
   (
     checkSchedulable.mission?check:({False}) ->
     throw.illegalStateException ->
-    CHAOS(Events)   
+    --CHAOS(Events)
+    STOP
   )
 )
 
 RegisterException(mission) =
   register?s!mission ->
   throw.illegalStateException ->
-  CHAOS(Events)  
-  
+  --CHAOS(Events)  
+  STOP
+
 SetCeilingPriority(mission) =
-  setCeilingPriority.mission?o?p -> 
-  SKIP
+ setCeilingPriority.mission?o?p -> 
+ SKIP
 
 SetCeilingPriorityException(mission) =
-  setCeilingPriority.mission?o?p -> 
-  throw.illegalStateException ->
-  CHAOS(Events)
- 
+ setCeilingPriority.mission?o?p -> 
+ throw.illegalStateException ->
+ --CHAOS(Events)
+ STOP
 
 MissionPhase(mission) =
 sbisim(diamond( 
 (
   Execute_M(mission)
     [|  {|done_schedulables|} |] 
-  MissionExceptions(mission)
+ MissionExceptions(mission)
 )\{|done_schedulables|}
 ))
 

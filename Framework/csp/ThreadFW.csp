@@ -29,16 +29,10 @@ channel end_threadState : ThreadID
 
 
 ThreadFW(thread, basePriority) =
---sbisim(diamond(   	
 ( 
 	Execute(thread, basePriority, <basePriority>,basePriority, False)
 )
 /\(done_toplevel_sequencer -> SKIP)
---))
-  
-
- 	
-
 
 Execute(thread, basePriority, priorityStack, activePriority, interruptedV) = 
 (  
@@ -49,7 +43,6 @@ Execute(thread, basePriority, priorityStack, activePriority, interruptedV) =
 )																																																																																																																																																																																																																																																																																																																																																																																																																													
 
 Priority(thread, basePriority, priorityStack, activePriority) = 
---get_priorityStack.thread?priorityStack ->
 (
  if priorityStack ==  <basePriority> then 
  	(
@@ -66,7 +59,7 @@ Priority(thread, basePriority, priorityStack, activePriority) =
 		GetPriorityLevel(thread, basePriority, priorityStack, activePriority)
 	)
 ) 
---; Priority(thread, basePriority) 	
+ 	
  
 
 IncreasePriority(thread, basePriority, priorityStack, activePriority) = 
@@ -100,26 +93,18 @@ Interrupts(thread, interruptedV) =
 
 
 Interrupt(thread, interruptedV) = 
- interrupt.thread -> 
--- set_interrupted.thread!True -> 
-Interrupts(thread, True)
+	interrupt.thread -> 
+	Interrupts(thread, True)
 
 
 IsInterrupted(thread, interruptedV) = 
- --isInterruptedCall.thread -> 
- --get_interrupted.thread?interrupted -> 
- --isInterruptedRet.thread!interruptedV -> 
-  isInterrupted.thread!interruptedV -> 
-Interrupts(thread, interruptedV)
+	isInterrupted.thread!interruptedV -> 
+	Interrupts(thread, interruptedV)
 
 
 Interrupted(thread, interruptedV) = 
--- interruptedCall.thread -> 
--- get_interrupted.thread?interrupted -> 
--- interruptedRet.thread!interrupted -> 
-interrupted.thread!interruptedV ->
--- set_interrupted.thread!False -> 
-Interrupts(thread, False)
+	interrupted.thread!interruptedV ->
+	Interrupts(thread, False)
 
 
 assert ThreadFW(WriterThreadID, 0); Loop :[ deadlock free [FD] ]

@@ -9,9 +9,9 @@ datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId
                           | WriterId | ReaderId
 
 datatype MissionID = nullMissionId|
-                      missionA|missionB 
-                    | TopMission1ID --| MyMission1ID | MyMission2ID | MyMission3ID 
-                      | FlatBufferMissionId       
+                    missionA|missionB 
+                    | TopMission1ID 
+                    | FlatBufferMissionId       
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 

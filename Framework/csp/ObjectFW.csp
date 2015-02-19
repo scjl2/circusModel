@@ -29,7 +29,7 @@ datatype WaitType = wait | waitForObject
 	channel get_lockedBy : ObjectID . ThreadID 
 	channel get_waitQueue : ObjectID . PriorityQueue 
 	channel reset_lockedBy : ObjectID 
-	channel fully_unlock : ObjectID --.SchedulableID.Int 
+	channel fully_unlock : ObjectID 
 	channel increment_locks : ObjectID 
 	channel decrement_locks : ObjectID 
 	channel get_ceilingPriority : ObjectID . PriorityLevel  

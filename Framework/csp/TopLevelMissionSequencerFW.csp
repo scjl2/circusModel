@@ -30,34 +30,34 @@ sbisim(diamond(
       [| TLMSStateSync |]
     TopLevelMissionSequencerFWBehaviour(sequencer)
 )\ TLMSStateSync
- ))
+))
 
 
 TopLevelMissionSequencerFWState(sequencer, currentMission, continue) =
-  (
-    set_currentMission.sequencer?newCurrentMission ->
-    TopLevelMissionSequencerFWState(sequencer, newCurrentMission, continue)
-  )
-  []
-  (
-    get_currentMission.sequencer!currentMission ->
-    TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
-  )
-  []
-  (
-    get_continue.sequencer!continue ->
-    TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
-  )
-  []
-  (
-    set_continue.sequencer?newContinue ->
-    TopLevelMissionSequencerFWState(sequencer, currentMission, newContinue)
-  )
-  []
-  (
-    end_toplevelsequencerState.sequencer ->
-    SKIP
-  )
+(
+  set_currentMission.sequencer?newCurrentMission ->
+  TopLevelMissionSequencerFWState(sequencer, newCurrentMission, continue)
+)
+[]
+(
+  get_currentMission.sequencer!currentMission ->
+  TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
+)
+[]
+(
+  get_continue.sequencer!continue ->
+  TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
+)
+[]
+(
+  set_continue.sequencer?newContinue ->
+  TopLevelMissionSequencerFWState(sequencer, currentMission, newContinue)
+)
+[]
+(
+  end_toplevelsequencerState.sequencer ->
+  SKIP
+)
 
 
 TopLevelMissionSequencerFWBehaviour(sequencer)=
@@ -77,17 +77,17 @@ TopLevelMissionSequencerFWBehaviour(sequencer)=
   SKIP
 )
 
-Start_TLS(sequencer)  =  
- start_toplevel_sequencer.sequencer -> 
- SKIP 
+Start_TLS(sequencer)  = 
+( 
+  start_toplevel_sequencer.sequencer -> 
+  SKIP 
+)
 
 Execute_TLS(sequencer)  =
-( 
   RunMission_TLS(sequencer)
-) 
 
 RunMission_TLS(sequencer) = 
- GetNextMission_TLS(sequencer) 
+  GetNextMission_TLS(sequencer) 
 
 GetNextMission_TLS(sequencer)  =  
   getNextMissionCall.sequencer -> 
@@ -97,20 +97,20 @@ GetNextMission_TLS(sequencer)  =
 StartMission_TLS(sequencer, currentMission) = 
 (
 	if currentMission != nullMissionId then
-    ( 
-      start_mission.currentMission.sequencer ->
-      done_mission.currentMission?returnedcontinue -> 
-      Continue_TLS(sequencer,returnedcontinue)
-    )
-     else 
-         Continue_TLS(sequencer, False)
+  ( 
+    start_mission.currentMission.sequencer ->
+    done_mission.currentMission?returnedcontinue -> 
+    Continue_TLS(sequencer,returnedcontinue)
+  )
+  else 
+    Continue_TLS(sequencer, False)
 )    
  
 Continue_TLS(sequencer, continue) = 
 if continue == True then
-    RunMission_TLS(sequencer) 
+  RunMission_TLS(sequencer) 
 else
-    SKIP
+  SKIP
 
 Finish_TLS(sequencer)   = 
   done_toplevel_sequencer ->  
@@ -119,3 +119,7 @@ Finish_TLS(sequencer)   =
 assert TopLevelMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
 assert TopLevelMissionSequencerFW(schedulableA) :[ divergence free ]
 assert TopLevelMissionSequencerFW(schedulableA) :[ deterministic  [FD] ]
+
+assert sbdia( TopLevelMissionSequencerFW(schedulableA) ); Loop :[ deadlock free [FD] ]
+assert sbdia(  TopLevelMissionSequencerFW(schedulableA) ):[ divergence free ]
+assert sbdia(  TopLevelMissionSequencerFW(schedulableA) ):[ deterministic  [FD] ]
