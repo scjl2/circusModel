@@ -4,37 +4,37 @@
 datatype WaitType = wait | waitForObject
 
 
-	channel waitCall : ObjectID . ThreadID
-	channel timedWaitCall : ObjectID . ThreadID . JTime 
-	channel waitRet : ObjectID . ThreadID
-	channel waitForObjectCall : ObjectID . ThreadID . JTime 
-	channel waitForObjectRet : ObjectID . ThreadID . Bool 
-	channel notify : ObjectID . ThreadID
-	channel notifyAll : ObjectID . ThreadID	
+channel waitCall : ObjectID . ThreadID
+channel timedWaitCall : ObjectID . ThreadID . JTime 
+channel waitRet : ObjectID . ThreadID
+channel waitForObjectCall : ObjectID . ThreadID . JTime 
+channel waitForObjectRet : ObjectID . ThreadID . Bool 
+channel notify : ObjectID . ThreadID
+channel notifyAll : ObjectID . ThreadID	
 
-	channel unlock_Monitor : ObjectID . ThreadID
-	channel relock: ObjectID . ThreadID
-	channel relock_this : ObjectID . ThreadID 
-	channel startSynchMeth : ObjectID . ThreadID 
-	channel lockAcquired : ObjectID . ThreadID 
-	channel endSyncMeth : ObjectID . ThreadID
-	channel cancel_wait_timer : ObjectID . ThreadID 
-	channel start_timer : ObjectID . ThreadID . PriorityLevel . JTime
-	channel lock_request : ObjectID . ThreadID 
-	channel assignLock : ObjectID  
-	channel add_to_wait : ObjectID . ThreadID . PriorityLevel . WaitType 
-	channel remove_from_wait : ObjectID . ThreadID . PriorityLevel 
-	channel remove_most_eligible_from_wait : ObjectID 
-	channel removed_thread : ObjectID . ThreadID . WaitType 
-	channel get_lockedBy : ObjectID . ThreadID 
-	channel get_waitQueue : ObjectID . PriorityQueue 
-	channel reset_lockedBy : ObjectID 
-	channel fully_unlock : ObjectID 
-	channel increment_locks : ObjectID 
-	channel decrement_locks : ObjectID 
-	channel get_ceilingPriority : ObjectID . PriorityLevel  
-	channel start_waitForObject_timer : ObjectID . ThreadID  . PriorityLevel . JTime 
-	channel get_waitForObjectThreads : ObjectID . Set(ThreadID)
+channel unlock_Monitor : ObjectID . ThreadID
+channel relock: ObjectID . ThreadID
+channel relock_this : ObjectID . ThreadID 
+channel startSynchMeth : ObjectID . ThreadID 
+channel lockAcquired : ObjectID . ThreadID 
+channel endSyncMeth : ObjectID . ThreadID
+channel cancel_wait_timer : ObjectID . ThreadID 
+channel start_timer : ObjectID . ThreadID . PriorityLevel . JTime
+channel lock_request : ObjectID . ThreadID 
+channel assignLock : ObjectID  
+channel add_to_wait : ObjectID . ThreadID . PriorityLevel . WaitType 
+channel remove_from_wait : ObjectID . ThreadID . PriorityLevel 
+channel remove_most_eligible_from_wait : ObjectID 
+channel removed_thread : ObjectID . ThreadID . WaitType 
+channel get_lockedBy : ObjectID . ThreadID 
+channel get_waitQueue : ObjectID . PriorityQueue 
+channel reset_lockedBy : ObjectID 
+channel fully_unlock : ObjectID 
+channel increment_locks : ObjectID 
+channel decrement_locks : ObjectID 
+channel get_ceilingPriority : ObjectID . PriorityLevel  
+channel start_waitForObject_timer : ObjectID . ThreadID  . PriorityLevel . JTime 
+channel get_waitForObjectThreads : ObjectID . Set(ThreadID)
 
 channel add_to_queue_for_lock :ObjectID.ThreadID.PriorityLevel
 channel assign_eligible :ObjectID
@@ -42,14 +42,10 @@ channel add_to_wait_queue :ObjectID.ThreadID.PriorityLevel.WaitType
 channel remove_thread_from_wait_queue :ObjectID.ThreadID.PriorityLevel 
 channel remove_most_eligible_from_wait_queue :ObjectID
 
-
-
 channel set_locks : ObjectID.Int
 channel get_locks : ObjectID.Int
 channel set_lockedBy : ObjectID.ThreadID
 channel get_queueForLock : ObjectID.PriorityQueue
-
-
 
 
 nametype ObjectStateSync = 
@@ -210,7 +206,7 @@ Monitor(object) =
 	MonitorUnlocked(object)
 
 StartSync_monitorUnlocked(object)=
- (
+(
 	startSynchMeth.object?someThread:( diff(ThreadID, {nullThreadId}) ) -> 	
 	lock_request.object!someThread ->
 	MonitorUnlocked	(object)	
@@ -249,45 +245,40 @@ LockAquired_monitorUnlocked(object)
 
 
 MonitorLocked(object, lockedBy)=
-
+(
+	startSynchMeth.object.lockedBy -> 	
+	increment_locks.object -> 
+	MonitorLocked(object, lockedBy)
+)	
+[] 
+(
+	startSynchMeth.object?someThread:(diff(ThreadID,{lockedBy})) -> 	
+	lock_request.object!someThread ->
+	MonitorLocked(object, lockedBy)
+)	
+[] 
+(
+	endSyncMeth.object.lockedBy -> 
 	(
-		startSynchMeth.object.lockedBy -> 	
-		increment_locks.object -> 
-		MonitorLocked(object, lockedBy)
-
-	)	
-	[] 
-	(
-		startSynchMeth.object?someThread:(diff(ThreadID,{lockedBy})) -> 	
-		lock_request.object!someThread ->
-		MonitorLocked(object, lockedBy)
-
-	)	
-	[] 
-	(
-		endSyncMeth.object.lockedBy -> 
 		(
-			(
-				decrement_locks.object -> 
-				lower_thread_priority.lockedBy -> 	
-				MonitorUnlocked(object)
-			) 
-			[] 
-			(
-				decrement_locks.object -> 
-				MonitorLocked(object, lockedBy)
-
-			) 
-		
+			decrement_locks.object -> 
+			lower_thread_priority.lockedBy -> 	
+			MonitorUnlocked(object)
+		) 
+		[] 
+		(
+			decrement_locks.object -> 
+			MonitorLocked(object, lockedBy)
 		) 		
-	)	
-	[] 
-	(
-		unlock_Monitor.object?unlockingThread -> 
-		fully_unlock.object ->  
-		lower_thread_priority.unlockingThread -> 
-		MonitorUnlocked(object)
-	) 
+	) 		
+)	
+[] 
+(
+	unlock_Monitor.object?unlockingThread -> 
+	fully_unlock.object ->  
+	lower_thread_priority.unlockingThread -> 
+	MonitorUnlocked(object)
+) 
 
 nametype WaitSync = {|cancel_wait_timer, waitRet, waitForObjectRet  |}
 
@@ -399,7 +390,7 @@ TimedWaitHandler(object)  =
 		throw.illegalMonitorStateException -> 
 		CHAOS(Events)
 	)
-    )	
+)	
 
 
 
