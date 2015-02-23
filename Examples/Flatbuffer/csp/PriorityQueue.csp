@@ -50,8 +50,6 @@ GetHPP(pq, p) =
 		p
 
 
-
-
 RemoveFromPriorityQueue(pq)	=
 	if IsEmpty(pq) == true then 
 		(pq)--, <>)
