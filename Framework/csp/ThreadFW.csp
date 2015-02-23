@@ -30,27 +30,27 @@ channel end_threadState : ThreadID
 
 ThreadFW(thread, basePriority) =
 ( 
-	Execute(thread, basePriority, <basePriority>,basePriority, False)
+	Execute(thread, basePriority, {basePriority},basePriority, False)
 )
 /\(done_toplevel_sequencer -> SKIP)
 
-Execute(thread, basePriority, priorityStack, activePriority, interruptedV) = 
+Execute(thread, basePriority, priorityStack, activePriority, interruptedVar) = 
 (  
 	Priority (thread, basePriority, priorityStack, activePriority)
 	|||
-	Interrupts(thread, interruptedV) 
-	
+	Interrupts(thread, interruptedVar) 	
 )																																																																																																																																																																																																																																																																																																																																																																																																																													
 
 Priority(thread, basePriority, priorityStack, activePriority) = 
 (
- if priorityStack ==  <basePriority> then 
+	-- comparing these donks up FDR
+	if priorityStack ==  {basePriority} then 
  	(
 		IncreasePriority(thread, basePriority, priorityStack, activePriority)
 		[]	
 		GetPriorityLevel(thread, basePriority, priorityStack, activePriority)
 	)
- else 
+	else 
 	(
 		IncreasePriority(thread, basePriority, priorityStack, activePriority) 
 		[]
@@ -64,12 +64,15 @@ Priority(thread, basePriority, priorityStack, activePriority) =
 
 IncreasePriority(thread, basePriority, priorityStack, activePriority) = 
 	raise_thread_priority.thread?ceilingPriority ->
-	Priority(thread, basePriority, <ceilingPriority>^priorityStack, ceilingPriority)
+	Priority(thread, basePriority, union({ceilingPriority},priorityStack), ceilingPriority)
 
 
 DecreasePriority(thread, basePriority, priorityStack, activePriority) = 
 	lower_thread_priority.thread -> 
-	Priority(thread, basePriority, tail(priorityStack), basePriority)
+	if empty(priorityStack) == true then
+		Priority(thread, basePriority, priorityStack, basePriority)
+	else
+	Priority(thread, basePriority, set(tail(seq(priorityStack))), basePriority)
 	
 
 GetPriorityLevel(thread, basePriority, priorityStack, activePriority) =
@@ -78,7 +81,9 @@ GetPriorityLevel(thread, basePriority, priorityStack, activePriority) =
 
 
 
-assert Priority(WriterThreadID, 0, <0>, 0); Loop :[ deadlock free [FD] ]
+assert Priority(WriterThreadID, 0, {0}, 0); Loop :[ deadlock free [FD] ]
+assert Priority(WriterThreadID, 0, {0}, 0):[ divergence free ]
+assert Priority(WriterThreadID, 0, {0}, 0) :[ deterministic  [FD] ]  
 
 
 
@@ -105,6 +110,12 @@ IsInterrupted(thread, interruptedV) =
 Interrupted(thread, interruptedV) = 
 	interrupted.thread!interruptedV ->
 	Interrupts(thread, False)
+
+
+assert Interrupts(WriterThreadID, False); Loop :[ deadlock free [FD] ]
+assert Interrupts(WriterThreadID, False) :[ divergence free ]
+assert Interrupts(WriterThreadID, False) :[ deterministic  [FD] ]  
+
 
 
 assert ThreadFW(WriterThreadID, 0); Loop :[ deadlock free [FD] ]
