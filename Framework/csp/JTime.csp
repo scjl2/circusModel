@@ -5,7 +5,8 @@ maxNanos = 999999
 nametype JTime = Bit.Bit
 
 valueOf(mils.nanos) =
-  (mils*1000000)+nanos
+--  (mils*1000000)+nanos   Modified to allow model checking
+	mils
 
 timeMillis( mils.nanos ) =
 	mils
