@@ -1,0 +1,16 @@
+APPInitializePhase(mission) =
+	initializeCall.missionA ->
+  	register!schedulableA!missionA  -> 
+
+  	register!schedulableB!missionA  -> 
+
+  initializeRet.missionA ->
+  MissionPhase(mission, {schedulableA, schedulableB})
+
+
+APPCleanupMission(mission) =
+	cleanupMissionCall.missionA ->
+    cleanupMissionRet.missionA?false ->
+    SKIP
+	 
+
