@@ -10,6 +10,9 @@ channel circwait : num
 channel  throw : ExceptionType 
 channel apiError
 
+
+include "APP_MISSION.csp"
+
 include "SafeletFW.csp"
 
 include "MissionSequencerSharedChan.csp"
