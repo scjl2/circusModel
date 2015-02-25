@@ -8,6 +8,7 @@ Loop = a-> Loop
 
 channel circwait : num
 channel  throw : ExceptionType 
+channel apiError
 
 include "SafeletFW.csp"
 
@@ -15,7 +16,7 @@ include "MissionSequencerSharedChan.csp"
 
 include "TopLevelMissionSequencerFW.csp"
 
-include "MissionFW.csp"
+include "MissionFW_NoChaos2.csp"
 
 include "ManagedSchedulableSharedChan.csp"
 

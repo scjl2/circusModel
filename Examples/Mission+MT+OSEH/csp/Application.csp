@@ -214,6 +214,6 @@ TestProgram =
 				{ (Tier0MissionId , ({},{}, {(Tier0OSEHId, 1, 0, nullSchedulableId)},  {}, {Tier0ManagedThreadId} )  )   }		                 
             )
 
-assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(TestProgram)) :[ divergence free ]
-assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
+assert TestProgram ; Loop :[ deadlock free [F] ]
+assert TestProgram :[ divergence free ]
+assert TestProgram :[ deterministic  [FD] ]

@@ -44,10 +44,13 @@ HighestPopulatedPriority(pq) =
 	GetHPP(pq, MaxPriority)
 
 GetHPP(pq, p) =
-	if mapLookup(pq, p) == <> then
-		GetHPP(pq, p-1)
+	if IsEmpty(pq) == true then
+		-1
 	else
-		p
+		if mapLookup(pq, p) == <> then
+			GetHPP(pq, p-1)
+		else
+			p
 
 
 
