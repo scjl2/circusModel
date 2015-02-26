@@ -29,7 +29,7 @@ channel remove_from_wait : ObjectID . ThreadID . PriorityLevel
 channel remove_most_eligible_from_wait : ObjectID 
 channel removed_thread : ObjectID . ThreadID . WaitType 
 channel get_lockedBy : ObjectID . ThreadID 
-channel get_waitQueue : ObjectID . PriorityQueue 
+--channel get_waitQueue : ObjectID . PriorityQueue 
 channel reset_lockedBy : ObjectID 
 channel fully_unlock : ObjectID 
 channel increment_locks : ObjectID 
@@ -47,7 +47,7 @@ channel remove_most_eligible_from_wait_queue :ObjectID
 channel set_locks : ObjectID.num
 channel get_locks : ObjectID.num
 channel set_lockedBy : ObjectID.ThreadID
-channel get_queueForLock : ObjectID.PriorityQueue
+--channel get_queueForLock : ObjectID.PriorityQueue
 
 channel addToWaitQueue : ObjectID.PriQueueItem
 channel removeFromWaitQueue : ObjectID.PriQueueItem
@@ -69,13 +69,14 @@ nametype QueueForLockSync = {|addToQueueForLock, removeFromQueueForLock, removeT
 
 
 nametype ObjectStateSync = 
-	{|set_lockedBy, increment_locks, decrement_locks,get_locks,get_waitQueue, get_waitForObjectThreads,
+	{|set_lockedBy, increment_locks, decrement_locks,get_locks,get_waitForObjectThreads,
 	  fully_unlock, add_to_queue_for_lock, assign_eligible, add_to_wait_queue, 
 		remove_thread_from_wait_queue, remove_most_eligible_from_wait_queue    |}
 
 ObjectFW(object) =
 ( 
-	ObjectState(object, EmptyPriorityQueue, nullThreadId, 0, EmptyThreadMap, EmptyPriorityQueue, {}) 
+	--ObjectState(object, EmptyPriorityQueue, nullThreadId, 0, EmptyThreadMap, EmptyPriorityQueue, {}) 
+	ObjectState(object)
 		[| ObjectStateSync|]
 	Execute_Object(object, {}, MaxPriority )
 ) \ObjectStateSync
@@ -85,11 +86,12 @@ ObjectFW(object) =
 
 
 ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,  waitForObjectThreads) =
- (
+{- (
  	get_queueForLock.object!queueForLock ->
  	ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  )
  []
+ -}
  (
  	set_lockedBy.object?newLockedBy ->
 	ObjectState(object,waitQueue, newLockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
@@ -117,12 +119,12 @@ ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,  wa
  	get_locks.object!locks ->
  	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  )
- []
+ {-[]
  (
  	get_waitQueue.object!waitQueue -> 
  	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
  ) 
- []
+ -}[]
  (
  	get_waitForObjectThreads.object!waitForObjectThreads -> 
  	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, queueForLock, waitForObjectThreads)
@@ -132,13 +134,14 @@ ObjectState(object, waitQueue, lockedBy, locks, previousLocks, queueForLock,  wa
  	fully_unlock.object ->
  	ObjectState(object,waitQueue, nullThreadId, 0, mapUpdate(previousLocks, lockedBy, locks )  , queueForLock, waitForObjectThreads)
  ) 
- []
+ {-[]
  (
  	--someThread? != nullSchedulableId 
 	--someThread? \notin ElementsOf (queueForLock ) 
  	add_to_queue_for_lock.object?someThread?priorityLevel ->
  	ObjectState(object,waitQueue, lockedBy, locks, previousLocks, AddToPriorityQueue(queueForLock, someThread, priorityLevel) , waitForObjectThreads)
  )
+-}
  []
  (
  	--lockedBy' \in \dom previousLocks \implies locks' = previousLocks(lockedBy') 
@@ -197,8 +200,6 @@ Execute_Object(object, interruptedThreads, ceilingPriority ) =
 )  
 
 
-
-
 Monitor(object) = 
 	MonitorUnlocked(object)
 
@@ -222,7 +223,6 @@ MonitorUnlocked(object) =
 		)
 		else 
 		(
-			
 			throw.ceilingViolationException ->  
 			--CHAOS(Events) What it should be 
 			--STOP --Helps model checking
@@ -282,7 +282,7 @@ assert Monitor(WriterObjectId) :[ deterministic  [FD] ]
 
 nametype WaitSync = {|cancel_wait_timer, waitRet, waitForObjectRet  |}
 
-nametype InterruptSync = {| remove_from_wait, get_waitQueue |}
+nametype InterruptSync = {| remove_from_wait |}
 
 Synchronisation(object) = 
 (
@@ -298,7 +298,7 @@ Synchronisation(object) =
 	[| union(WaitQueueSync, QueueForLockSync) |]
 	PriorityQueues  
 
-) \ {| cancel_wait_timer, remove_from_wait, get_waitQueue |}
+) \ {| cancel_wait_timer, remove_from_wait |}
 
 
 
@@ -499,7 +499,9 @@ waitForObjectCall.object?someThread?waitTime ->
 		else 
 		(
 			get_priorityLevel.someThread.object?priorityLevel -> 
-			add_to_wait.object?someThread?priorityLevel!waitForObject -> 
+			--add_to_wait.object?someThread?priorityLevel!waitForObject -> 
+			addToWaitQueue.object.(someThread, priorityLevel) ->
+
 			start_waitForObject_timer.object!someThread!priorityLevel!waitTime -> 
 			unlock_Monitor.object!someThread -> 
 			WaitForObjectHandler(object)
@@ -720,11 +722,15 @@ MonitorLockController(object,interruptedThreads) =
 get_queueForLock.object?queueForLock ->
 --remove this diff
 get_lockedBy.object?lockedBy:(diff({nullThreadId}, ThreadID)) ->
+queueForLockEmpty.object?isEmpty_QfL ->
 (	
 	(
 		lock_request.object?someThread ->
 		get_priorityLevel.someThread.object?priorityLevel -> 
-		add_to_queue_for_lock.object.someThread!priorityLevel  -> 
+
+		--add_to_queue_for_lock.object.someThread!priorityLevel  -> 
+		addToQueueForLock.object.(someThread, priorityLevel) -> 
+
 		MonitorLockController(object,interruptedThreads)  
 	)    
  	[] 
@@ -732,7 +738,8 @@ get_lockedBy.object?lockedBy:(diff({nullThreadId}, ThreadID)) ->
 		relock_this.object?someThread -> 
 		get_priorityLevel.someThread.object?priorityLevel -> 
 		(
-			add_to_queue_for_lock.object.someThread!priorityLevel  ->
+			--add_to_queue_for_lock.object.someThread!priorityLevel  ->
+			addToQueueForLock.object.(someThread, priorityLevel) ->
 			(
 				(	
 					isInterruptedCall.someThread -> 
@@ -751,9 +758,11 @@ get_lockedBy.object?lockedBy:(diff({nullThreadId}, ThreadID)) ->
 	)
 	[]
 	(	
-		(IsEmpty(queueForLock) == False and lockedBy == nullThreadId) &
+		(isEmpty_QfL == False and lockedBy == nullThreadId) &
 		(	
-			assign_eligible.object   -> 
+			--assign_eligible.object   -> 
+			removeFromQueueForLock.object?(t,p) ->
+
 			lockAcquired.object.lockedBy -> 
 			if member(lockedBy,interruptedThreads) then 
 			(				

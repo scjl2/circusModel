@@ -1,6 +1,12 @@
 --Locking Model
 
-include "PriorityQueue.csp"
+
+MaxPriority = 2
+MinPriority = 0
+
+nametype PriorityLevel = {MinPriority..MaxPriority}
+
+--include "PriorityQueue.csp"
 --include "PriorityQueue_FDR.csp"
 include "priqueue.csp"
 
