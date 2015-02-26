@@ -1,0 +1,71 @@
+--Priority Queue_FDR
+
+
+MaxPriority = 2
+MinPriority = 0
+
+nametype PriorityLevel = {MinPriority..MaxPriority}
+
+
+minPQStackId = 0
+maxPQStackId = 2
+nametype pqStackId = {minPQStackId..maxPQStackId}
+
+
+channel pqStack_push	: pqStackId.ThreadID
+channel pqStack_pop		: pqStackId.ThreadID
+channel pqStack_elect	: pqStackId.ThreadID
+channel pqStack_top		: pqStackId
+channel more, noMore	: pqStackId
+
+Empty(p) = 
+	pqStack_push.p?v -> NotEmpty(p, <v>)
+
+NotEmpty(p, v) =
+	pqStack_push.p?v' -> NotEmpty(p, v^<v'>)
+	[]
+	(
+		if #v > 1 then
+			pqStack_pop.p!(head(v)) -> more.p -> NotEmpty(p, tail(v))
+		else
+			pqStack_pop.p!(head(v)) -> noMore.p -> Empty(p)
+	)
+	--[]
+--	pqStack_elect.p.(head(v)) -> NotEmpty(p, v)
+
+PQController(p, v) = 
+	(pqStack_push?newP?v' ->
+			if p <= newP then
+				PQController(p, union(v,{v'}))
+			else
+				PQController(newP,  union(v,{v'}))
+	)
+	[]
+	pqStack_pop.p?v' -> 
+		(
+			more.p -> PQController(p, diff(v,{v'}))
+			[]
+			noMore.p -> SKIP
+		)
+
+
+
+PQController' = 
+	pqStack_push?p?v -> PQController(p, {v})
+
+
+AlphaPQStack(id) ={| pqStack_push.id, pqStack_pop.id, pqStack_elect.id |}
+	
+
+PQStack = 
+(
+	(	|| i : PriorityLevel @ [ AlphaPQStack(i) ] Empty(i)
+)
+--[[ pSatck_push.id <- raise_thread_priority.thread, pStack_pop.id <- lower_thread_priority.thread| id <- pStackId  ]]
+--[[ pStack_top.id <- get_priorityLevel.thread.o | id <- pStackId, o <- ObjectID ]]
+) 
+
+PQ = 
+	PQController'
+	[| {| pqStack_push, pqStack_pop, more, noMore |} |]
+	PQStack

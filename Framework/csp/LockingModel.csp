@@ -1,12 +1,13 @@
 --Locking Model
 
 include "PriorityQueue.csp"
---include "PriorityQueueNoMaps.csp"
+--include "PriorityQueue_FDR.csp"
+include "priqueue.csp"
 
 include "ThreadFW.csp"
 
-include "ObjectFW.csp"
---include "ObjectFWNoMaps.csp"
+--include "ObjectFW.csp"
+include "ObjectFW2.csp"
 
 include "JTime.csp"
 

@@ -36,3 +36,5 @@ include "PeriodicEventHandlerFW.csp"
 include "ManagedThreadFW.csp" 
 
 include "LockingModel.csp"
+
+--include "PriorityQueue_FDR.csp"
