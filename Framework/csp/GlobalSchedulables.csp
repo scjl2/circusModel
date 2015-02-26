@@ -1,0 +1,23 @@
+GlobalSchedulableRegulator =
+	(||| s : SchedulableID @ Unregistered(s))
+	/\ 
+	(
+		done_toplevel_sequencer -> SKIP
+		[]
+		done_safeletFW -> SKIP
+	)
+
+
+Unregistered(s) =
+	(register.s?m  -> 
+		Registered(s))
+
+Registered(s) =
+	(deregister.s ->
+		Unregistered(s))
+	[]
+	(register.s?m ->
+		throw.illegalStateException ->
+	    --CHAOS(Events)
+	    --STOP
+	    SKIP)

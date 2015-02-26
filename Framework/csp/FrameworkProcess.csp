@@ -119,6 +119,8 @@ SafeletTier(topLevelMissionSequencerIDs) =
   SafeletFW
   [|SafeletTierSync|]
   TopLevelMissionSequencers(topLevelMissionSequencerIDs)
+  [|{|done_toplevel_sequencer, done_safeletFW|}}|]
+  GlobalSchedulableRegulator
 )  
 
 
@@ -216,8 +218,7 @@ ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS) =
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
   (
-    Tier0(tier0IDS) 
-     
+    Tier0(tier0IDS)      
   )
 )
 
@@ -226,8 +227,4 @@ NewSchedulablesTest =
   ClustereAndTieredFramework({TopLevelSequencerId}, { (TopMission1ID , ({}, {}, {},  {}, {schedulableA})  )   }    )
 
 
-assert CHAOS(Events) [T= SchedulableMissionSequencerFW(schedulableA)
-assert CHAOS(Events) [T= AperiodicEventHandlerFW(schedulableA, aperiodic, 0, nullSchedulableId) 
-assert CHAOS(Events) [T= OneShotEventHandlerFW(schedulableA, 0, 0, nullSchedulableId ) 
-assert CHAOS(Events) [T= PeriodicEventHandlerFW(schedulableA, 1, 0, 0, nullSchedulableId)
-assert CHAOS(Events) [T= ManagedThreadFW(schedulableA) 
+

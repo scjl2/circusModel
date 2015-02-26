@@ -39,7 +39,7 @@ Execute_S =
   if topLevelSequencer != nullSequencerId then
   (
       start_toplevel_sequencer.topLevelSequencer -> 
-      Methods_S({}, topLevelSequencer) ;
+     -- Methods_S({}, topLevelSequencer) ;
       end_safelet_app ->
       SKIP
   ) 
@@ -47,12 +47,15 @@ Execute_S =
     end_safelet_app ->
     done_safeletFW -> SKIP
   
+
+
+
 Methods_S(globallyRegistered, sequencerID) = 
 (
   Register_S(globallyRegistered, sequencerID)
   [] 
-  Deregister_S(globallyRegistered, sequencerID)
-  []
+--  Deregister_S(globallyRegistered, sequencerID)
+ -- []
   done_toplevel_sequencer -> SKIP 
 )   
    
@@ -69,9 +72,9 @@ Register_S(globallyRegistered, sequencerID) =
   Methods_S(globallyRegistered, sequencerID)
 )
     
-Deregister_S(globallyRegistered, sequencerID) = 
-  deregister?schedulables -> 
-  Methods_S(diff(globallyRegistered,schedulables), sequencerID) 
+--Deregister_S(globallyRegistered, sequencerID) = 
+ -- deregister?schedulables -> 
+ -- Methods_S(diff(globallyRegistered,schedulables), sequencerID) 
 
 assert sbdia( SafeletFW ); Loop :[ deadlock free [FD] ]
 assert sbdia( SafeletFW ) :[ divergence free ]

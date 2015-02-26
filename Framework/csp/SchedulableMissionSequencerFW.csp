@@ -11,7 +11,7 @@ nametype SchedulableMissionSequencerFWChanSet =
   union(
       union(ManagedSchedulableFWChanSet , MissionSequencerFWSharedChanSet),
       {| done_safeletFW, set_continueAbove, set_continueBelow, end_schedulableMissionSequencerState, 
-      done_toplevel_sequencer, start_mission, initializeRet, done_mission, requestTermination |}  
+      done_toplevel_sequencer, start_mission, initializeRet, done_mission, requestTerminationCall, requestTerminationRet |}  
       )
   
 nametype  SchedulableMissionSequencerFWChan  = {| end_sequencer_app, end_methods, end_terminations, get_continue  |}
@@ -156,7 +156,8 @@ SignalTermination_SMS(sequencer, currentMission)  =
   ( 
     signalTerminationCall.sequencer -> 
     set_continueAbove.sequencer!False ->       
-    requestTermination.currentMission.sequencer ->  
+    requestTerminationCall.currentMission.sequencer ->  
+    requestTerminationRet.currentMission.sequencer?b ->
     signalTerminationRet.sequencer -> 
     end_terminations.sequencer ->      
     SKIP

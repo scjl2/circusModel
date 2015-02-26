@@ -30,7 +30,7 @@ channel end_threadState : ThreadID
 
 ThreadFW(thread, basePriority) =
 ( 
-	Execute(thread, basePriority, {basePriority},basePriority, False)
+	Execute(thread, basePriority, <basePriority>,basePriority, False)
 )
 /\(done_toplevel_sequencer -> SKIP)
 
@@ -44,7 +44,7 @@ Execute(thread, basePriority, priorityStack, activePriority, interruptedVar) =
 Priority(thread, basePriority, priorityStack, activePriority) = 
 (
 	-- comparing these donks up FDR
-	if priorityStack ==  {basePriority} then 
+	if priorityStack ==  <basePriority> then 
  	(
 		IncreasePriority(thread, basePriority, priorityStack, activePriority)
 		[]	
@@ -64,15 +64,15 @@ Priority(thread, basePriority, priorityStack, activePriority) =
 
 IncreasePriority(thread, basePriority, priorityStack, activePriority) = 
 	raise_thread_priority.thread?ceilingPriority ->
-	Priority(thread, basePriority, union({ceilingPriority},priorityStack), ceilingPriority)
+	Priority(thread, basePriority, <ceilingPriority>^priorityStack, ceilingPriority)
 
 
 DecreasePriority(thread, basePriority, priorityStack, activePriority) = 
 	lower_thread_priority.thread -> 
-	if empty(priorityStack) == true then
+	if (priorityStack) == <basePriority> then
 		Priority(thread, basePriority, priorityStack, basePriority)
 	else
-	Priority(thread, basePriority, set(tail(seq(priorityStack))), basePriority)
+	Priority(thread, basePriority,(tail(priorityStack)), basePriority)
 	
 
 GetPriorityLevel(thread, basePriority, priorityStack, activePriority) =
@@ -81,9 +81,9 @@ GetPriorityLevel(thread, basePriority, priorityStack, activePriority) =
 
 
 
-assert Priority(WriterThreadID, 0, {0}, 0); Loop :[ deadlock free [FD] ]
-assert Priority(WriterThreadID, 0, {0}, 0):[ divergence free ]
-assert Priority(WriterThreadID, 0, {0}, 0) :[ deterministic  [FD] ]  
+assert Priority(WriterThreadID, 0, <0>, 0); Loop :[ deadlock free [FD] ]
+assert Priority(WriterThreadID, 0, <0>, 0):[ divergence free ]
+assert Priority(WriterThreadID, 0, <0>, 0) :[ deterministic  [FD] ]  
 
 
 

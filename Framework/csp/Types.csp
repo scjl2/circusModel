@@ -5,8 +5,8 @@ sbdia(P) = sbisim(diamond(P))
 
 datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
                           | FirstMissionSequencerID| schedulableA|schedulableB | schedulableC
-                          | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
-                          | WriterId | ReaderId
+                        --  | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
+                        --  | WriterId | ReaderId
 
 datatype MissionID = nullMissionId|
                     missionA|missionB 
