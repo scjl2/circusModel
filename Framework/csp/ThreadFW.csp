@@ -27,6 +27,16 @@ channel get_priorityStack : ThreadID.Seq(PriorityLevel)
 channel end_threadState : ThreadID
 
 
+minStackId = 0
+maxStackId = 2
+nametype pStackId = {minStackId..maxStackId}
+
+channel pSatck_push : pStackId.PriorityLevel
+channel pStack_pop : pStackId
+channel pStack_resume : pStackId
+channel pStack_top : pStackId.PriorityLevel
+
+
 
 ThreadFW(thread, basePriority) =
 ( 
@@ -36,54 +46,80 @@ ThreadFW(thread, basePriority) =
 
 Execute(thread, basePriority, priorityStack, activePriority, interruptedVar) = 
 (  
-	Priority (thread, basePriority, priorityStack, activePriority)
+	(PStack(thread, basePriority)
+			[| {|raise_thread_priority, lower_thread_priority, get_priorityLevel|} |]
+		Priority (thread, basePriority) 
+	)
 	|||
 	Interrupts(thread, interruptedVar) 	
 )																																																																																																																																																																																																																																																																																																																																																																																																																													
 
-Priority(thread, basePriority, priorityStack, activePriority) = 
+Priority(thread, basePriority)= 
+
 (
-	-- comparing these donks up FDR
-	if priorityStack ==  <basePriority> then 
- 	(
-		IncreasePriority(thread, basePriority, priorityStack, activePriority)
-		[]	
-		GetPriorityLevel(thread, basePriority, priorityStack, activePriority)
-	)
-	else 
-	(
-		IncreasePriority(thread, basePriority, priorityStack, activePriority) 
-		[]
-		DecreasePriority(thread, basePriority, priorityStack, activePriority)
-		[]
-		GetPriorityLevel(thread, basePriority, priorityStack, activePriority)
-	)
+	IncreasePriority(thread, basePriority) 
+	[]
+	DecreasePriority(thread, basePriority) 
+	[]
+	GetPriorityLevel(thread, basePriority) 
+	
 ) 
- 	
  
 
-IncreasePriority(thread, basePriority, priorityStack, activePriority) = 
+
+ 
+Free(id) = 
+	pSatck_push.id?v -> Full(id, v)
+
+Full(id, v) =
+	(id != 0)&
+	pStack_pop.id-> 
+	(	
+		if id > minStackId then
+			pStack_resume.id-1 -> Free(id)
+		else
+			Free(id)
+	)
+	[]
+	(id < maxStackId )&
+		pSatck_push.id+1?_ -> pStack_resume.id -> Full(id, v)
+	[]
+	pStack_top.id!v -> Full(id, v)
+
+AlphaFree(id) =
+	Union ({
+				{| pSatck_push.id, pStack_pop.id, pStack_resume.id, pStack_top.id |},
+				{| pSatck_push.id+1 | id<maxStackId  |},
+				{| pStack_resume.id-1 | id > minStackId  |}
+			})
+
+PStack(thread, basePriority) = 
+(
+	(	|| i : PriorityLevel @ [ AlphaFree(i) ] if i == 0 then
+												Full(i, basePriority)
+											else
+												Free(i)
+	)
+[[ pSatck_push.id <- raise_thread_priority.thread, pStack_pop.id <- lower_thread_priority.thread| id <- pStackId  ]]
+[[ pStack_top.id <- get_priorityLevel.thread.o | id <- pStackId, o <- ObjectID ]]
+) \ {| pStack_resume|}
+
+IncreasePriority(thread, basePriority)= 
 	raise_thread_priority.thread?ceilingPriority ->
-	Priority(thread, basePriority, <ceilingPriority>^priorityStack, ceilingPriority)
+	Priority(thread, basePriority)
 
-
-DecreasePriority(thread, basePriority, priorityStack, activePriority) = 
+DecreasePriority(thread, basePriority)= 
 	lower_thread_priority.thread -> 
-	if (priorityStack) == <basePriority> then
-		Priority(thread, basePriority, priorityStack, basePriority)
-	else
-	Priority(thread, basePriority,(tail(priorityStack)), basePriority)
-	
+	Priority(thread, basePriority)
 
-GetPriorityLevel(thread, basePriority, priorityStack, activePriority) =
- 	get_priorityLevel.thread?object!activePriority -> 
- 	Priority(thread, basePriority, priorityStack, activePriority)
+GetPriorityLevel(thread, basePriority) =
+ 	get_priorityLevel.thread?object?_ -> 
+	Priority(thread, basePriority)
 
 
-
-assert Priority(WriterThreadID, 0, <0>, 0); Loop :[ deadlock free [FD] ]
-assert Priority(WriterThreadID, 0, <0>, 0):[ divergence free ]
-assert Priority(WriterThreadID, 0, <0>, 0) :[ deterministic  [FD] ]  
+assert Priority(WriterThreadID, 0); Loop :[ deadlock free [FD] ]
+assert Priority(WriterThreadID, 0):[ divergence free ]
+assert Priority(WriterThreadID, 0) :[ deterministic  [FD] ]  
 
 
 

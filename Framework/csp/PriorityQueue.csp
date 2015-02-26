@@ -34,7 +34,6 @@ IsEmpty(pq) =
 
 AddToPriorityQueue(pq, t, p)	=
 if  member(t,ElementsOf(pq)) == true then
-	--	error("Specified Thread is Already In the Priority 	Queue")
 	pq
 else
 	mapUpdate(pq, p, mapLookup(pq, p)^<t>)
@@ -57,10 +56,9 @@ GetHPP(pq, p) =
 
 RemoveFromPriorityQueue(pq)	=
 	if IsEmpty(pq) == true then 
-		(pq)--, <>)
+		(pq)
 	else
-		( mapUpdate(pq, HighestPopulatedPriority(pq), tail(mapLookup(pq, HighestPopulatedPriority(pq)))) )--,  head(mapLookup(pq, HighestPopulatedPriority(pq)))   )
-
+		( mapUpdate(pq, HighestPopulatedPriority(pq), tail(mapLookup(pq, HighestPopulatedPriority(pq)))) )
 
 RemoveThreadFromPriorityQueue(pq, t, p) =
 if  not member(t,set(mapLookup(pq, p))) then
