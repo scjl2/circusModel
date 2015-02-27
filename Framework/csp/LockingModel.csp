@@ -10,22 +10,17 @@ nametype PriorityLevel = {MinPriority..MaxPriority}
 --include "PriorityQueue_FDR.csp"
 include "priqueue.csp"
 
+include "ThreadObject.csp"
+
+
+
+
+
 include "ThreadFW.csp"
 
 --include "ObjectFW.csp"
-include "ObjectFW2.csp"
+--include "ObjectFW2.csp"
 
 include "JTime.csp"
 
-nametype LockingModelSync = 
-		{|waitCall, timedWaitCall, waitRet, waitForObjectCall, waitForObjectRet, notify, notifyAll,
-		interrupt,isInterruptedCall ,isInterruptedRet , interruptedCall, interruptedRet, startSynchMeth, endSyncMeth |}
 
-nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_priority |}
-
-
-
-
-LockingModel( lockingModelIds   ) =
-	||| (threadId, threadBasePriority, objectId) : lockingModelIds @
-			(ThreadFW(threadId, threadBasePriority) [|ObjectSync|] ObjectFW(objectId) )

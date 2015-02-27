@@ -13,13 +13,13 @@ channel lower_thread_priority : ThreadID
 channel set_interrupted : ThreadID . Bool 
 channel get_interrupted : ThreadID . Bool 
 
-channel interrupt : ThreadID 
+--channel interrupt : ThreadID 
 
-channel isInterrupted : ThreadID . Bool 
+--channel isInterrupted : ThreadID . Bool 
 channel isInterruptedCall : ThreadID 
 channel isInterruptedRet : ThreadID . Bool 
 
-channel interrupted : ThreadID . Bool 
+--channel interrupted : ThreadID . Bool 
 channel interruptedCall : ThreadID 
 channel interruptedRet : ThreadID . Bool 
 

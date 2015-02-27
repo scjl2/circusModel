@@ -1,0 +1,203 @@
+
+
+channel waitCall : ObjectID . ThreadID
+channel timedWaitCall : ObjectID . ThreadID . JTime 
+channel waitRet : ObjectID . ThreadID
+channel waitForObjectCall : ObjectID . ThreadID . JTime 
+channel waitForObjectRet : ObjectID . ThreadID . Bool 
+channel notify : ObjectID . ThreadID
+channel notifyAll : ObjectID . ThreadID	
+
+channel startSynchMeth : ObjectID . ThreadID 
+channel lockAcquired : ObjectID . ThreadID 
+channel endSyncMeth : ObjectID . ThreadID
+
+channel interrupt : ThreadID 
+channel isInterrupted : ThreadID . Bool 
+channel interrupted : ThreadID . Bool 
+
+channel lock_released :ObjectID.ThreadID
+
+
+channel addToWaitQueue : ObjectID.PriQueueItem
+channel removeFromWaitQueue : ObjectID.PriQueueItem
+channel removeThreadFromWaitQueue : ObjectID.ThreadID
+channel waitQueueEmpty :ObjectID. Bool
+channel waitQueueMember : ObjectID.ThreadID
+channel waitQueueNotMember : ObjectID.ThreadID
+
+WaitQueueSync = {|addToWaitQueue, removeFromWaitQueue, removeThreadFromWaitQueue, waitQueueEmpty, waitQueueMember,  waitQueueNotMember|}
+
+channel addToQueueForLock : ObjectID.PriQueueItem
+channel removeFromQueueForLock : ObjectID.PriQueueItem
+channel removeThreadFromQueueForLock : ObjectID.ThreadID
+channel queueForLockEmpty : ObjectID.Bool
+channel queueForLockMember : ObjectID.ThreadID
+channel queueForLockNotMember : ObjectID.ThreadID
+
+QueueForLockSync = {|addToQueueForLock, removeFromQueueForLock, removeThreadFromQueueForLock, queueForLockEmpty, queueForLockMember, queueForLockNotMember|}
+
+
+PriorityQueues =
+(	PQSystem [[	priq_push <- addToWaitQueue.o , 
+				priq_pop <- removeFromWaitQueue.o, 
+				priq_emptyQueue <- waitQueueEmpty.o, 
+				priq_member <- waitQueueMember.o, 
+				priq_notMember <- waitQueueNotMember.o, 
+				priq_remove <- removeThreadFromWaitQueue.o 
+				| o <- ObjectID
+			  ]]
+)
+|||
+(
+	PQSystem [[	priq_push <- addToQueueForLock.o,
+				priq_pop <- removeFromQueueForLock.o, 
+				priq_emptyQueue <- queueForLockEmpty.o, 
+				priq_member <- queueForLockMember.o, 
+				priq_notMember <- queueForLockNotMember.o, 
+				priq_remove <- removeThreadFromQueueForLock.o
+				|o <- ObjectID
+			  ]]
+)
+
+
+
+AlphaThreadObjState(o,t) =
+	{|interrupt.t, isInterrupted.t, interrupted.t, startSynchMeth.o.t, waitCall.o.t, notify.o.t, notifyAll.o.t, lockAcquired.o.t, lock_released.o.t |}
+
+ThreadObjState(o, t) =
+	let
+		Irr(interruptedVar) = 
+			interrupt.t -> Irr(True)
+			[]
+			isInterrupted.t!interruptedVar -> Irr(interruptedVar)
+			[]
+			interrupted.t!interruptedVar -> Irr(False)
+			[]
+			startSynchMeth.o.t -> Aquiring(interruptedVar, 1)
+			[]
+			waitCall.o.t -> throw.illegalMonitorStateException -> STOP
+			[]
+			notify.o.t ->throw.illegalMonitorStateException -> STOP
+			[]
+			notifyAll.o.t -> throw.illegalMonitorStateException -> STOP
+
+		Aquiring(interruptedVar, locks) =
+			interrupt.t -> Aquiring(True, locks)
+			[]
+			isInterrupted.t!interruptedVar -> Aquiring(interruptedVar, locks)
+			[]
+			interrupted.t!interruptedVar -> Aquiring(False, locks)
+			[]
+			lockAcquired.o.t -> Locked(interruptedVar, locks)
+			[]
+			waitCall.o.t -> throw.illegalMonitorStateException -> STOP
+			[]
+			notify.o.t ->throw.illegalMonitorStateException -> STOP
+			[]
+			notifyAll.o.t -> throw.illegalMonitorStateException -> STOP
+
+		Locked(interruptedVar, locks)	=
+			interrupt.t -> Locked(True, locks)
+			[]
+			isInterrupted.t!interruptedVar -> Locked(interruptedVar, locks)
+			[]
+			interrupted.t!interruptedVar -> Locked(False, locks)
+			[]
+			waitCall.o.t -> Waiting(interruptedVar, locks)
+			[]
+			(locks < maxNum)& startSynchMeth.o.t -> lockAcquired.o.t -> Locked(interruptedVar, locks+1)
+			[]
+			(locks >0)& endSyncMeth.o.t -> 
+			(	if locks == 1 then
+					lock_released.o.t ->
+					Irr(interruptedVar)
+				else
+					Locked(interruptedVar, locks-1)
+			)
+			[]
+			notify.o.t -> Locked(interruptedVar, locks)
+			[]
+			notifyAll.o.t -> Locked(interruptedVar, locks)
+
+		Waiting(interruptedVar, locks) = 
+			interrupt.t -> Waiting(True, locks)
+			[]
+			isInterrupted.t!interruptedVar -> Waiting(interruptedVar, locks)
+			[]
+			interrupted.t!interruptedVar -> Waiting(False, locks)
+			[]
+			lockAcquired.o.t -> 
+			(	if interruptedVar then
+					throw.interruptedException -> STOP
+				else
+					Locked(interruptedVar, locks)
+			)
+	within Irr(False)
+
+
+AlphaMonitorController(o)=
+	union({|startSynchMeth.o, lockAcquired.o, waitCall.o, lock_released.o, removeFromQueueForLock.o, queueForLockEmpty.o, addToWaitQueue.o |},
+			{| get_priorityLevel.t.o | t<- ThreadID |}
+		)
+
+MonitorController(o) =
+	let
+		Unlocked =
+			startSynchMeth.o?t -> lockAcquired.o.t ->  Locked(t)
+			[]
+			waitCall.o?_ -> Unlocked
+	 
+		Locked(t) =
+			startSynchMeth.o.t -> lockAcquired.o.t -> Locked(t)
+			[]
+			startSynchMeth.o?t':(diff(ThreadID, {t}) ) -> get_priorityLevel.t'.o?p -> addToQueueForLock.o.(t',p) -> Locked(t)
+			[]
+			lock_released.o.t -> FindNext
+			[]
+			waitCall.o.t -> get_priorityLevel.t.o?p -> addToWaitQueue.o.(t,p) -> FindNext
+
+		FindNext = 
+			removeFromQueueForLock.o?(t,p) -> lockAcquired.o.t -> Locked(t)
+			[]
+			queueForLockEmpty.o.True -> Unlocked
+
+	within Unlocked
+
+AlphaNotifyController(o) =
+	{|notify.o, notifyAll.o, removeFromWaitQueue.o, addToQueueForLock.o, waitQueueEmpty.o |}
+
+
+NotifyController(o) =
+	notify.o?_ -> 
+	(	
+		removeFromWaitQueue.o?(t,p) -> addToQueueForLock.o.(t,p) -> NotifyController(o)
+		[]
+		waitQueueEmpty.o.True -> NotifyController(o)
+	)
+	[]
+	notifyAll.o?_ -> NotifyAllHandler(o)
+
+
+NotifyAllHandler(o)=
+	removeFromWaitQueue.o?(t,p) -> addToQueueForLock.o.(t,p) -> NotifyController(o)
+	[]
+	waitQueueEmpty.o.True -> NotifyController(o)
+
+
+ObjectProcesses(o) =
+	union({(NotifyController(o), AlphaNotifyController(o)), (MonitorController(o), AlphaMonitorController(o))  },
+			{ (ThreadObjState(o,t), AlphaThreadObjState(o,t) ) | t<-ThreadID } )
+
+ThreadObjectSystem(o)=
+	--(|| (p,a') : ObjectProcesses(o) @ [a'] p)
+	(
+		(NotifyController(o)
+				[| inter(AlphaNotifyController(o), AlphaMonitorController(o)) |]
+			MonitorController(o)
+		)
+			[| inter(union(AlphaMonitorController(o), AlphaNotifyController(o)), Union({AlphaThreadObjState(o, t) | t <- ThreadID})) |]
+		||| t: ThreadID @ ThreadObjState(o, t)
+	)
+		[| union(WaitQueueSync, QueueForLockSync ) |]
+	PriorityQueues
