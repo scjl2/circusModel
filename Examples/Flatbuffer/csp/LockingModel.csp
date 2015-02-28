@@ -26,4 +26,4 @@ include "JTime.csp"
 
 nametype LockingModelSync = 
 		{|waitCall, timedWaitCall, waitRet, waitForObjectCall, waitForObjectRet, notify, notifyAll,
-		interrupt,isInterruptedCall ,isInterruptedRet , interruptedCall, interruptedRet|}
+		interrupt,isInterrupted, interrupted|}

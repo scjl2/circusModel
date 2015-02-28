@@ -15,9 +15,9 @@ nametype SafeltAppSync =
 
 
 FlatBufferApp  = 
-	(
-	 	Methods_s 
-	)		
+(
+ 	Methods_s 
+)		
  /\	(end_safelet_app -> SKIP)
 
 InitializeApplication_s =  
@@ -111,7 +111,7 @@ channel set_bufferContents:{FlatBufferMissionId}.Bit
 channel get_bufferConetents:{FlatBufferMissionId}.Bit
 
 
-nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
+nametype MissionAppSync = {|cleanupMissionRet   |}
 nametype FlatBufferMissionStateSync = {|get_bufferEmpty,set_bufferContents, get_bufferConetents |}
 
 FlatBufferMissionApp = 
@@ -218,11 +218,11 @@ Methods_w =
 	Run_w
 
 Run_w =
-	startSyncMeth.WriterObjectId.WriterThreadID ->
-	runCall.WriterId -> 
+	
+	runCall.WriterId -> startSyncMeth.WriterObjectId.WriterThreadID ->
 		Write ;
-	runRet.WriterId ->
-	endSyncMeth.WriterObjectId.WriterThreadID ->
+	endSyncMeth.WriterObjectId.WriterThreadID -> runRet.WriterId ->
+	
 	SKIP
 
 Write = 
@@ -258,13 +258,13 @@ Methods_r =
 	Run_r
 
 Run_r =
-	startSyncMeth.ReaderObjectId.ReaderThreadID ->
-	runCall.ReaderId -> 
+	
+	runCall.ReaderId -> startSyncMeth.ReaderObjectId.ReaderThreadID ->
 
 	Read ;
 
-	runRet.ReaderId ->
-	endSyncMeth.ReaderObjectId.ReaderThreadID ->
+	endSyncMeth.ReaderObjectId.ReaderThreadID -> runRet.ReaderId ->
+	
 	SKIP
 
 Read =
