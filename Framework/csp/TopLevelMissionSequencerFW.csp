@@ -3,14 +3,14 @@
 
 
 --TLMS CHANNELS
-channel  start_toplevel_sequencer:SchedulableID 
+channel  start_toplevel_sequencer: TopLevelSequencers 
 
 channel  done_toplevel_sequencer 
 
 
-channel set_continue : SchedulableID . Bool 
+channel set_continue : MissionSequencers . Bool 
 
-channel end_toplevelsequencerState : SchedulableID
+channel end_toplevelsequencerState : MissionSequencers
 
 nametype TopLevelMissionSequencerFWChanSet = union(
   union(MissionSequencerFWSharedChanSet, TLMSStateSync) ,
@@ -24,14 +24,11 @@ nametype TLMSStateSync = {|get_continue, set_continue, get_currentMission, set_c
 --TLMS
 
 TopLevelMissionSequencerFW(sequencer) =
-sbisim(diamond(
  (
     TopLevelMissionSequencerFWState(sequencer, nullMissionId, True )
       [| TLMSStateSync |]
     TopLevelMissionSequencerFWBehaviour(sequencer)
 )\ TLMSStateSync
-))
-
 
 TopLevelMissionSequencerFWState(sequencer, currentMission, continue) =
 (
@@ -60,7 +57,7 @@ TopLevelMissionSequencerFWState(sequencer, currentMission, continue) =
 )
 
 
-TopLevelMissionSequencerFWBehaviour(sequencer)=
+TopLevelMissionSequencerFWBehaviour(sequencer) =
 (
   done_safeletFW -> 
   end_toplevelsequencerState.sequencer ->
@@ -116,10 +113,6 @@ Finish_TLS(sequencer)   =
   done_toplevel_sequencer ->  
   SKIP   
    
-assert TopLevelMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
-assert TopLevelMissionSequencerFW(schedulableA) :[ divergence free ]
-assert TopLevelMissionSequencerFW(schedulableA) :[ deterministic  [FD] ]
-
-assert sbdia( TopLevelMissionSequencerFW(schedulableA) ); Loop :[ deadlock free [FD] ]
-assert sbdia(  TopLevelMissionSequencerFW(schedulableA) ):[ divergence free ]
-assert sbdia(  TopLevelMissionSequencerFW(schedulableA) ):[ deterministic  [FD] ]
+assert TopLevelMissionSequencerFW(TopLevelSequencerId); Loop :[ deadlock free [FD] ]
+assert TopLevelMissionSequencerFW(TopLevelSequencerId) :[ divergence free ]
+assert TopLevelMissionSequencerFW(TopLevelSequencerId) :[ deterministic  [FD] ]

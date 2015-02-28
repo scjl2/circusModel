@@ -5,13 +5,22 @@ sbdia(P) = sbisim(diamond(P))
 
 datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
                           | FirstMissionSequencerID| schedulableA|schedulableB | schedulableC
-                        --  | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
-                        --  | WriterId | ReaderId
+                          | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
+                          | WriterId | ReaderId
+
+TopLevelSequencers = {TopLevelSequencerId}
+MissionSequencers = {TopLevelSequencerId,FirstMissionSequencerID,SecondMissionSequencerID ,ThirdMissionSequencerID  }
+MissionSequencers_null = union(MissionSequencers, {nullSequencerId})
+Schedulables = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencers))
+
 
 datatype MissionID = nullMissionId|
                     missionA|missionB 
                     | TopMission1ID 
-                    | FlatBufferMissionId       
+                    | FlatBufferMissionId    
+
+Missions = diff(MissionID, {nullMissionId})
+
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 
@@ -24,11 +33,10 @@ datatype ExceptionType = interruptedException |
 nametype Bit = {0,1}
 
 
---datatype ObjectID = objectA | objectB
---datatype ThreadID = nullThreadId| threadA | threadB
-
-
 datatype ObjectID = WriterObjectId | ReaderObjectId
 datatype ThreadID = nullThreadId | WriterThreadID | ReaderThreadID
+
+Threads = diff(ThreadID, {nullThreadId})
+
 maxNum = 2
 nametype num = {0..maxNum}

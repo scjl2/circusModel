@@ -2,10 +2,10 @@
 -- Models javax.safetycritical.MissionSequencer
 
 --SMS CHANNELS 
-channel set_continueAbove : SchedulableID.Bool
-channel set_continueBelow : SchedulableID.Bool
+channel set_continueAbove : MissionSequencers.Bool
+channel set_continueBelow : MissionSequencers.Bool
 
-channel end_schedulableMissionSequencerState : SchedulableID
+channel end_schedulableMissionSequencerState : MissionSequencers
 
 nametype SchedulableMissionSequencerFWChanSet = 
   union(
@@ -136,12 +136,12 @@ else
 
 Continue_SMS(sequencer) = 
 (
-  get_continue.sequencer?continue:({True}) -> 
+  get_continue.sequencer?True -> 
   RunMission_SMS(sequencer) 
 )
 []  
 (
-  get_continue.sequencer?continue:({False}) -> 
+  get_continue.sequencer?False -> 
   done_schedulable.sequencer -> 
   SKIP
 )
@@ -157,7 +157,7 @@ SignalTermination_SMS(sequencer, currentMission)  =
     signalTerminationCall.sequencer -> 
     set_continueAbove.sequencer!False ->       
     requestTerminationCall.currentMission.sequencer ->  
-    requestTerminationRet.currentMission.sequencer?b ->
+    requestTerminationRet.currentMission.sequencer?_ ->
     signalTerminationRet.sequencer -> 
     end_terminations.sequencer ->      
     SKIP
@@ -170,10 +170,7 @@ Cleanup_SMS(sequencer)  =
   SKIP
 
   
-assert SchedulableMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
-assert SchedulableMissionSequencerFW(schedulableA) :[ divergence free ]
-assert SchedulableMissionSequencerFW(schedulableA) :[ deterministic  [FD] ]  
+assert SchedulableMissionSequencerFW(FirstMissionSequencerID); Loop :[ deadlock free [FD] ]
+assert SchedulableMissionSequencerFW(FirstMissionSequencerID) :[ divergence free ]
+assert SchedulableMissionSequencerFW(FirstMissionSequencerID) :[ deterministic  [FD] ]  
 
-assert sbdia( SchedulableMissionSequencerFW(schedulableA) ); Loop :[ deadlock free [FD] ]
-assert sbdia( SchedulableMissionSequencerFW(schedulableA)  ):[ divergence free ]
-assert sbdia( SchedulableMissionSequencerFW(schedulableA) ):[ deterministic  [FD] ]  

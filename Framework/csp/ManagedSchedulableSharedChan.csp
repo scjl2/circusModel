@@ -1,16 +1,16 @@
 --Schedulable SHARED
-channel release_complete:SchedulableID
-channel done_schedulable : SchedulableID 
-channel end_releases:SchedulableID
-channel release:SchedulableID
+channel release_complete:Schedulables
+channel done_schedulable : Schedulables 
+channel end_releases:Schedulables
+channel release:Schedulables
 
-channel handleAsyncEventCall :SchedulableID 
-channel handleAsyncEventRet :SchedulableID 
+channel handleAsyncEventCall :Schedulables 
+channel handleAsyncEventRet :Schedulables 
 
-channel signalTerminationCall : SchedulableID
-channel signalTerminationRet : SchedulableID
-channel set_applicationTerminating: SchedulableID.Bool
-channel get_applicationTerminating: SchedulableID.Bool
+channel signalTerminationCall : Schedulables
+channel signalTerminationRet : Schedulables
+channel set_applicationTerminating: Schedulables.Bool
+channel get_applicationTerminating: Schedulables.Bool
 
 nametype ManagedSchedulableFWChanSet = 
   {| done_schedulable,release,handleAsyncEventCall,handleAsyncEventRet, 
