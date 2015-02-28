@@ -50,18 +50,23 @@ nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_s
 
 
 FlatBufferSequencerApp = 
-(
-  Methods_fbms
-    [|MissionSequencerAppStateSync|] 
-  DoneController_fbms(False) 
-)\ MissionSequencerAppStateSync
-/\ (end_sequencer_app.FlatBufferSequencerId -> SKIP)
+
+sbdia(
+	(
+		(
+		  Methods_fbms
+		    [|MissionSequencerAppStateSync|] 
+		  DoneController_fbms(False) 
+		)\ MissionSequencerAppStateSync
+		/\ (end_sequencer_app.FlatBufferSequencerId -> SKIP)
+	)
+)
    
 
-DoneController_fbms(done) =
+DoneController_fbms(doneVar) =
 (
-	get_sequencer_done.FlatBufferSequencerId!done ->
-	DoneController_fbms(done)
+	get_sequencer_done.FlatBufferSequencerId!doneVar ->
+	DoneController_fbms(doneVar)
 )
 []
 (
@@ -72,9 +77,9 @@ DoneController_fbms(done) =
 
 GetNextMission_fbms = 
     getNextMissionCall.FlatBufferSequencerId -> 
-	get_sequencer_done.FlatBufferSequencerId?done ->
+	get_sequencer_done.FlatBufferSequencerId?doneVar ->
 	(
-	  if done == False then
+	  if doneVar == False then
 	  (
 		set_sequencer_done.FlatBufferSequencerId!True ->
 		getNextMissionRet.FlatBufferSequencerId!FlatBufferMissionId  ->
@@ -110,6 +115,8 @@ nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissio
 nametype FlatBufferMissionStateSync = {|get_bufferEmpty,set_bufferContents, get_bufferConetents |}
 
 FlatBufferMissionApp = 
+
+sbdia(
 ( 
 	(
 		FlatBufferMissionState(0)
@@ -118,6 +125,7 @@ FlatBufferMissionApp =
 	)
 	/\ 
 	(end_mission_app.FlatBufferMissionId -> SKIP )
+)\FlatBufferMissionStateSync
 )
 
 FlatBufferMissionState(bufferContents) =
@@ -140,6 +148,15 @@ FlatBufferMissionState(bufferContents) =
 	FlatBufferMissionState(bufferContents) 
 )
 
+APPInitializePhase(mission) =
+	initializeCall.FlatBufferMissionId   -> 
+
+	register!ReaderId!FlatBufferMissionId  -> 
+  	register!WriterId!FlatBufferMissionId  -> 
+  	  
+	initializeRet.FlatBufferMissionId  -> 
+  MissionPhase(mission, {ReaderId, WriterId})
+
 InitializePhase_fbm = 
 	initializeCall.FlatBufferMissionId   -> 
 
@@ -150,17 +167,19 @@ InitializePhase_fbm =
 	initializeRet.FlatBufferMissionId  -> 
 	SKIP
 
-CleanupPhase_fbm = 
+APPCleanupMission(mission) =
+
+--CleanupPhase_fbm = 
  cleanupMissionCall.FlatBufferMissionId  ->
  cleanupMissionRet.FlatBufferMissionId?false ->
  SKIP
 
 Methods_fbm = 
 ( 
-	InitializePhase_fbm
-	[] 
-	CleanupPhase_fbm
-	[]
+	--InitializePhase_fbm
+	--[] 
+	--CleanupPhase_fbm
+	--[]
 	BufferEmpty_fbm
 	[]
 	Write_fbm
@@ -199,9 +218,11 @@ Methods_w =
 	Run_w
 
 Run_w =
+	startSyncMeth.WriterObjectId.WriterThreadID ->
 	runCall.WriterId -> 
 		Write ;
 	runRet.WriterId ->
+	endSyncMeth.WriterObjectId.WriterThreadID ->
 	SKIP
 
 Write = 
@@ -237,11 +258,13 @@ Methods_r =
 	Run_r
 
 Run_r =
+	startSyncMeth.ReaderObjectId.ReaderThreadID ->
 	runCall.ReaderId -> 
 
 	Read ;
 
 	runRet.ReaderId ->
+	endSyncMeth.ReaderObjectId.ReaderThreadID ->
 	SKIP
 
 Read =
@@ -279,24 +302,26 @@ FlatBuffer =
 	FlatBufferMissionApp
 	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
 	(
-		ReaderApp 
+		sbdia(ReaderApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(ReaderObjectId)   )
 			[|{|  notify |}|]
-		WriterApp 
+		sbdia(WriterApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(WriterObjectId) )
 	)	
 )
-[| LockingModelSync |]	
-LockingModel({(ReaderThreadID, 1, ReaderObjectId), (WriterThreadID, 1, WriterObjectId) })
+
 
 
 --nametype APEHSync = {| release.Tier0APEHId |}
 --nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
 Program(topLevelSequencerIDs, tier0) = 
-(  
-	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
+(
+
+(	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, --OSEHSync , --APEHSync, 
-		 {|end_mission_app, end_managedThread_app, setCeilingPriority, requestTermination, terminationPendingCall, terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		 {|end_mission_app, end_managedThread_app, setCeilingPriority, requestTerminationCall,requestTerminationRet, terminationPendingCall, terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	FlatBuffer	
+)\{|end_mission_app, end_managedThread_app, done_safeletFW, done_mission, done_toplevel_sequencer |}
+
 )
 
 TestProgram = 
@@ -305,6 +330,6 @@ TestProgram =
 				{ (FlatBufferMissionId , ({}, {}, {},  {}, {WriterId, ReaderId})  )   }	                 
             )
 
-assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(TestProgram)) :[ divergence free ]
-assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
+assert TestProgram ; Loop :[ deadlock free [FD] ]
+assert TestProgram :[ divergence free ]
+assert TestProgram :[ deterministic  [FD] ]

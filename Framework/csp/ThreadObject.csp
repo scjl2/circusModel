@@ -189,7 +189,7 @@ ObjectProcesses(o) =
 	union({(NotifyController(o), AlphaNotifyController(o)), (MonitorController(o), AlphaMonitorController(o))  },
 			{ (ThreadObjState(o,t), AlphaThreadObjState(o,t) ) | t<-ThreadID } )
 
-ThreadObjectSystem(o)=
+ThreadObjectSystem(o) =
 	--(|| (p,a') : ObjectProcesses(o) @ [a'] p)
 	(
 		(NotifyController(o)

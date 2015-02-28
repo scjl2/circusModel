@@ -1,25 +1,29 @@
 --Locking Model
 
-include "PriorityQueue.csp"
+
+MaxPriority = 2
+MinPriority = 0
+
+nametype PriorityLevel = {MinPriority..MaxPriority}
+
+--include "PriorityQueue.csp"
+--include "PriorityQueue_FDR.csp"
+include "priqueue.csp"
+
+include "ThreadObject.csp"
+
+
+
 
 
 include "ThreadFW.csp"
 
-include "ObjectFW.csp"
+--include "ObjectFW.csp"
+--include "ObjectFW2.csp"
 
 include "JTime.csp"
+
 
 nametype LockingModelSync = 
 		{|waitCall, timedWaitCall, waitRet, waitForObjectCall, waitForObjectRet, notify, notifyAll,
 		interrupt,isInterruptedCall ,isInterruptedRet , interruptedCall, interruptedRet|}
-
-nametype ObjectSync = {|get_priorityLevel, raise_thread_priority, lower_thread_priority |}
-
-
-
-
---simple synchronised meth? his wont work...
--- (||| Threads(ids)   ) [|objectsync|] (||| Objects(ids))
-LockingModel( lockingModelIds   ) =
-	||| (threadId, threadBasePriority, objectId) : lockingModelIds @
-			(ThreadFW(threadId, threadBasePriority) [|ObjectSync|] ObjectFW(objectId) )

@@ -22,8 +22,6 @@ channel unlock_Monitor : ObjectID . ThreadID
 channel relock: ObjectID . ThreadID
 channel relock_this : ObjectID . ThreadID 
 
-
-
 channel cancel_wait_timer : ObjectID . ThreadID 
 channel start_timer : ObjectID . ThreadID . PriorityLevel . JTime
 channel lock_request : ObjectID . ThreadID 

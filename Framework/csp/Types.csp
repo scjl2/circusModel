@@ -8,10 +8,10 @@ datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId
                           | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
                           | WriterId | ReaderId
 
-TopLevelSequencers = {TopLevelSequencerId}
-MissionSequencers = {TopLevelSequencerId,FirstMissionSequencerID,SecondMissionSequencerID ,ThirdMissionSequencerID  }
-MissionSequencers_null = union(MissionSequencers, {nullSequencerId})
-Schedulables = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencers))
+TopLevelSequencerIDs = {TopLevelSequencerId}
+MissionSequencerIDs = {TopLevelSequencerId,FirstMissionSequencerID,SecondMissionSequencerID ,ThirdMissionSequencerID  }
+MissionSequencerIDs_null = union(MissionSequencerIDs, {nullSequencerId})
+SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencerIDs))
 
 
 datatype MissionID = nullMissionId|
@@ -19,7 +19,7 @@ datatype MissionID = nullMissionId|
                     | TopMission1ID 
                     | FlatBufferMissionId    
 
-Missions = diff(MissionID, {nullMissionId})
+MissionIDs = diff(MissionID, {nullMissionId})
 
 
 datatype ExceptionType = interruptedException | 

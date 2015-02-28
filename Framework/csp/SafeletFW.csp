@@ -9,7 +9,7 @@ channel initializeApplicationCall
 channel initializeApplicationRet 
 
 channel getSequencerCall 
-channel getSequencerRet : TopLevelSequencers
+channel getSequencerRet : TopLevelSequencerIDs
 channel end_safelet_app
 
 nametype SafeletFWChanSet = 

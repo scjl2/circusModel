@@ -1,11 +1,22 @@
 --GLOBALS
 transparent sbisim, diamond
 
+sbdia(P) = sbisim(diamond(P))
+
 datatype SchedulableID = nullSequencerId|nullSchedulableId| FlatBufferSequencerId 
                           | WriterId | ReaderId
 
+TopLevelSequencerIDs = {FlatBufferSequencerId}
+MissionSequencerIDs = {FlatBufferSequencerId  }
+MissionSequencerIDs_null = union(MissionSequencerIDs, {nullSequencerId})
+SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencerIDs))
+
+
 datatype MissionID = nullMissionId
-                    | FlatBufferMissionId                  
+                    | FlatBufferMissionId     
+
+MissionIDs = diff(MissionID, {nullMissionId})
+
 
 datatype ExceptionType = interruptedException | 
                           illegalMonitorStateException | 
@@ -14,22 +25,14 @@ datatype ExceptionType = interruptedException |
                           illegalStateException | 
                           ceilingViolationException
 
---MaxPriority = 2
---MinPriority = 1
 
---nametype PriorityLevel = {MinPriority..MaxPriority}
 nametype Bit = {0,1}
-
-
---nametype JTime = Bit.Bit
---datatype PriorityQueue =  (| {PriorityLevel} =>  <ThreadID> |)
-
-nametype ApplicationMissionIds = {FlatBufferMissionId}
 
 
 datatype ObjectID = WriterObjectId | ReaderObjectId
 datatype ThreadID = nullThreadId | WriterThreadID | ReaderThreadID
+
+Threads = diff(ThreadID, {nullThreadId})
+
 maxNum = 2
 nametype num = {0..maxNum}
-
-

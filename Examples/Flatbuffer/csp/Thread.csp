@@ -4,4 +4,4 @@ ThreadMap =
 	Map(ThreadID, num)
 
 EmptyThreadMap 	=	
-	mapFromList(<(WriterThreadID, 0), (WriterThreadID, 0) >)
+	mapFromList(<(WriterThreadID, 0), (ReaderThreadID, 0) >)

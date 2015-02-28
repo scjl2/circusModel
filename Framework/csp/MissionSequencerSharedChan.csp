@@ -1,17 +1,17 @@
 --MissionSequencerShared
-channel get_currentMission :MissionSequencers.MissionID
-channel set_currentMission : MissionSequencers.MissionID
-channel get_continue : MissionSequencers.Bool
+channel get_currentMission :MissionSequencerIDs.MissionID
+channel set_currentMission : MissionSequencerIDs.MissionID
+channel get_continue : MissionSequencerIDs.Bool
 
-channel get_controllingMission : MissionSequencers.MissionID
-channel set_controllingMission : MissionSequencers.MissionID
+channel get_controllingMission : MissionSequencerIDs.MissionID
+channel set_controllingMission : MissionSequencerIDs.MissionID
 
-channel  getNextMissionCall : MissionSequencers
-channel  getNextMissionRet : MissionSequencers . MissionID 
+channel  getNextMissionCall : MissionSequencerIDs
+channel  getNextMissionRet : MissionSequencerIDs . MissionID 
 
-channel  end_sequencer_app:MissionSequencers
-channel  end_methods : MissionSequencers
-channel  end_terminations : MissionSequencers
+channel  end_sequencer_app:MissionSequencerIDs
+channel  end_methods : MissionSequencerIDs
+channel  end_terminations : MissionSequencerIDs
 
 nametype MissionSequencerFWSharedChanSet = 
   {| get_currentMission, set_currentMission, get_continue, get_controllingMission,set_controllingMission,

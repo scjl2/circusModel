@@ -116,9 +116,9 @@ nametype SafeletTierChan = union(SafeletFWChanSet, TopLevelMissionSequencerFWCha
 
 SafeletTier(topLevelMissionSequencerIDs) =
 (
-  SafeletFW
+  (SafeletFW
   [|SafeletTierSync|]
-  TopLevelMissionSequencers(topLevelMissionSequencerIDs)
+  TopLevelMissionSequencers(topLevelMissionSequencerIDs))
   [|{|done_toplevel_sequencer, done_safeletFW|}}|]
   GlobalSchedulableRegulator
 )  

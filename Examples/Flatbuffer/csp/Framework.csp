@@ -8,14 +8,10 @@ Loop = a-> Loop
 
 channel circwait : num
 channel  throw : ExceptionType 
+channel apiError
 
 
-nametype aperiodicParams = (SchedulableID, AperiodicType, Int, SchedulableID)
-nametype periodicParams = (SchedulableID, Int, Int, Int, SchedulableID)
-nametype oneShotParams = (SchedulableID, Int, Int, SchedulableID)
-nametype schedulableParams = ({SchedulableID},{aperiodicParams}, {oneShotParams}, {periodicParams}, {SchedulableID} )
-nametype cluster = (MissionID, schedulableParams )
-nametype tier = Set(cluster)
+--include "APP_MISSION.csp"
 
 include "SafeletFW.csp"
 
@@ -23,7 +19,7 @@ include "MissionSequencerSharedChan.csp"
 
 include "TopLevelMissionSequencerFW.csp"
 
-include "MissionFW.csp"
+include "MissionFW_NoChaos2.csp"
 
 include "ManagedSchedulableSharedChan.csp"
 
@@ -40,3 +36,9 @@ include "PeriodicEventHandlerFW.csp"
 include "ManagedThreadFW.csp" 
 
 include "LockingModel.csp"
+
+include "GlobalSchedulables.csp"
+
+--include "ThreadObject.csp"
+
+--include "PriorityQueue_FDR.csp"

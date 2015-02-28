@@ -7,20 +7,20 @@
 
 channel set_missionTerminating : MissionID.Bool 
 channel get_missionTerminating : MissionID.Bool
-channel get_controllingSequencer : MissionID.MissionSequencers_null
-channel set_controllingSequencer : MissionID.MissionSequencers_null
+channel get_controllingSequencer : MissionID.MissionSequencerIDs_null
+channel set_controllingSequencer : MissionID.MissionSequencerIDs_null
 channel end_mission_state : MissionID
 
 nametype MissionFWStateChan = 
   {|end_mission_state, set_controllingSequencer,  
   set_missionTerminating, get_missionTerminating,  get_controllingSequencer |}
 
-channel start_mission : MissionID.MissionSequencers
+channel start_mission : MissionID.MissionSequencerIDs
 
 channel initializeCall : MissionID
 channel initializeRet : MissionID
 
-channel register : Schedulables.MissionID
+channel register : SchedulableIDs.MissionID
 channel deregister : SchedulableID
 
 channel done : SchedulableID
@@ -37,8 +37,8 @@ channel schedulables_stopped : MissionID
 channel requestTerminationCall : MissionID.SchedulableID
 channel requestTerminationRet : MissionID.SchedulableID.Bool
 
-channel cleanupSchedulableCall : Schedulables
-channel cleanupSchedulableRet : Schedulables
+channel cleanupSchedulableCall : SchedulableIDs
+channel cleanupSchedulableRet : SchedulableIDs
 channel cleanupMissionCall : MissionID 
 channel cleanupMissionRet : MissionID.Bool
 channel end_mission_app : MissionID
@@ -46,7 +46,7 @@ channel done_mission : MissionID.Bool
 
 channel terminationPendingCall : MissionID
 channel terminationPendingRet : MissionID.Bool
-channel getSequencer : MissionID.MissionSequencers_null 
+channel getSequencer : MissionID.MissionSequencerIDs_null 
 
 
 nametype MissionFWCHanSet = union(

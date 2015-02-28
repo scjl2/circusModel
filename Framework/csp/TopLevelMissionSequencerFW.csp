@@ -3,14 +3,14 @@
 
 
 --TLMS CHANNELS
-channel  start_toplevel_sequencer: TopLevelSequencers 
+channel  start_toplevel_sequencer: TopLevelSequencerIDs 
 
 channel  done_toplevel_sequencer 
 
 
-channel set_continue : MissionSequencers . Bool 
+channel set_continue : MissionSequencerIDs . Bool 
 
-channel end_toplevelsequencerState : MissionSequencers
+channel end_toplevelsequencerState : MissionSequencerIDs
 
 nametype TopLevelMissionSequencerFWChanSet = union(
   union(MissionSequencerFWSharedChanSet, TLMSStateSync) ,

@@ -2,10 +2,10 @@
 -- Models javax.safetycritical.MissionSequencer
 
 --SMS CHANNELS 
-channel set_continueAbove : MissionSequencers.Bool
-channel set_continueBelow : MissionSequencers.Bool
+channel set_continueAbove : MissionSequencerIDs.Bool
+channel set_continueBelow : MissionSequencerIDs.Bool
 
-channel end_schedulableMissionSequencerState : MissionSequencers
+channel end_schedulableMissionSequencerState : MissionSequencerIDs
 
 nametype SchedulableMissionSequencerFWChanSet = 
   union(
