@@ -93,11 +93,11 @@ Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,
 
 
 
-nametype SafeletSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, register, deregister|}
+nametype SafeletSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer|}
 
 nametype TopLevelMissionSequencerSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  
+nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer, register, deregister, 
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
                    cleanupSchedulableCall, cleanupSchedulableRet  |} 
 
@@ -114,8 +114,6 @@ SafeletTier(topLevelMissionSequencerIDs) =
     [|SafeletTierSync|]
     TopLevelMissionSequencers(topLevelMissionSequencerIDs)
   )
-  [|{|done_toplevel_sequencer, done_safeletFW|}|]
-  GlobalSchedulableRegulator
 )  
 
 
@@ -183,9 +181,11 @@ NestedTiers(nestedTierIDs) =
 )
 
 
-nametype TierSync = {|start_mission.FlatBufferMissionId, done_mission.FlatBufferMissionId, register, deregister, done_safeletFW, done_toplevel_sequencer|}
+nametype TierSync = {|start_mission.FlatBufferMissionId, done_mission.FlatBufferMissionId,  
+                      done_safeletFW, done_toplevel_sequencer|}
 
-nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
+nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, 
+                              nested_start_mission, nested_done_mission |}
 
 
 
@@ -209,17 +209,16 @@ nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_s
 
 
 ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS) =
-(  
+((  
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
   (
     Tier0(tier0IDS)      
   )
 )
+  [|{|register, deregister, done_toplevel_sequencer, done_safeletFW|}|]
+GlobalSchedulableRegulator)
 
 
 NewSchedulablesTest =
   ClustereAndTieredFramework({FlatBufferSequencerId}, { (FlatBufferMissionId , ({}, {}, {},  {}, {WriterId, ReaderId})  )   }    )
-
-
-

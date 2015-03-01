@@ -11,7 +11,7 @@ channel isAlive : SchedulableID.Bool
 channel end_managedThread_app : SchedulableID
 channel end_managedThreadState : SchedulableID
 
-nametype ManagedThreadSync = {|runCall, runRet |} 
+nametype ManagedThreadSync = {|isAlive, runCall, runRet |} 
 
 
 nametype MTFWChanSet = 
