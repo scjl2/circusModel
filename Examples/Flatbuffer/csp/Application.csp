@@ -11,7 +11,9 @@ include "FrameworkProcess.csp"
 -- SAFELET: MY APP
 
 nametype SafeltAppSync = 
-    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
+    {| getSequencerCall, getSequencerRet,
+    	initializeApplicationCall, initializeApplicationRet, 
+    	end_safelet_app |}
 
 
 FlatBufferApp  = 
@@ -152,7 +154,8 @@ APPInitializePhase(mission) =
 	initializeCall.FlatBufferMissionId   -> 
 
 	register!ReaderId!FlatBufferMissionId  -> 
-  	register!WriterId!FlatBufferMissionId  -> 
+
+	register!WriterId!FlatBufferMissionId  -> 
   	  
 	initializeRet.FlatBufferMissionId  -> 
   MissionPhase(mission, {ReaderId, WriterId})
@@ -219,7 +222,7 @@ Methods_w =
 
 Run_w =
 	
-	runCall.WriterId -> startSyncMeth.WriterObjectId.WriterThreadID ->
+	runCall.WriterId -> --startSyncMeth.WriterObjectId.WriterThreadID ->
 		Write ;
 	endSyncMeth.WriterObjectId.WriterThreadID -> runRet.WriterId ->
 	
@@ -288,7 +291,7 @@ Read =
 
 
 
-nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
+nametype MTAppSync = {| isAlive, runCall, runRet,  end_managedThread_app |}
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
@@ -303,24 +306,20 @@ FlatBuffer =
 	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
 	(
 		sbdia(ReaderApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(ReaderObjectId)   )
-			[|{|  notify |}|]
+			[|{|  notify, notifyAll, waitCall, timedWaitCall, waitForObjectCall |}|]
 		sbdia(WriterApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(WriterObjectId) )
 	)	
 )
 
-
-
---nametype APEHSync = {| release.Tier0APEHId |}
---nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
 Program(topLevelSequencerIDs, tier0) = 
 (
 
 (	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, --OSEHSync , --APEHSync, 
-		 {|end_mission_app, end_managedThread_app, setCeilingPriority, requestTerminationCall,requestTerminationRet, terminationPendingCall, terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		 {| end_mission_app, end_managedThread_app, setCeilingPriority, requestTerminationCall,requestTerminationRet, terminationPendingCall, terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	FlatBuffer	
-)\{|end_mission_app, end_managedThread_app, done_safeletFW, done_mission, done_toplevel_sequencer |}
+)--\{|end_mission_app, end_managedThread_app, done_safeletFW, done_mission, done_toplevel_sequencer |}
 
 )
 
