@@ -13,6 +13,8 @@ channel apiError
 
 include "APP_MISSION.csp"
 
+include "GlobalSchedulables.csp"
+
 include "SafeletFW.csp"
 
 include "MissionSequencerSharedChan.csp"
@@ -35,6 +37,5 @@ include "PeriodicEventHandlerFW.csp"
 
 include "ManagedThreadFW.csp" 
 
-include "LockingModel.csp"
+--include "LockingModel.csp"
 
---include "PriorityQueue_FDR.csp"

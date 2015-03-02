@@ -1,3 +1,9 @@
+AlphaGSR =
+	{|register, deregister, throw, done_toplevel_sequencer, done_safeletFW   |}
+
+GSRSync =
+	{|register, deregister, done_toplevel_sequencer, done_safeletFW   |}
+
 GlobalSchedulableRegulator =
 	(||| s : SchedulableID @ Unregistered(s))
 	/\ 
@@ -9,15 +15,21 @@ GlobalSchedulableRegulator =
 
 
 Unregistered(s) =
-	(register.s?m  -> 
-		Registered(s))
+(
+	register.s?m  -> 
+	Registered(s)
+)
 
 Registered(s) =
-	(deregister.s ->
-		Unregistered(s))
-	[]
-	(register.s?m ->
-		throw.illegalStateException ->
-	    --CHAOS(Events)
-	    --STOP
-	    SKIP)
+(
+	deregister.s ->
+	Unregistered(s)
+)
+[]
+(
+	register.s?m ->
+	throw.illegalStateException ->
+    --CHAOS(Events)
+    --STOP
+    SKIP
+)

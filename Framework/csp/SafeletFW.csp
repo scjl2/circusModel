@@ -37,7 +37,8 @@ Execute_S =
   getSequencerRet?topLevelSequencer ->
   if topLevelSequencer != nullSequencerId then
   (
-      start_toplevel_sequencer.topLevelSequencer ->      
+      start_toplevel_sequencer.topLevelSequencer ->    
+	  done_toplevel_sequencer ->  
       end_safelet_app ->
       SKIP
   ) 
