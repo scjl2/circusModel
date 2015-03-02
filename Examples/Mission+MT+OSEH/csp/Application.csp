@@ -57,10 +57,10 @@ MainSequencerApp =
 /\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
    
 
-DoneController_tlms(done) =
+DoneController_tlms(doneVar) =
 (
-	get_sequencer_done.TopLevelSequencerId!done ->
-	DoneController_tlms(done)
+	get_sequencer_done.TopLevelSequencerId!doneVar ->
+	DoneController_tlms(doneVar)
 )
 []
 (
@@ -71,9 +71,9 @@ DoneController_tlms(done) =
 
 GetNextMission_tlms = 
     getNextMissionCall.TopLevelSequencerId -> 
-	get_sequencer_done.TopLevelSequencerId?done ->
+	get_sequencer_done.TopLevelSequencerId?doneVar ->
 	(
-	  if done == False then
+	  if doneVar == False then
 	  (
 		set_sequencer_done.TopLevelSequencerId!True ->
 		getNextMissionRet.TopLevelSequencerId!Tier0MissionId  ->
@@ -105,31 +105,34 @@ nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissio
 MainMissionApp = 
 ( 
 	(
-		(Methods_mm )
-		/\ 
+		--(Methods_mm )
+		--/\ 
 		(end_mission_app.Tier0MissionId -> SKIP )
 	) 
 )
 
 
-InitializePhase_mm = 
+APPInitializePhase(mission) =
+--InitializePhase_mm = 
   initializeCall.Tier0MissionId   -> 
   register!Tier0ManagedThreadId!Tier0MissionId  -> 
   register!Tier0OSEHId!Tier0MissionId  ->  
   initializeRet.Tier0MissionId  -> 
- SKIP
+-- SKIP
+ MissionPhase(mission, {Tier0ManagedThreadId, Tier0OSEHId})
 
-CleanupPhase_mm = 
+APPCleanupMission(mission) =
+--CleanupPhase_mm = 
  cleanupMissionCall.Tier0MissionId  ->
  cleanupMissionRet.Tier0MissionId?false ->
  SKIP
 
-Methods_mm = 
-( 
-	InitializePhase_mm
-	[] 
-	CleanupPhase_mm
-) ; Methods_mm
+--Methods_mm = 
+--( 
+--	--InitializePhase_mm
+	--[] 
+	--CleanupPhase_mm
+--) ; Methods_mm
   
 
 -- Tier0 MANAGED THRED APP
@@ -167,7 +170,8 @@ Methods_t0oseh =
 
 handlerAsyncEvent_t0oseh =
 	handleAsyncEventCall.Tier0OSEHId -> 
-	requestTermination.Tier0MissionId.Tier0OSEHId ->
+	requestTerminationCall.Tier0MissionId.Tier0OSEHId ->
+	requestTerminationRet.Tier0MissionId.Tier0OSEHId?_ ->
     handleAsyncEventRet.Tier0OSEHId ->   
     SKIP
 
@@ -203,7 +207,7 @@ Program(topLevelSequencerIDs, tier0) =
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync, 
-		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	Mission_MT_OSEH	
 )
 

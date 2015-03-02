@@ -7,7 +7,7 @@ channel get_controllingMission : MissionSequencerIDs.MissionID
 channel set_controllingMission : MissionSequencerIDs.MissionID
 
 channel  getNextMissionCall : MissionSequencerIDs
-channel  getNextMissionRet : MissionSequencerIDs . MissionID 
+channel  getNextMissionRet : MissionSequencerIDs . MissionIDs 
 
 channel  end_sequencer_app:MissionSequencerIDs
 channel  end_methods : MissionSequencerIDs

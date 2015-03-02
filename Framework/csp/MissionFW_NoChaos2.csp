@@ -109,10 +109,11 @@ Start_M(mission) =
     start_mission.mission?mySequencer ->
     set_controllingSequencer.mission!mySequencer ->
     APPInitializePhase(mission) ; 
-   
-    end_mission_state.mission -> 
-    end_mission_app.mission ->
-    SKIP
+    (
+       end_mission_state.mission -> 
+       end_mission_app.mission ->
+       SKIP
+     )
   ) 
   []
   (

@@ -1,16 +1,16 @@
 APPInitializePhase(mission) =
-	initializeCall.missionA ->
-  	register!schedulableA!missionA  -> 
+	initializeCall.mission ->
+  	register!schedulableA!mission  -> 
 
-  	register!schedulableB!missionA  -> 
+  	--register!schedulableB!mission  -> 
 
-  initializeRet.missionA ->
-  MissionPhase(mission, {schedulableA, schedulableB})
+  initializeRet.mission ->
+  MissionPhase(mission, {schedulableA})
 
 
 APPCleanupMission(mission) =
-	cleanupMissionCall.missionA ->
-    cleanupMissionRet.missionA?false ->
+	cleanupMissionCall.mission ->
+    cleanupMissionRet.mission?False ->
     SKIP
 	 
 

@@ -5,7 +5,7 @@ GSRSync =
 	{|register, deregister, done_toplevel_sequencer, done_safeletFW   |}
 
 GlobalSchedulableRegulator =
-	(||| s : SchedulableID @ Unregistered(s))
+	(||| s : SchedulableIDs @ Unregistered(s))
 	/\ 
 	(
 		done_toplevel_sequencer -> SKIP
@@ -33,3 +33,8 @@ Registered(s) =
     --STOP
     SKIP
 )
+
+
+TestGSR =
+	GlobalSchedulableRegulator [| GSRSync |] 
+	MissionFW(missionA)

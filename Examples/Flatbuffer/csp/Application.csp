@@ -305,22 +305,24 @@ FlatBuffer =
 	FlatBufferMissionApp
 	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
 
-	(
-		sbdia(ReaderApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(ReaderObjectId)   )
-			[|{|  notify, notifyAll, waitCall, timedWaitCall, waitForObjectCall |}|]
-		sbdia(WriterApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(WriterObjectId) )
-	)	
-)
+--	(
+--		sbdia(ReaderApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(ReaderObjectId)   )
+--			[|{|  notify, notifyAll, waitCall, timedWaitCall, waitForObjectCall |}|]
+--		sbdia(WriterApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(WriterObjectId) )
+--	)	
+--)
 
 
 
-	((
+ 	(	
+		(
 			(ReaderApp    )
 				|||
 			(WriterApp  )
 		)
 		[| union(AlphaThreadObjectSystem(ReaderObjectId), AlphaThreadObjectSystem(WriterObjectId) ) |]	
-		(ThreadObjectSystem(ReaderObjectId) |||  ThreadObjectSystem(WriterObjectId)))
+		(ThreadObjectSystem(ReaderObjectId) |||  ThreadObjectSystem(WriterObjectId) ) 
+	)
 )
 
 

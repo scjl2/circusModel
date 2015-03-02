@@ -103,13 +103,6 @@ nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,
 
 
 
---assert sbisim(diamond(SimpleFramework)) ; Loop :[ deadlock free [FD] ]
---assert sbisim(diamond(SimpleFramework)) :[ divergence free ]
---assert sbisim(diamond(SimpleFramework)) :[ deterministic  [FD] ]
-
-
-
-
 nametype SafeletTierSync = {|start_toplevel_sequencer, done_toplevel_sequencer, done_safeletFW |}
 nametype SafeletTierChan = union(SafeletFWChanSet, TopLevelMissionSequencerFWChanSet)
 
@@ -190,7 +183,7 @@ NestedTiers(nestedTierIDs) =
 )
 
 
-nametype TierSync = {|start_mission.TopMission1ID, done_mission.TopMission1ID, register, deregister, done_safeletFW, done_toplevel_sequencer|}
+nametype TierSync = {|start_mission.TopMission1ID, done_mission.TopMission1ID,  done_safeletFW, done_toplevel_sequencer|}
 
 nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
 
@@ -216,21 +209,19 @@ nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_s
 
 
 ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS) =
-(
-  (  
+(  
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
-  (
-    Tier0(tier0IDS)      
-  )
+  Tier0(tier0IDS)      
 )
   [| GSRSync |]
 GlobalSchedulableRegulator
-)
 
 
 NewSchedulablesTest =
   ClustereAndTieredFramework({TopLevelSequencerId}, { (TopMission1ID , ({}, {}, {},  {}, {schedulableA})  )   }    )
 
 
-
+assert  NewSchedulablesTest ; Loop :[ deadlock free [FD] ]
+assert  NewSchedulablesTest  :[ divergence free ]
+assert  NewSchedulablesTest  :[ deterministic  [FD] ]
