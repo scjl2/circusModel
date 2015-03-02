@@ -53,7 +53,7 @@ nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_s
 
 FlatBufferSequencerApp = 
 
-sbdia(
+
 	(
 		(
 		  Methods_fbms
@@ -62,7 +62,7 @@ sbdia(
 		)\ MissionSequencerAppStateSync
 		/\ (end_sequencer_app.FlatBufferSequencerId -> SKIP)
 	)
-)
+
    
 
 DoneController_fbms(doneVar) =
@@ -304,12 +304,30 @@ FlatBuffer =
 	|||
 	FlatBufferMissionApp
 	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
+
 	(
 		sbdia(ReaderApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(ReaderObjectId)   )
 			[|{|  notify, notifyAll, waitCall, timedWaitCall, waitForObjectCall |}|]
 		sbdia(WriterApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(WriterObjectId) )
 	)	
 )
+
+
+
+	((
+			(ReaderApp    )
+				|||
+			(WriterApp  )
+		)
+		[| union(AlphaThreadObjectSystem(ReaderObjectId), AlphaThreadObjectSystem(WriterObjectId) ) |]	
+		(ThreadObjectSystem(ReaderObjectId) |||  ThreadObjectSystem(WriterObjectId)))
+)
+
+
+-- union(AlphaThreadObjectSystem(ReaderObjectId), AlphaThreadObjectSystem(WriterObjectId) )
+
+--[|  AlphaThreadObjectSystem(ReaderObjectId)  |]	ThreadObjectSystem(ReaderObjectId) 
+--  [|  AlphaThreadObjectSystem(WriterObjectId)  |]	ThreadObjectSystem(WriterObjectId)
 
 
 Program(topLevelSequencerIDs, tier0) = 

@@ -27,11 +27,13 @@ public class FlatBufferMission extends Mission
 
 		reader = new Reader(new PriorityParameters(5), storageParameters, this,
 				writer);
+		reader.register();
 
 		writer = new Writer(new PriorityParameters(5), storageParameters, this,
 				reader);
-
-		System.out.println("FlatBufferMission init");
+		writer.register();
+		
+		Console.println("FlatBufferMission init");
 	}
 
 	public boolean bufferEmpty()
