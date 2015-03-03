@@ -172,7 +172,7 @@ Methods_t0oseh =
 handlerAsyncEvent_t0oseh =
 	handleAsyncEventCall.Tier0OSEHId -> 
 	requestTerminationCall.Tier0MissionId.Tier0OSEHId ->
-	requestTerminationRet.Tier0MissionId.Tier0OSEHId?_ ->
+	requestTerminationRet.Tier0MissionId.Tier0OSEHId?b ->
     handleAsyncEventRet.Tier0OSEHId ->   
     SKIP
 
@@ -218,5 +218,6 @@ TestProgram =
             )
 
 assert TestProgram ; Loop :[ deadlock free [F] ]
+assert TestProgram  :[ deadlock free [F] ]
 assert TestProgram :[ divergence free ]
 assert TestProgram :[ deterministic  [FD] ]

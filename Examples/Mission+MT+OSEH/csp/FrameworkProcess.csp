@@ -99,14 +99,7 @@ nametype TopLevelMissionSequencerSync = {|done_safeletFW, start_mission, done_mi
 
 nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  register, 
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, register |} 
-
-
-
---assert sbisim(diamond(SimpleFramework)) ; Loop :[ deadlock free [FD] ]
---assert sbisim(diamond(SimpleFramework)) :[ divergence free ]
---assert sbisim(diamond(SimpleFramework)) :[ deterministic  [FD] ]
-
+                   cleanupSchedulableCall, cleanupSchedulableRet |} 
 
 
 
