@@ -110,6 +110,7 @@ Start_M(mission) =
     set_controllingSequencer.mission!mySequencer ->
     APPInitializePhase(mission) ; 
     (
+      done_toplevel_sequencer ->
        end_mission_state.mission -> 
        end_mission_app.mission ->
        SKIP
@@ -186,7 +187,7 @@ DoneSchedulables(mission, registeredSchedulables) =
             requestTerminationCall.mission, 
             requestTerminationRet.mission |}|] s : registeredSchedulables @ Pending(mission, s)
    )
-     [| {|signalTerminationCall, deregister, signalTerminationNotCall, done_schedulables |}  |]
+     [| {|signalTerminationCall,  signalTerminationNotCall, done_schedulables |}  |]
    Regulator(mission, seq(registeredSchedulables))
 ) \ {|signalTerminationNotCall |}
 
