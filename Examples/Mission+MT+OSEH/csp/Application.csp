@@ -98,7 +98,8 @@ Methods_tlms =
 
 --TOP LEVEL MISSION
 
-nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
+nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet  
+							getSequencer, terminationPendingCall, terminationPendingRet |}
 
 
 
@@ -179,9 +180,7 @@ handlerAsyncEvent_t0oseh =
 
 
 
-
-
-nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
+nametype MTAppSync = {| runCall, runRet,  end_managedThread_app, isAlive  |}
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
@@ -206,7 +205,7 @@ nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNe
 Program(topLevelSequencerIDs, tier0) = 
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
-		[| Union({SafeltAppSync, MissionSequencerAppSync,  MTAppSync, OSEHSync , --APEHSync, 
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  MTAppSync, OSEHSync , --APEHSync, 
 		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	Mission_MT_OSEH	
 )
