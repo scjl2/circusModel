@@ -13,9 +13,11 @@ channel getNextReleaseTimeRet : SchedulableID.num
 channel descheduleCall : SchedulableID
 channel descheduleRet : SchedulableID.Bool
 
+channel stop_release : SchedulableID
+
 
 nametype MethodsSync_OSEH =  {|end_releases, reschedule_handler, deschedule_handler|} 
-nametype ReleaseSync_OSEH = {|handleAsyncEventCall, reschedule_handler, end_releases|}
+nametype ReleaseSync_OSEH = {|handleAsyncEventCall, reschedule_handler,  stop_release|}
 nametype DeadlineSync_OSEH =  {| end_releases, deschedule_handler, release_complete |}
 nametype OSEHStateSync = {| get_startTime, set_startTime, end_oneshotEventHandlerState|}
 
@@ -139,7 +141,8 @@ Release_OSEH(schedulable) =
   )
  []
  (
-    end_releases.schedulable -> 
+    --end_releases.schedulable -> 
+    stop_release.schedulable ->
     SKIP
   )
 
@@ -217,6 +220,7 @@ Scheduled(schedulable) =
     []
     (
       end_releases.schedulable -> 
+      stop_release.schedulable ->
       SKIP
     )
  )
@@ -235,6 +239,7 @@ NotScheduled(schedulable) =
 []
 (
   end_releases.schedulable -> 
+  stop_release.schedulable ->
   SKIP
 )
 
