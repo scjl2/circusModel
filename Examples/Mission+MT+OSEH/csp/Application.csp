@@ -206,7 +206,8 @@ Program(topLevelSequencerIDs, tier0) =
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  MTAppSync, OSEHSync , --APEHSync, 
-		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, 
+		 	end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	Mission_MT_OSEH	
 )
 
