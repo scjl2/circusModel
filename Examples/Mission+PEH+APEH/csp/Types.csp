@@ -1,6 +1,8 @@
 --GLOBALS
 transparent sbisim, diamond
 
+sbdia(P) = sbisim(diamond(P))
+
 datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
                           | Tier0SequencerId  | Tier0PEHId | Tier0APEHId                 
 

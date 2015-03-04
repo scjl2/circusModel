@@ -224,10 +224,11 @@ Mission_PEH_APEH =
 )	
 
 
-nametype APEHSync = {| release.Tier0APEHId |}
+nametype APEHSync = {| release.Tier0APEHId , end_aperiodicEventHandler_app|}
 --nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
 Program(topLevelSequencerIDs, tier0) = 
+
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
 		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  APEHSync, 
@@ -236,6 +237,32 @@ Program(topLevelSequencerIDs, tier0) =
 	Mission_PEH_APEH	
 )
 
+Program2 =
+(	
+
+( 
+ (
+ 	sbdia(SafeletFW [| SafeltAppSync |] MyApp)
+  	[|SafeletTierSync|]
+   sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
+ )
+    [|TierSync|]
+  (
+   sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
+     [|MissionSync|]
+   -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
+  (
+    sbdia(AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHSync |] Tier0APEHApp)
+      [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+   sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| {| handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |} |] Tier0OPEHApp)
+  )
+  )
+)
+    [| GSRSync |]
+GlobalSchedulableRegulator
+)
+
+
 TestProgram = 
 	Program(
 				{TopLevelSequencerId},
@@ -243,6 +270,9 @@ TestProgram =
 				{ (Tier0MissionId , ({}, {(Tier0APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier0PEHId, 1,0,0,nullSchedulableId)}, {})  )   }	                 
             )
 
-assert TestProgram ; Loop :[ deadlock free [FD] ]
-assert TestProgram :[ divergence free ]
-assert TestProgram :[ deterministic  [FD] ]
+
+
+
+assert Program2 ; Loop :[ deadlock free [FD] ]
+assert Program2 :[ divergence free ]
+assert Program2 :[ deterministic  [FD] ]

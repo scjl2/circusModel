@@ -33,8 +33,3 @@ Registered(s) =
     --STOP
     SKIP
 )
-
-
-TestGSR =
-	GlobalSchedulableRegulator [| GSRSync |] 
-	MissionFW(missionA)

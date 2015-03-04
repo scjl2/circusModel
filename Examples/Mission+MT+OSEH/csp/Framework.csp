@@ -10,6 +10,8 @@ channel  throw : ExceptionType
 
 include "SafeletFW.csp"
 
+include "GlobalSchedulables.csp"
+
 include "MissionSequencerSharedChan.csp"
 
 include "TopLevelMissionSequencerFW.csp"

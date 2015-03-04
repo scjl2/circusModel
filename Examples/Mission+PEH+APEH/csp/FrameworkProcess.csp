@@ -82,10 +82,10 @@ Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,
         )
             [|{|  activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
         OneShotEventHandlerFWs(oneShotEventHandlers)
-      )
-          [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+        )
+       [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
       PeriodicEventHandlerFWs(periodicEventHandlers)
-      )
+      ) 
           [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
       ManagedThreadFWs(managedThreads)
     )
@@ -97,16 +97,9 @@ nametype SafeltSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel
 
 nametype TopLevelMissionSequencerSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  
+nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  register, 
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, register |} 
-
-
-
---assert sbisim(diamond(SimpleFramework)) ; Loop :[ deadlock free [FD] ]
---assert sbisim(diamond(SimpleFramework)) :[ divergence free ]
---assert sbisim(diamond(SimpleFramework)) :[ deterministic  [FD] ]
-
+                   cleanupSchedulableCall, cleanupSchedulableRet |} 
 
 
 
@@ -127,12 +120,11 @@ Cluster(missionID, (schedulableSequencers, aperiodicEventHanders, oneShotEventHa
    MissionFW(missionID)
      [|MissionSync|]
    -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
-   (
-      PeriodicEventHandlerFWs(periodicEventHandlers)
-        [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
-      AperiodicEventHandlerFWs(aperiodicEventHanders)
-
-   )
+  (
+    AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId)
+      [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+   PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId)
+  )
 
 
 nametype TierChanSet = diff(Union({ MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet, {|register|} }), {|end_mission_app|})
@@ -194,11 +186,33 @@ NestedTiers(nestedTierIDs) =
 
 nametype TierSync = {|start_mission.Tier0MissionId, done_mission.Tier0MissionId, done_safeletFW, done_toplevel_sequencer|}
 
+nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
+
+
 ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS) =
 (  
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
   (
-    Tier0(tier0IDS)     
+    Tier0(tier0IDS)      
   )
 )
+
+
+ConcreteFramework =
+( 
+ SafeletTier({TopLevelSequencerId})
+    [|TierSync|]
+  (
+    MissionFW(Tier0MissionId)
+     [|MissionSync|]
+   -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
+  (
+    AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId)
+      [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+   PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId)
+  )
+  )
+)
+    [| GSRSync |]
+GlobalSchedulableRegulator

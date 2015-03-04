@@ -193,7 +193,7 @@ ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS) =
 (  
   SafeletTier(topLevelSequencerIDs)
     [|TierSync|]
-  (
-    Tier0(tier0IDS)      
-  )
+  Tier0(tier0IDS)      
 )
+  [| GSRSync |]
+GlobalSchedulableRegulator
