@@ -99,7 +99,7 @@ nametype TopLevelMissionSequencerSync = {|done_safeletFW, start_mission, done_mi
 
 nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  register, 
                    signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet |} 
+                   cleanupSchedulableCall, cleanupSchedulableRet, setCeilingPriority, requestTerminationCall, requestTerminationRet |} 
 
 
 

@@ -258,6 +258,20 @@ Release_APEH(schedulable, pending) =
   else 
     Ready_APEH(schedulable)   
 )
+[]
+(
+  end_releases.schedulable ->
+  handleAsyncEventRet.schedulable -> 
+  release_complete.schedulable -> 
+  if pending == True then
+  ( 
+    handleAsyncEventCall.schedulable -> 
+    Release_APEH(schedulable, False)
+  )
+  else 
+    Ready_APEH(schedulable)   
+)
+
 
 ReleaseLong(schedulable, data, pending ) =  
 ( 

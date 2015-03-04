@@ -99,7 +99,7 @@ Methods_tlms =
 --TOP LEVEL MISSION: TOP MISSION 1
 
 nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet  
-							getSequencer, terminationPendingCall, terminationPendingRet |}
+							getSequencer, terminationPendingCall, terminationPendingRet, end_mission_app |}
 
 
 MainMissionApp = 
@@ -224,7 +224,7 @@ Mission_PEH_APEH =
 )	
 
 
-nametype APEHSync = {| release.Tier0APEHId , end_aperiodicEventHandler_app|}
+nametype APEHSync = {| handleAsyncEventCall, handleAsyncEventRet,  end_aperiodicEventHandler_app|}
 --nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
 Program(topLevelSequencerIDs, tier0) = 
@@ -253,8 +253,8 @@ Program2 =
    -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
   (
     sbdia(AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHSync |] Tier0APEHApp)
-      [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
-   sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| {| handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |} |] Tier0OPEHApp)
+      [|{| release.Tier0APEHId , activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+   sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |} |] Tier0OPEHApp)
   )
   )
 )
