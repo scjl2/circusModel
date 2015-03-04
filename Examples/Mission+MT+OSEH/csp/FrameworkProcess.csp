@@ -82,10 +82,10 @@ Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,
         )
             [|{|  activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
         OneShotEventHandlerFWs(oneShotEventHandlers)
-      )
-          [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+        )
+       [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
       PeriodicEventHandlerFWs(periodicEventHandlers)
-      )
+      ) 
           [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
       ManagedThreadFWs(managedThreads)
     )
@@ -119,7 +119,12 @@ SafeletTier(topLevelMissionSequencerIDs) =
 Cluster(missionID, (schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads) ) =
    MissionFW(missionID)
      [|MissionSync|]
-    Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
+   -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
+  (
+    OneShotEventHandlerFWs(oneShotEventHandlers)
+      [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+    ManagedThreadFWs(managedThreads)
+  )
 
 
 nametype TierChanSet = diff(Union({ MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet, {|register|} }), {|end_mission_app|})
