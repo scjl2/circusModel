@@ -189,24 +189,6 @@ nametype TierSync = {|start_mission.Tier0MissionId, done_mission.Tier0MissionId,
 nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
 
 
-
---nametype Tier0Chan = union(diff(TierChanSet, {|start_mission, done_mission|}), {|start_mission.missionA.TopLevelSequencerId, done_mission.missionA.True, done_mission.missionA.False |})
-
-
---nametype NestedTeirChan = union(diff(TierChanSet, {|start_mission, done_mission|}), {|start_mission.missionB.FirstMissionSequencerID, done_mission.missionA.True, done_mission.missionA.False |})
- 
-
---makeTierInterface(MIds) = TierSpecificChan.MIds
-
---      {
---          {(NestedMissionId, ({NestedMissionSequencerAId}, {}, {},  {}, {})  )},
- --         {(MissionAId,({}, {}, {},  {}, {ManagedThreadId})  ) }
-  --      }
-
-
---MissionsInTiers(nestedTierIDs) = {m | m<- MissionID , tier <- Set(cluster), (missionID, managedSchedulableIDs) <-cluster, member(cluster, tier), member(tier, nestedTierIDs) ,  member(m, missionsInCluster(cluster))  }
-
-
 ClustereAndTieredFramework(topLevelSequencerIDs, tier0IDS) =
 (  
   SafeletTier(topLevelSequencerIDs)

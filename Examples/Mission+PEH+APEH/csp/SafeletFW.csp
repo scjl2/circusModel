@@ -1,4 +1,5 @@
 --SAFELET
+--Models javax.safetycritical.Safelet
 
 --SAFELET CHANNELS
 
@@ -6,23 +7,21 @@ channel done_safeletFW
 
 channel initializeApplicationCall 
 channel initializeApplicationRet 
-channel checkSchedulable : MissionID.Bool 
+
 channel getSequencerCall 
-channel getSequencerRet : SchedulableID
+channel getSequencerRet : TopLevelSequencerIDs
 channel end_safelet_app
 
 nametype SafeletFWChanSet = 
   {|initializeApplicationCall,initializeApplicationRet,
-    getSequencerCall,getSequencerRet,
-    start_toplevel_sequencer, end_safelet_app,done_safeletFW,
-    checkSchedulable, deregister|}
+    getSequencerCall,getSequencerRet, start_toplevel_sequencer, 
+    end_safelet_app,done_safeletFW |}
 
 
 SafeletFW =
   SafeletFWBehaviour 
 
 SafeletFWBehaviour=
-
   InitializeApplication ;
   Execute_S ;    
   SKIP
@@ -38,8 +37,8 @@ Execute_S =
   getSequencerRet?topLevelSequencer ->
   if topLevelSequencer != nullSequencerId then
   (
-      start_toplevel_sequencer.topLevelSequencer -> 
-      Methods_S({}, topLevelSequencer) ;
+      start_toplevel_sequencer.topLevelSequencer ->    
+	  done_toplevel_sequencer ->  
       end_safelet_app ->
       SKIP
   ) 
@@ -47,33 +46,9 @@ Execute_S =
     end_safelet_app ->
     done_safeletFW -> SKIP
   
-  Methods_S(globallyRegistered, sequencerID) = 
-  (
-    Register_S(globallyRegistered, sequencerID)
-    [] 
-    Deregister_S(globallyRegistered, sequencerID)
-    []
-    done_toplevel_sequencer -> SKIP 
-  )   
-  
-   
-  Register_S(globallyRegistered, sequencerID) = 
-  (
-      register?schedulable:diff(SchedulableID, globallyRegistered)?mission ->
-      checkSchedulable.mission!True -> 
-      Methods_S(union(globallyRegistered,{schedulable}), sequencerID) 
-  )
-  []
-  (
-    register?schedulable:globallyRegistered?mission ->  
-    checkSchedulable.mission!False -> 
-    Methods_S(globallyRegistered, sequencerID)
-  )
-    
-  Deregister_S(globallyRegistered, sequencerID) = 
-    deregister?schedulables -> 
-    Methods_S(diff(globallyRegistered,schedulables), sequencerID) 
 
--- assert SafeletFW; Loop :[ deadlock free [FD] ]
--- assert SafeletFW :[ divergence free ]
--- assert SafeletFW :[ deterministic  [FD] ]
+
+
+assert  SafeletFW ; Loop :[ deadlock free [FD] ]
+assert  SafeletFW  :[ divergence free ]
+assert  SafeletFW  :[ deterministic  [FD] ]

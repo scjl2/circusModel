@@ -23,7 +23,6 @@ channel initializeRet : MissionID
 channel register : SchedulableIDs.MissionID
 channel deregister : SchedulableID
 
-channel done : SchedulableID
 
 channel signalTerminationNotCall : SchedulableID
 

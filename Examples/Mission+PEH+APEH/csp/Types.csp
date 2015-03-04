@@ -4,6 +4,18 @@ transparent sbisim, diamond
 datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
                           | Tier0SequencerId  | Tier0PEHId | Tier0APEHId                 
 
+
+
+TopLevelSequencerIDs = {TopLevelSequencerId}
+MissionSequencerIDs = {TopLevelSequencerId,Tier0SequencerId  }
+MissionSequencerIDs_null = union(MissionSequencerIDs, {nullSequencerId})
+SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencerIDs))
+
+
+MissionIDs = diff(MissionID, {nullMissionId})
+
+
+
 datatype MissionID = nullMissionId
                     | Tier0MissionId                  
 

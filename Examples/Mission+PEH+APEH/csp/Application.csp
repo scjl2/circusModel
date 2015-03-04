@@ -98,36 +98,40 @@ Methods_tlms =
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
-nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
+nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet  
+							getSequencer, terminationPendingCall, terminationPendingRet |}
+
 
 MainMissionApp = 
 ( 
 	(
-		(Methods_tlm1 )
-		/\ 
+	--	(Methods_tlm1 )
+	--	/\ 
 		(end_mission_app.Tier0MissionId -> SKIP )
 	) 
 )
 
-InitializePhase_tlm1 = 
+APPInitializePhase(mission) =
+--InitializePhase_tlm1 = 
   initializeCall.Tier0MissionId   -> 
   register!Tier0PEHId!Tier0MissionId  -> 
   register!Tier0APEHId!Tier0MissionId  ->  
   initializeRet.Tier0MissionId  -> 
- SKIP
+ MissionPhase(mission, {Tier0PEHId, Tier0APEHId})
 
-CleanupPhase_tlm1 = 
+APPCleanupMission(mission) =
+--CleanupPhase_tlm1 = 
  cleanupMissionCall.Tier0MissionId  ->
  cleanupMissionRet.Tier0MissionId?false ->
  SKIP
 
-Methods_tlm1 = 
+{-Methods_tlm1 = 
 ( 
 	InitializePhase_tlm1 
 	[] 
 	CleanupPhase_tlm1
 ) ; Methods_tlm1
-  
+  -}
 
 
 -- Tier 0 PEH APP
@@ -192,7 +196,8 @@ Methods_t0apeh =
 
 handlerAsyncEvent_t0apeh =
 	handleAsyncEventCall.Tier0APEHId -> 
-	requestTermination.Tier0MissionId.Tier0APEHId ->
+	requestTerminationCall.Tier0MissionId.Tier0APEHId ->
+	requestTerminationRet.Tier0MissionId.Tier0APEHId?b ->
     handleAsyncEventRet.Tier0APEHId ->
     SKIP  
 
@@ -200,7 +205,7 @@ handlerAsyncEvent_t0apeh =
 
 
 
-nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
+--nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
@@ -220,13 +225,14 @@ Mission_PEH_APEH =
 
 
 nametype APEHSync = {| release.Tier0APEHId |}
-nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
+--nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
 Program(topLevelSequencerIDs, tier0) = 
 (  
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync, 
-		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  APEHSync, 
+		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, 
+		 	end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	Mission_PEH_APEH	
 )
 
@@ -237,6 +243,6 @@ TestProgram =
 				{ (Tier0MissionId , ({}, {(Tier0APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier0PEHId, 1,0,0,nullSchedulableId)}, {})  )   }	                 
             )
 
-assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(TestProgram)) :[ divergence free ]
-assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
+assert TestProgram ; Loop :[ deadlock free [FD] ]
+assert TestProgram :[ divergence free ]
+assert TestProgram :[ deterministic  [FD] ]
