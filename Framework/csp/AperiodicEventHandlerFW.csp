@@ -258,6 +258,20 @@ Release_APEH(schedulable, pending) =
   else 
     Ready_APEH(schedulable)   
 )
+[]
+(
+  end_releases.schedulable ->
+  handleAsyncEventRet.schedulable -> 
+  release_complete.schedulable -> 
+  if pending == True then
+  ( 
+    handleAsyncEventCall.schedulable -> 
+    Release_APEH(schedulable, False)
+  )
+  else 
+    Ready_APEH(schedulable)   
+)
+
 
 ReleaseLong(schedulable, data, pending ) =  
 ( 
@@ -284,26 +298,24 @@ Cleanup_APEH(schedulable) =
   SKIP 
 )
 
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ divergence free ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
+assert AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
+assert AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId) :[ divergence free ]
+assert AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
 
-assert AperiodicEventHandlerFW(schedulableA, aperiodicLong, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodicLong, 2, nullSchedulableId) :[ divergence free ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodicLong, 2, nullSchedulableId) :[ deterministic  [FD] ] 
+assert AperiodicEventHandlerFW(Tier0APEHId, aperiodicLong, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
+assert AperiodicEventHandlerFW(Tier0APEHId, aperiodicLong, 2, nullSchedulableId) :[ divergence free ]
+assert AperiodicEventHandlerFW(Tier0APEHId, aperiodicLong, 2, nullSchedulableId) :[ deterministic  [FD] ] 
 
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) ; Loop :[ deadlock free [FD] ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ divergence free ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ deterministic  [FD] ] 
+
 
 assert 
     (
-        (AperiodicEventHandlerFW(schedulableA, aperiodic, 2, nullSchedulableId))
+        (AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId))
         [|{| release, signalTerminationCall, signalTerminationRet |}|]
         (
-            signalTerminationCall.schedulableA ->
-            release.schedulableA ->
-            signalTerminationRet.schedulableA ->
+            signalTerminationCall.Tier0APEHId ->
+            release.Tier0APEHId ->
+            signalTerminationRet.Tier0APEHId ->
             SKIP
         )
 )
