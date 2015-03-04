@@ -232,6 +232,7 @@ get_missedReleases.schedulable?missedReleases ->
     )
     ;
     (
+    (
       (
         handleAsyncEventRet.schedulable ->
         release_complete_PEH.schedulable.index ->
@@ -260,6 +261,18 @@ get_missedReleases.schedulable?missedReleases ->
       )
     )
   )
+    /\
+    (
+        end_releases.schedulable -> 
+        handleAsyncEventRet.schedulable ->
+
+        release_complete_PEH.schedulable.index ->
+         signalTerminationRet.schedulable ->
+        SKIP
+    )
+
+
+)
 )
 
 FireCatcher(schedulable) = 
