@@ -99,7 +99,7 @@ Methods_tlms =
 --TOP LEVEL MISSION
 
 nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet  
-							getSequencer, terminationPendingCall, terminationPendingRet |}
+							getSequencer, terminationPendingCall, terminationPendingRet, setCeilingPriority |}
 
 
 
@@ -211,6 +211,32 @@ Program(topLevelSequencerIDs, tier0) =
 	Mission_MT_OSEH	
 )
 
+Program2 =
+(	
+
+( 
+ (
+ 	sbdia(SafeletFW [| SafeltAppSync |] MyApp)
+  	[|SafeletTierSync|]
+   sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
+ )
+    [|TierSync|]
+  (
+   sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
+     [|MissionSync|]
+   -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
+  (
+    sbdia(OneShotEventHandlerFW(Tier0OSEHId, 1, 0, nullSchedulableId) [| OSEHSync |] Tier0OSEHApp )
+      [|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+   sbdia( ManagedThreadFW(Tier0ManagedThreadId) [| MTAppSync |] Tier0ManagedThreadApp )
+  )
+  )
+)
+    [| GSRSync |]
+GlobalSchedulableRegulator
+)
+
+
 TestProgram = 
 	Program(
 				{TopLevelSequencerId},
@@ -219,6 +245,7 @@ TestProgram =
             )
 
 assert TestProgram ; Loop :[ deadlock free [F] ]
-assert TestProgram  :[ deadlock free [F] ]
 assert TestProgram :[ divergence free ]
 assert TestProgram :[ deterministic  [FD] ]
+
+assert Program2 ; Loop :[ deadlock free [F] ]
