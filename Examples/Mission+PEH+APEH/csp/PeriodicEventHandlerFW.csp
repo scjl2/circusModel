@@ -146,7 +146,7 @@ circwait_startTime.startTime ->
   )
   [|  {|end_releases|} |] 
   GetRequestedStartTime(schedulable, startTime)
-)--\{|end_releases|}
+)\{|end_releases|}
   
 
 Running(schedulable, period)  =
@@ -177,7 +177,7 @@ RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler)
       SKIP
     )
   )
-) --\ {|release_complete_PEH|}
+) \ {|release_complete_PEH|}
 
 PeriodicClock(schedulable, period) =
 (
@@ -272,31 +272,33 @@ get_missedReleases.schedulable?missedReleases ->
 )-}
 
 Release_PEH(schedulable, index, 0) =
-(  release.schedulable ->
 (  
-  handleAsyncEventCall.schedulable ->
-  (
-    (handleAsyncEventRet.schedulable ->
-      --This is just to help FDR by limiting the amount of times this will recurse.
-        if index + 1 > maxNum then
-            get_missedReleases.schedulable?missed ->
-            Release_PEH(schedulable,index+1, missed)
-        else
-          end_releases.schedulable ->
-          done_schedulable.schedulable ->
-          SKIP
-    )
-    []
+  release.schedulable ->
+  (  
+    handleAsyncEventCall.schedulable ->
     (
-      end_releases.schedulable ->
-      handleAsyncEventRet.schedulable ->
-      done_schedulable.schedulable ->
-      SKIP
+      (handleAsyncEventRet.schedulable ->
+        --This is just to help FDR by limiting the amount of times this will recurse.
+          if index + 1 > maxNum then
+              get_missedReleases.schedulable?missed ->
+              Release_PEH(schedulable,index+1, missed)
+          else
+            end_releases.schedulable ->
+            done_schedulable.schedulable ->
+            SKIP
+      )
+      []
+      (
+        end_releases.schedulable ->
+        handleAsyncEventRet.schedulable ->
+        done_schedulable.schedulable ->
+        SKIP
+      )
     )
+    [| {|handleAsyncEventRet|}  |]
+  FireCatcher(schedulable)
   )
-)
-[| {|handleAsyncEventRet|}  |]
-FireCatcher(schedulable)
+    
 )
 []
 (
