@@ -299,26 +299,3 @@ Cleanup_APEH(schedulable) =
   SKIP 
 )
 
-assert AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
-assert AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId) :[ divergence free ]
-assert AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId) :[ deterministic  [FD] ] 
-
-assert AperiodicEventHandlerFW(Tier0APEHId, aperiodicLong, 2, nullSchedulableId) ; Loop :[ deadlock free [FD] ]
-assert AperiodicEventHandlerFW(Tier0APEHId, aperiodicLong, 2, nullSchedulableId) :[ divergence free ]
-assert AperiodicEventHandlerFW(Tier0APEHId, aperiodicLong, 2, nullSchedulableId) :[ deterministic  [FD] ] 
-
-
-
-assert 
-    (
-        (AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId))
-        [|{| handleAsyncEventCall, signalTerminationCall, signalTerminationRet, handleAsyncEventRet |}|]
-        (
-            handleAsyncEventCall.Tier0APEHId ->
-            signalTerminationCall.Tier0APEHId ->            
-            signalTerminationRet.Tier0APEHId ->
-            handleAsyncEventRet.Tier0APEHId ->
-            SKIP
-        )
-)
-; Loop :[ deadlock free [FD] ]
