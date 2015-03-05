@@ -263,13 +263,14 @@ Release_APEH(schedulable, pending) =
   end_releases.schedulable ->
   handleAsyncEventRet.schedulable -> 
   release_complete.schedulable -> 
-  if pending == True then
-  ( 
-    handleAsyncEventCall.schedulable -> 
-    Release_APEH(schedulable, False)
-  )
-  else 
-    Ready_APEH(schedulable)   
+ -- if pending == True then
+ -- ( 
+ --   handleAsyncEventCall.schedulable -> 
+ --   handleAsyncEventRet.schedulable ->
+ --   SKIP
+ -- )
+ -- else 
+    SKIP
 )
 
 
@@ -311,11 +312,12 @@ assert AperiodicEventHandlerFW(Tier0APEHId, aperiodicLong, 2, nullSchedulableId)
 assert 
     (
         (AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 2, nullSchedulableId))
-        [|{| release, signalTerminationCall, signalTerminationRet |}|]
+        [|{| handleAsyncEventCall, signalTerminationCall, signalTerminationRet, handleAsyncEventRet |}|]
         (
-            signalTerminationCall.Tier0APEHId ->
-            release.Tier0APEHId ->
+            handleAsyncEventCall.Tier0APEHId ->
+            signalTerminationCall.Tier0APEHId ->            
             signalTerminationRet.Tier0APEHId ->
+            handleAsyncEventRet.Tier0APEHId ->
             SKIP
         )
 )
