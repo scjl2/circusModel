@@ -305,7 +305,7 @@ Release_PEH(schedulable, index, 0) =
   end_releases.schedulable ->
   done_schedulable.schedulable ->
   SKIP
-  )
+)
 
 
 Release_PEH(schedulable, index, missed) =

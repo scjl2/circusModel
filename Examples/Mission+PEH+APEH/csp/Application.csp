@@ -242,19 +242,19 @@ Program2 =
 
 ( 
  (
- 	sbdia(SafeletFW [| SafeltAppSync |] MyApp)
+ 	(SafeletFW [| SafeltAppSync |] MyApp)
   	[|SafeletTierSync|]
-   sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
+   (TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
  )
     [|TierSync|]
   (
-   sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
+   ( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
      [|MissionSync|]
    -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
   (
-    sbdia(AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHSync |] Tier0APEHApp)
+    (AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHSync |] Tier0APEHApp)
       [|{| release.Tier0APEHId , activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
-   sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |} |] Tier0OPEHApp)
+   (PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |} |] Tier0OPEHApp)
   )
   )
 )
