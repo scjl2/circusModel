@@ -13,16 +13,13 @@ public class Writer extends ManagedThread
 	public Writer(PriorityParameters priority, StorageParameters storage,
 			FlatBufferMission fbMission, Reader reader)
 	{
-		super(priority, storage, "Writer");
+		super(priority, storage);
 
 		this.fbMission = fbMission;
 		this.reader = reader;
 	}
 
-	public synchronized void notifyWriter()
-	{
-		notify();
-	}
+
 
 	public synchronized void run()
 	{
@@ -34,13 +31,13 @@ public class Writer extends ManagedThread
 			{
 				while (!fbMission.bufferEmpty())
 				{
-					wait();
+					fbMission.waitOnMission();
 				}
 
 				fbMission.write(i);
 				i++;
 
-				reader.notifyReader();
+				fbMission.notifyOnMission();
 			}
 			catch (InterruptedException ie)
 			{

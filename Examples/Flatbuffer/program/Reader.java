@@ -12,7 +12,7 @@ public class Reader extends ManagedThread
 	public Reader(PriorityParameters priority, StorageParameters storage,
 			FlatBufferMission fbMission, Writer writer)
 	{
-		super(priority, storage, "Reader");
+		super(priority, storage);
 
 		this.fbMission = fbMission;
 		this.writer = writer;
@@ -33,12 +33,12 @@ public class Reader extends ManagedThread
 			{
 				while (fbMission.bufferEmpty())
 				{
-					wait();
+					fbMission.waitOnMission();
 				}
 
 				System.out.println("I Read: " + fbMission.read());
 
-				writer.notify();
+				fbMission.notifyOnMission();
 			}
 			catch (InterruptedException ie)
 			{

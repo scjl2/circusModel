@@ -18,7 +18,7 @@ public class FlatBuffer implements Safelet<Mission>
 		System.out.println("FlatBuffer");
 		//Create and return the main mission sequencer
 		StorageParameters storageParameters = new StorageParameters(150 * 1000, new long[] { Const.HANDLER_STACK_SIZE },
-				 Const.PRIVATE_MEM_SIZE-25*1000, Const.IMMORTAL_MEM_SIZE-50*1000, Const.MISSION_MEM_SIZE-100*1000);
+				 Const.PRIVATE_MEM_DEFAULT-25*1000, Const.IMMORTAL_MEM_DEFAULT-50*1000, Const.MISSION_MEM_DEFAULT-100*1000);
 		
 		return new FlatBufferMissionSequencer(new PriorityParameters(5), storageParameters);
 	}
@@ -27,7 +27,7 @@ public class FlatBuffer implements Safelet<Mission>
 	@Override
 	public long immortalMemorySize()
 	{		
-		return Const.IMMORTAL_MEM_SIZE;
+		return Const.IMMORTAL_MEM_DEFAULT;
 	}
 
 	@Override

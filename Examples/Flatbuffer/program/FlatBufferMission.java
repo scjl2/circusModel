@@ -23,17 +23,15 @@ public class FlatBufferMission extends Mission
 	{
 		StorageParameters storageParameters = new StorageParameters(1048576,
 				new long[] { Const.HANDLER_STACK_SIZE }, 1048576, 1048576,
-				Const.MISSION_MEM_SIZE - 100 * 1000);
+				Const.MISSION_MEM_DEFAULT - 100 * 1000);
 
 		reader = new Reader(new PriorityParameters(5), storageParameters, this,
 				writer);
-		reader.register();
 
 		writer = new Writer(new PriorityParameters(5), storageParameters, this,
 				reader);
-		writer.register();
-		
-		Console.println("FlatBufferMission init");
+
+		System.out.println("FlatBufferMission init");
 	}
 
 	public boolean bufferEmpty()
@@ -52,6 +50,16 @@ public class FlatBufferMission extends Mission
 		this.buffer[0] = 0;
 
 		return out;
+	}
+	
+	public synchronized void waitOnMission() throws InterruptedException
+	{
+		this.wait();
+	}
+	
+	public synchronized void notifyOnMission() throws InterruptedException
+	{
+		this.notify();
 	}
 
 	public long missionMemorySize()
