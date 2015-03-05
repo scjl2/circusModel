@@ -137,16 +137,16 @@ circwait_startTime.startTime ->
       []
       (
         end_releases.schedulable ->
-        signalTerminationRet.schedulable ->
+        done_schedulable.schedulable ->
         SKIP
       )
     )  
-      [|  {|end_releases, signalTerminationRet |} |] 
+      [|  {|end_releases, done_schedulable |} |] 
     SignalTermination_PEH(schedulable)
   )
   [|  {|end_releases|} |] 
   GetRequestedStartTime(schedulable, startTime)
-)\{|end_releases|}
+)--\{|end_releases|}
   
 
 Running(schedulable, period)  =
@@ -163,7 +163,7 @@ Running(schedulable, period)  =
     )  
   )
     [| ReleaseSync_PEH |] 
-  Release_PEH(schedulable,0)
+  Release_PEH(schedulable,0, 0)
 )
 
 RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler) =
@@ -177,7 +177,7 @@ RunningWithDeadlineDetection(schedulable, period, deadline, deadlineMissHandler)
       SKIP
     )
   )
-) \ {|release_complete_PEH|}
+) --\ {|release_complete_PEH|}
 
 PeriodicClock(schedulable, period) =
 (
@@ -203,12 +203,12 @@ PeriodicClock(schedulable, period) =
 )
  
 
-Release_PEH(schedulable, index) =
+{-Release_PEH(schedulable, index) =
 get_missedReleases.schedulable?missedReleases ->
 (
   (   
       end_releases.schedulable ->
-      signalTerminationRet.schedulable ->
+      --signalTerminationRet.schedulable ->
       SKIP 
   ) 
   []
@@ -233,6 +233,7 @@ get_missedReleases.schedulable?missedReleases ->
     ;
     (
     (
+    (
       (
         handleAsyncEventRet.schedulable ->
         release_complete_PEH.schedulable.index ->
@@ -247,7 +248,7 @@ get_missedReleases.schedulable?missedReleases ->
         get_periodicTerminating.schedulable?periodicTerminating:({False}) ->
         --This is just to help FDR by limiting the amount of times this will recurse.
         if index + 1 > maxNum then
-          signalTerminationRet.schedulable ->
+          end_releases.schedulable ->
           SKIP 
         else
           Release_PEH(schedulable, index + 1)
@@ -256,24 +257,66 @@ get_missedReleases.schedulable?missedReleases ->
       (
         get_periodicTerminating.schedulable?periodicTerminating:({True}) ->
         end_releases.schedulable ->
-        signalTerminationRet.schedulable ->
+        --signalTerminationRet.schedulable ->
         SKIP
       )
     )
   )
-    /\
-    (
-        end_releases.schedulable -> 
-        handleAsyncEventRet.schedulable ->
+    []
+  (
+    end_releases.schedulable -> handleAsyncEventRet.schedulable -> release_complete_PEH.schedulable.index -> SKIP
 
-        release_complete_PEH.schedulable.index ->
-         signalTerminationRet.schedulable ->
-        SKIP
+  )  
+  ) 
+
+)-}
+
+Release_PEH(schedulable, index, 0) =
+(  release.schedulable ->
+(  
+  handleAsyncEventCall.schedulable ->
+  (
+    (handleAsyncEventRet.schedulable ->
+      --This is just to help FDR by limiting the amount of times this will recurse.
+        if index + 1 > maxNum then
+            get_missedReleases.schedulable?missed ->
+            Release_PEH(schedulable,index+1, missed)
+        else
+          end_releases.schedulable ->
+          done_schedulable.schedulable ->
+          SKIP
     )
+    []
+    (
+      end_releases.schedulable ->
+      handleAsyncEventRet.schedulable ->
+      done_schedulable.schedulable ->
+      SKIP
+    )
+  )
+)
+[| {|handleAsyncEventRet|}  |]
+FireCatcher(schedulable)
+)
+[]
+(
+  end_releases.schedulable ->
+  done_schedulable.schedulable ->
+  SKIP
+  )
 
 
-)
-)
+Release_PEH(schedulable, index, missed) =
+  handleAsyncEventCall.schedulable ->
+  handleAsyncEventRet.schedulable ->
+  if index + 1 > maxNum then
+            Release_PEH(schedulable, index+1, missed -1)
+  else
+    end_releases.schedulable ->
+    done_schedulable.schedulable ->
+    SKIP
+  
+
 
 FireCatcher(schedulable) = 
 (
@@ -281,6 +324,7 @@ FireCatcher(schedulable) =
     release.schedulable ->
     get_missedReleases.schedulable?missedReleases ->
     if missedReleases +1 > maxNum then
+       handleAsyncEventRet.schedulable -> 
      SKIP
     else
       set_missedReleases.schedulable!(missedReleases +1) ->
@@ -358,3 +402,6 @@ assert  PeriodicEventHandlerFW(Tier0PEHId, 1, 0, 2, nullSchedulableId) ; Loop :[
 assert  PeriodicEventHandlerFW(Tier0PEHId, 1, 0, 2, nullSchedulableId)  :[ divergence free ]
 assert  PeriodicEventHandlerFW(Tier0PEHId, 1, 0, 2, nullSchedulableId)  :[ deterministic  [FD] ]
 
+assert  PeriodicEventHandlerFW(Tier0PEHId, 1, 1, 2, Tier0APEHId) ; Loop :[ deadlock free [FD] ]
+assert  PeriodicEventHandlerFW(Tier0PEHId, 1, 1, 2, Tier0APEHId)  :[ divergence free ]
+assert  PeriodicEventHandlerFW(Tier0PEHId, 1, 1, 2, Tier0APEHId)  :[ deterministic  [FD] ]
