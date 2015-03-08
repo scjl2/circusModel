@@ -49,6 +49,3 @@ Execute_S =
 
 
 
-assert  SafeletFW ; Loop :[ deadlock free [FD] ]
-assert  SafeletFW  :[ divergence free ]
-assert  SafeletFW  :[ deterministic  [FD] ]

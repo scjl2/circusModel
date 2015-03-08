@@ -29,8 +29,8 @@ datatype ExceptionType = interruptedException |
 nametype Bit = {0,1}
 
 
-datatype ObjectID = WriterObjectId | ReaderObjectId
-datatype ThreadID = nullThreadId | WriterThreadID | ReaderThreadID
+datatype ObjectID = WriterObjectId | ReaderObjectId | MissionObjectId
+datatype ThreadID = nullThreadId | WriterThreadId | ReaderThreadId
 
 Threads = diff(ThreadID, {nullThreadId})
 

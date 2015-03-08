@@ -21,7 +21,7 @@ public class Writer extends ManagedThread
 
 
 
-	public synchronized void run()
+	public void run()
 	{
 		System.out.println("Writer!");
 

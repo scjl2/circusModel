@@ -188,6 +188,10 @@ Methods_fbm =
 	Write_fbm
 	[]
 	Read_fbm
+	[]
+	waitOnMission
+	[]
+	notifyOnMission
 ) ; Methods_fbm
 
 BufferEmpty_fbm =
@@ -197,15 +201,33 @@ BufferEmpty_fbm =
 	SKIP
 
 Write_fbm =
-	 write.FlatBufferMissionId?value ->
-	 set_bufferContents.FlatBufferMissionId!value ->
-	 SKIP
+	startSyncMeth.MissionObjectId?thread -> 
+	write.FlatBufferMissionId?value ->
+	set_bufferContents.FlatBufferMissionId!value ->
+	endSyncMeth.MissionObjectId.thread -> 
+	SKIP
 
 Read_fbm =
+	startSyncMeth.MissionObjectId?thread -> 
 	readCall.FlatBufferMissionId -> 
 	get_bufferConetents.FlatBufferMissionId?bufferConetents ->
     readRet.FlatBufferMissionId!bufferConetents ->
+    endSyncMeth.MissionObjectId.thread -> 
     SKIP
+
+waitOnMission=
+	startSyncMeth.MissionObjectId?thread -> 
+	waitCall.MissionObjectId.thread -> 
+	waitRet.MissionObjectId.thread -> 
+	endSyncMeth.MissionObjectId.thread -> 
+	SKIP
+	
+notifyOnMission =
+	startSyncMeth.MissionObjectId?thread -> 
+	notify.MissionObjectId.thread ->
+	endSyncMeth.MissionObjectId.thread -> 
+	SKIP
+
 
 
 
@@ -222,29 +244,47 @@ Methods_w =
 
 Run_w =
 	
-	runCall.WriterId -> --startSyncMeth.WriterObjectId.WriterThreadID ->
-		Write ;
-	endSyncMeth.WriterObjectId.WriterThreadID -> runRet.WriterId ->
-	
+	runCall.WriterId -> 
+	RunOuter_w ;
+	runRet.WriterId ->	
 	SKIP
 
-Write = 
+RunOuter_w =
 	terminationPendingCall.FlatBufferMissionId ->
 	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+	WhileOuter_w(missionIsTerminating)
+
+
+WhileOuter_w(missionIsTerminating) =
 	if missionIsTerminating == false then
 		bufferEmptyCall.FlatBufferMissionId ->
 		bufferEmptyRet.FlatBufferMissionId?empty ->
-		if empty == true then
-	    	write.FlatBufferMissionId!1 ->
-			notify.ReaderObjectId.WriterThreadID ->
-    		Write
-		else
-			waitCall.WriterObjectId.WriterThreadID -> 
-			waitRet.WriterObjectId.WriterThreadID -> 
-			notify.WriterObjectId.WriterThreadID ->
-			Write 
+		WhileInner_w(empty)
 	else 
- 		SKIP
+ 		RunOuter_w
+
+WhileInner_w(empty) =
+	if empty == false then
+		(
+			startSyncMeth.MissionObjectId.WriterThreadId -> 
+			waitCall.MissionObjectId.WriterThreadId -> 
+			waitRet.MissionObjectId.WriterThreadId -> 
+			endSyncMeth.MissionObjectId.WriterThreadId -> 
+			WhileOuter_w(false)
+		)
+		
+	else
+		startSyncMeth.MissionObjectId.WriterThreadId -> 
+		write.FlatBufferMissionId!1 ->	
+		endSyncMeth.MissionObjectId.WriterThreadId -> 
+	
+		startSyncMeth.MissionObjectId.WriterThreadId -> 
+		notify.MissionObjectId.WriterThreadId ->
+		endSyncMeth.MissionObjectId.WriterThreadId -> 
+	
+    	RunOuter_w
+
+
 
 
 
@@ -262,32 +302,48 @@ Methods_r =
 
 Run_r =
 	
-	runCall.ReaderId -> startSyncMeth.ReaderObjectId.ReaderThreadID ->
-
-	Read ;
-
-	endSyncMeth.ReaderObjectId.ReaderThreadID -> runRet.ReaderId ->
+	runCall.ReaderId -> 
+	RunOuter_r ;
+	runRet.ReaderId ->
 	
 	SKIP
 
-Read =
+RunOuter_r =
 	terminationPendingCall.FlatBufferMissionId ->
-  	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+	WhileOuter_w(missionIsTerminating)
+
+
+WhileOuter_r(missionIsTerminating) =
 	if missionIsTerminating == false then
 		bufferEmptyCall.FlatBufferMissionId ->
 		bufferEmptyRet.FlatBufferMissionId?empty ->
-		if empty == false then
-	    	readCall.FlatBufferMissionId -> 
-    		readRet.FlatBufferMissionId?value ->
-			notify.WriterObjectId.ReaderThreadID ->
-    		Read
-		else
-			waitCall.ReaderObjectId.ReaderThreadID ->
-			waitRet.ReaderObjectId.ReaderThreadID ->
-			 notify.ReaderObjectId.ReaderThreadID ->
-			Read
-   	else 
-		SKIP 	
+		WhileInner_w(empty)
+	else 
+ 		RunOuter_w
+
+
+WhileInner_r(empty) =
+	if empty == true then
+		(
+			startSyncMeth.MissionObjectId.ReaderThreadId -> 
+			waitCall.MissionObjectId.ReaderThreadId -> 
+			waitRet.MissionObjectId.ReaderThreadId -> 
+			endSyncMeth.MissionObjectId.ReaderThreadId -> 
+			WhileOuter_w(false)
+		)
+		
+	else
+		startSyncMeth.MissionObjectId.ReaderThreadId -> 
+		readCall.FlatBufferMissionId -> 
+    	readRet.FlatBufferMissionId?value ->
+		endSyncMeth.MissionObjectId.ReaderThreadId -> 
+	
+		startSyncMeth.MissionObjectId.ReaderThreadId -> 
+		notify.MissionObjectId.ReaderThreadId ->
+		endSyncMeth.MissionObjectId.ReaderThreadId -> 
+	
+    	RunOuter_w
 
 
 
@@ -302,8 +358,8 @@ FlatBuffer =
 	|||
 	FlatBufferSequencerApp
 	|||
-	FlatBufferMissionApp
-	[|{| bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
+	sbdia(FlatBufferMissionApp [| AlphaThreadObjectSystem(MissionObjectId) |] ThreadObjectSystem(MissionObjectId))
+	[|{| startSyncMeth, endSyncMeth, waitCall, waitRet, notify, bufferEmptyCall, bufferEmptyRet, readCall, readRet, write |}|]
 
 --	(
 --		sbdia(ReaderApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(ReaderObjectId)   )
@@ -312,16 +368,13 @@ FlatBuffer =
 --	)	
 --)
 
-
-
  	(	
 		(
 			(ReaderApp    )
 				|||
 			(WriterApp  )
 		)
-		[| union(AlphaThreadObjectSystem(ReaderObjectId), AlphaThreadObjectSystem(WriterObjectId) ) |]	
-		(ThreadObjectSystem(ReaderObjectId) |||  ThreadObjectSystem(WriterObjectId) ) 
+		
 	)
 )
 

@@ -18,12 +18,8 @@ public class Reader extends ManagedThread
 		this.writer = writer;
 	}
 
-	public synchronized void notifyReader()
-	{
-		notify();
-	}
-
-	public synchronized void run()
+	
+	public void run()
 	{
 		System.out.println("Reader!");
 

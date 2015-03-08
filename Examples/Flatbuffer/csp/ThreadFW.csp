@@ -117,10 +117,6 @@ GetPriorityLevel(thread, basePriority) =
 	Priority(thread, basePriority)
 
 
-assert Priority(WriterThreadID, 0); Loop :[ deadlock free [FD] ]
-assert Priority(WriterThreadID, 0):[ divergence free ]
-assert Priority(WriterThreadID, 0) :[ deterministic  [FD] ]  
-
 
 
 Interrupts(thread, interruptedV) = 
@@ -146,14 +142,3 @@ IsInterrupted(thread, interruptedV) =
 Interrupted(thread, interruptedV) = 
 	interrupted.thread!interruptedV ->
 	Interrupts(thread, False)
-
-
-assert Interrupts(WriterThreadID, False); Loop :[ deadlock free [FD] ]
-assert Interrupts(WriterThreadID, False) :[ divergence free ]
-assert Interrupts(WriterThreadID, False) :[ deterministic  [FD] ]  
-
-
-
-assert ThreadFW(WriterThreadID, 0); Loop :[ deadlock free [FD] ]
-assert ThreadFW(WriterThreadID, 0) :[ divergence free ]
-assert ThreadFW(WriterThreadID, 0) :[ deterministic  [FD] ]  

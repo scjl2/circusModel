@@ -113,6 +113,3 @@ Finish_TLS(sequencer)   =
   done_toplevel_sequencer ->  
   SKIP   
    
-assert TopLevelMissionSequencerFW(TopLevelSequencerId); Loop :[ deadlock free [FD] ]
-assert TopLevelMissionSequencerFW(TopLevelSequencerId) :[ divergence free ]
-assert TopLevelMissionSequencerFW(TopLevelSequencerId) :[ deterministic  [FD] ]
