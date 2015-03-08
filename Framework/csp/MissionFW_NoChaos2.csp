@@ -186,7 +186,7 @@ DoneSchedulables(mission, registeredSchedulables) =
             requestTerminationCall.mission, 
             requestTerminationRet.mission |}|] s : registeredSchedulables @ Pending(mission, s)
    )
-     [| {|signalTerminationCall,  signalTerminationNotCall, done_schedulables |}  |]
+     [| {|signalTerminationCall,  signalTerminationNotCall, done_schedulables, deregister |}  |]
    Regulator(mission, seq(registeredSchedulables))
 ) \ {|signalTerminationNotCall |}
 
@@ -202,6 +202,7 @@ Pending(mission, s) =
     requestTerminationCall.mission?_ -> 
     signalTerminationCall.s -> 
     signalTerminationRet.s -> 
+    done_schedulable.s->
     deregister.s ->
     requestTerminationRet.mission?_!False -> 
     done_schedulables.mission -> 

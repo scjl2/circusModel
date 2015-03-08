@@ -219,7 +219,7 @@ GlobalSchedulableRegulator
 
 
 NewSchedulablesTest =
-  ClustereAndTieredFramework({TopLevelSequencerId}, { (TopMission1ID , ({}, {}, {},  {}, {schedulableA})  )   }    )
+  ClustereAndTieredFramework({TopLevelSequencerId}, { (TopMission1ID , ({}, {}, {},  {}, {schedulableB})  )   }    )
 
 
 assert  NewSchedulablesTest ; Loop :[ deadlock free [FD] ]
