@@ -3,6 +3,8 @@
 
 include "FrameworkProcess.csp"
 
+
+
 --****************************************************************************************************************************************************************************************************
 --*******************************************************************************************APLICATION***********************************************************************************************
 --****************************************************************************************************************************************************************************************************
@@ -222,8 +224,8 @@ MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpe
 	)
 )
 
-
-InitializePhase_mm = 
+APPInitializePhase(MainMissionId) =
+--InitializePhase_mm = 
   initializeCall.MainMissionId   -> 
   register!ACModeChangerId!MainMissionId  -> 
   register!EnvironmentMonitorId!MainMissionId  -> 
@@ -231,9 +233,12 @@ InitializePhase_mm =
   register!CommunicationsHandlerId!MainMissionId ->
   register!ControlHandlerId!MainMissionId  ->  
   initializeRet.MainMissionId  -> 
- SKIP
+ --SKIP
+ MissionPhase(MainMissionId, {ACModeChangerId, EnvironmentMonitorId, FlightSensorsMonitorId, CommunicationsHandlerId, ControlHandlerId})
 
-CleanupPhase_mm = 
+
+APPCleanupMission(MainMissionId) =
+--CleanupPhase_mm = 
  cleanupMissionCall.MainMissionId  ->
  cleanupMissionRet.MainMissionId?false ->
  SKIP
@@ -308,10 +313,10 @@ SetHeading_mm =
 
 Methods_mm = 
 ( 
-	InitializePhase_mm 
-	[] 
-	CleanupPhase_mm
-	[]
+--	InitializePhase_mm 
+	--[] 
+--	CleanupPhase_mm
+--	[]
 	GetCabinPressure_mm 
 	[] 
 	SetCabinPressure_mm 
@@ -564,7 +569,8 @@ TakeOffMissionState(abortVar, landingGearDeployed) =
 	TakeOffMissionState(abortVar, newLandingGearDeployed)	
 ))
 
-InitializePhase_tom = 
+APPInitializePhase(TakeOffModeId) =
+--InitializePhase_tom = 
   initializeCall.TakeOffModeId  -> 
 
   register!TakeOffMonitorId!TakeOffModeId -> 
@@ -572,9 +578,11 @@ InitializePhase_tom =
   register!LandingGearHandler1Id!TakeOffModeId ->  
    
   initializeRet.TakeOffModeId -> 
-  SKIP
+  --SKIP
+    MissionPhase(TakeOffModeId, {TakeOffMonitorId, TakeOffFailureHandlerId, LandingGearHandler1Id})
 
-CleanupPhase_tom = 
+APPCleanupMission(TakeOffModeId) =
+--CleanupPhase_tom = 
  cleanupMissionCall.TakeOffModeId ->
  get_abort.TakeOffModeId?abortVar ->
  cleanupMissionRet.TakeOffModeId!abortVar ->
@@ -604,10 +612,10 @@ DeployLandingGear_tom =
 
 Methods_tom = 
 ( 
-	InitializePhase_tom 
-	[] 
-	CleanupPhase_tom
-	[]
+	--InitializePhase_tom 
+	--[] 
+	--CleanupPhase_tom
+	--[]
 	Abort_tom
 	[]
 	StowLandingGear_tom
@@ -725,13 +733,14 @@ handlerAsyncEvent_lgh1 =
 
 
 CruiseMissionApp = 
-( 
-	Methods_cm	
-) 
-/\ (end_mission_app.CruiseModeId -> SKIP )
+--( 
+	--Methods_cm	
+--) 
+--/\
+ (end_mission_app.CruiseModeId -> SKIP )
 
-
-InitializePhase_cm = 
+APPInitializePhase(CruiseModeId) =
+--InitializePhase_cm = 
   initializeCall.CruiseModeId  -> 
 
   register!NavigationMonitorId!CruiseModeId ->   
@@ -739,20 +748,22 @@ InitializePhase_cm =
   register!BeginLandingHandlerId!CruiseModeId ->   
 
   initializeRet.CruiseModeId -> 
-  SKIP
+--  SKIP
+MissionPhase(CruiseModeId, {NavigationMonitorId, BeginLandingHandlerId})
 
-CleanupPhase_cm = 
+APPCleanupMission(CruiseModeId) =
+--CleanupPhase_cm = 
  cleanupMissionCall.CruiseModeId ->
  cleanupMissionRet.CruiseModeId!True ->
  SKIP
 
-Methods_cm = 
+{-Methods_cm = 
 ( 
 	InitializePhase_cm
 	[] 
 	CleanupPhase_cm	
 ) ; Methods_cm
-
+-}
 
 -- NavigationMonitor
 NavigationMonitorApp =
@@ -814,7 +825,8 @@ LandMissionApp =
 )
 /\ (end_mission_app.LandModeId -> SKIP )
 
-InitializePhase_lam = 
+APPInitializePhase(LandModeId) =
+--InitializePhase_lam = 
   initializeCall.LandModeId  -> 
 
   register!GroundDistanceMonitorId!LandModeId ->   
@@ -823,9 +835,11 @@ InitializePhase_lam =
   register!InstrumentLandingSystemMonitorId!LandModeId -> 
 
   initializeRet.LandModeId -> 
-  SKIP
+--  SKIP
+  MissionPhase(LandModeId, {GroundDistanceMonitorId, LandingGearHandler2Id, SafeLandingHandlerId, InstrumentLandingSystemMonitorId})
 
-CleanupPhase_lam = 
+APPCleanupMission(LandModeId) =
+--CleanupPhase_lam = 
  cleanupMissionCall.LandModeId ->
  cleanupMissionRet.LandModeId!True ->
  SKIP
@@ -850,10 +864,10 @@ DeployLandingGear_lam =
 
 Methods_lam = 
 ( 
-	InitializePhase_lam
-	[] 
-	CleanupPhase_lam
-	[]
+	--InitializePhase_lam
+	--[] 
+	--CleanupPhase_lam
+	--[]
 	StowLandingGear_lam
 	[]
 	IsLandingGearDeployed_lam

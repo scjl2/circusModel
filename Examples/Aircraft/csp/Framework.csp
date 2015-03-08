@@ -23,7 +23,7 @@ include "MissionSequencerSharedChan.csp"
 
 include "TopLevelMissionSequencerFW.csp"
 
-include "MissionFW.csp"
+include "MissionFW_NoChaos2.csp"
 
 include "ManagedSchedulableSharedChan.csp"
 

@@ -8,16 +8,17 @@ datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId
                           | ThirdMissionSequencerID | SecondMissionSequencerID | MyPEH1Id | MyPEH2Id | MyPEH3Id
                           | WriterId | ReaderId
 
+datatype MissionID = nullMissionId|
+                    missionA|missionB 
+                    | TopMission1ID 
+                    | FlatBufferMissionId    
+
+
 TopLevelSequencerIDs = {TopLevelSequencerId}
 MissionSequencerIDs = {TopLevelSequencerId,FirstMissionSequencerID,SecondMissionSequencerID ,ThirdMissionSequencerID  }
 MissionSequencerIDs_null = union(MissionSequencerIDs, {nullSequencerId})
 SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencerIDs))
 
-
-datatype MissionID = nullMissionId|
-                    missionA|missionB 
-                    | TopMission1ID 
-                    | FlatBufferMissionId    
 
 MissionIDs = diff(MissionID, {nullMissionId})
 
