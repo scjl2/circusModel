@@ -1,0 +1,25 @@
+datatype MissionID = nullMissionId|
+                    missionA|missionB 
+                    | TopMission1ID 
+                    | FlatBufferMissionId   
+
+
+channel a : MissionID
+channel b
+
+f(missionA)   =      
+	a.missionA -> SKIP
+
+f(missionB) = 
+	a.missionB -> SKIP      
+
+
+f(_) = b -> SKIP
+
+
+P(mission)
+= f(mission)
+
+
+P' =
+	||| x : MissionID @ f(x)
