@@ -169,10 +169,8 @@ Cleanup_SMS(sequencer)  =
   cleanupSchedulableRet.sequencer -> 
   SKIP
 
-
-{-
+  
 assert SchedulableMissionSequencerFW(FirstMissionSequencerID); Loop :[ deadlock free [FD] ]
 assert SchedulableMissionSequencerFW(FirstMissionSequencerID) :[ divergence free ]
 assert SchedulableMissionSequencerFW(FirstMissionSequencerID) :[ deterministic  [FD] ]  
 
--}

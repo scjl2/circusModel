@@ -37,8 +37,8 @@ Execute_S =
   getSequencerRet?topLevelSequencer ->
   if topLevelSequencer != nullSequencerId then
   (
-      start_toplevel_sequencer.topLevelSequencer ->  
-      done_toplevel_sequencer ->    
+      start_toplevel_sequencer.topLevelSequencer ->    
+	    done_toplevel_sequencer ->  
       end_safelet_app ->
       SKIP
   ) 
@@ -48,8 +48,7 @@ Execute_S =
   
 
 
-{-
+
 assert  SafeletFW ; Loop :[ deadlock free [FD] ]
 assert  SafeletFW  :[ divergence free ]
 assert  SafeletFW  :[ deterministic  [FD] ]
--}

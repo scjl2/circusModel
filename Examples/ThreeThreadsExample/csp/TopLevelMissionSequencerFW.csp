@@ -3,17 +3,14 @@
 
 
 --TLMS CHANNELS
-
-
-
-channel  start_toplevel_sequencer:SchedulableID 
+channel  start_toplevel_sequencer: TopLevelSequencerIDs 
 
 channel  done_toplevel_sequencer 
 
 
-channel set_continue : SchedulableID . Bool 
+channel set_continue : MissionSequencerIDs . Bool 
 
-channel end_toplevelsequencerState : SchedulableID
+channel end_toplevelsequencerState : MissionSequencerIDs
 
 nametype TopLevelMissionSequencerFWChanSet = union(
   union(MissionSequencerFWSharedChanSet, TLMSStateSync) ,
@@ -27,41 +24,40 @@ nametype TLMSStateSync = {|get_continue, set_continue, get_currentMission, set_c
 --TLMS
 
 TopLevelMissionSequencerFW(sequencer) =
-(
+ (
     TopLevelMissionSequencerFWState(sequencer, nullMissionId, True )
       [| TLMSStateSync |]
     TopLevelMissionSequencerFWBehaviour(sequencer)
 )\ TLMSStateSync
 
-
 TopLevelMissionSequencerFWState(sequencer, currentMission, continue) =
-  (
-    set_currentMission.sequencer?newCurrentMission ->
-    TopLevelMissionSequencerFWState(sequencer, newCurrentMission, continue)
-  )
-  []
-  (
-    get_currentMission.sequencer!currentMission ->
-    TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
-  )
-  []
-  (
-    get_continue.sequencer!continue ->
-    TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
-  )
-  []
-  (
-    set_continue.sequencer?newContinue ->
-    TopLevelMissionSequencerFWState(sequencer, currentMission, newContinue)
-  )
-  []
-  (
-    end_toplevelsequencerState.sequencer ->
-    SKIP
-  )
+(
+  set_currentMission.sequencer?newCurrentMission ->
+  TopLevelMissionSequencerFWState(sequencer, newCurrentMission, continue)
+)
+[]
+(
+  get_currentMission.sequencer!currentMission ->
+  TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
+)
+[]
+(
+  get_continue.sequencer!continue ->
+  TopLevelMissionSequencerFWState(sequencer, currentMission, continue)
+)
+[]
+(
+  set_continue.sequencer?newContinue ->
+  TopLevelMissionSequencerFWState(sequencer, currentMission, newContinue)
+)
+[]
+(
+  end_toplevelsequencerState.sequencer ->
+  SKIP
+)
 
 
-TopLevelMissionSequencerFWBehaviour(sequencer)=
+TopLevelMissionSequencerFWBehaviour(sequencer) =
 (
   done_safeletFW -> 
   end_toplevelsequencerState.sequencer ->
@@ -78,19 +74,17 @@ TopLevelMissionSequencerFWBehaviour(sequencer)=
   SKIP
 )
 
-Start_TLS(sequencer)  =  
- start_toplevel_sequencer.sequencer -> 
- SKIP 
+Start_TLS(sequencer)  = 
+( 
+  start_toplevel_sequencer.sequencer -> 
+  SKIP 
+)
 
 Execute_TLS(sequencer)  =
-( 
   RunMission_TLS(sequencer)
-) 
 
 RunMission_TLS(sequencer) = 
- GetNextMission_TLS(sequencer) --; 
--- StartMission_TLS(sequencer) ; 
--- Continue_TLS(sequencer)
+  GetNextMission_TLS(sequencer) 
 
 GetNextMission_TLS(sequencer)  =  
   getNextMissionCall.sequencer -> 
@@ -98,41 +92,27 @@ GetNextMission_TLS(sequencer)  =
   StartMission_TLS(sequencer, next)
 
 StartMission_TLS(sequencer, currentMission) = 
- -- get_currentMission.sequencer?currentMission ->
-  (
-    if currentMission != nullMissionId then
-    ( 
-      start_mission.currentMission.sequencer ->
-      done_mission.currentMission?returnedcontinue -> 
-  --  set_continue.sequencer.returnedcontinue -> 
-    --  SKIP
+(
+	if currentMission != nullMissionId then
+  ( 
+    start_mission.currentMission.sequencer ->
+    done_mission.currentMission?returnedcontinue -> 
     Continue_TLS(sequencer,returnedcontinue)
-    )
-     else 
-    ( 
-      --set_continue.sequencer!False ->
-      --SKIP
-      Continue_TLS(sequencer, False)
-    ) 
-  )    
+  )
+  else 
+    Continue_TLS(sequencer, False)
+)    
  
 Continue_TLS(sequencer, continue) = 
 if continue == True then
-  (
- --   get_continue.sequencer?continue:({True}) -> 
-    RunMission_TLS(sequencer) 
-  )
- -- []
+  RunMission_TLS(sequencer) 
 else
-  (
- --   get_continue.sequencer?continue:( {False}) -> 
-    SKIP
-  )
+  SKIP
 
 Finish_TLS(sequencer)   = 
   done_toplevel_sequencer ->  
   SKIP   
    
--- assert TopLevelMissionSequencerFW(schedulableA); Loop :[ deadlock free [FD] ]
--- assert TopLevelMissionSequencerFW(schedulableA) :[ divergence free ]
--- assert TopLevelMissionSequencerFW(schedulableA) :[ deterministic  [FD] ]
+assert TopLevelMissionSequencerFW(TopLevelSequencerId); Loop :[ deadlock free [FD] ]
+assert TopLevelMissionSequencerFW(TopLevelSequencerId) :[ divergence free ]
+assert TopLevelMissionSequencerFW(TopLevelSequencerId) :[ deterministic  [FD] ]

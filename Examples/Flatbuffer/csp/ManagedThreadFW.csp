@@ -11,7 +11,7 @@ channel isAlive : SchedulableID.Bool
 channel end_managedThread_app : SchedulableID
 channel end_managedThreadState : SchedulableID
 
-nametype ManagedThreadSync = {|isAlive, runCall, runRet |} 
+nametype ManagedThreadSync = {|runCall, runRet |} 
 
 
 nametype MTFWChanSet = 
@@ -107,9 +107,9 @@ Cleanup_MT(schedulable) =
   cleanupSchedulableRet.schedulable -> 
   SKIP
  
-{-
 assert ManagedThreadFW(schedulableA); Loop :[ deadlock free [FD] ]
 assert ManagedThreadFW(schedulableA) :[ divergence free ]
 assert ManagedThreadFW(schedulableA) :[ deterministic  [FD] ]  
 
--}
+
+

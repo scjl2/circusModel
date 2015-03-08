@@ -147,7 +147,7 @@ Interrupted(thread, interruptedV) =
 	interrupted.thread!interruptedV ->
 	Interrupts(thread, False)
 
-{-
+
 assert Interrupts(WriterThreadID, False); Loop :[ deadlock free [FD] ]
 assert Interrupts(WriterThreadID, False) :[ divergence free ]
 assert Interrupts(WriterThreadID, False) :[ deterministic  [FD] ]  
@@ -156,4 +156,4 @@ assert Interrupts(WriterThreadID, False) :[ deterministic  [FD] ]
 
 assert ThreadFW(WriterThreadID, 0); Loop :[ deadlock free [FD] ]
 assert ThreadFW(WriterThreadID, 0) :[ divergence free ]
-assert ThreadFW(WriterThreadID, 0) :[ deterministic  [FD] ]  -}
+assert ThreadFW(WriterThreadID, 0) :[ deterministic  [FD] ]  

@@ -1,14 +1,16 @@
 --MissionFW
 --Models javax.safetycritical.Mission
 
+
 --Mission Channels
+
 channel set_controllingSequencer : MissionID.SchedulableID
 channel set_applicationTerminating_M : MissionID.Bool 
 channel get_applicationTerminating_M : MissionID.Bool 
 channel set_missionTerminating : MissionID.Bool 
-channel set_activeSchedulables: MissionID.Set(SchedulableID) 
-channel get_activeSchedulables: MissionID.Set(SchedulableID) 
-channel add_schedulable: MissionID.SchedulableID
+channel set_activeSchedulables : MissionID.Set(SchedulableID) 
+channel get_activeSchedulables : MissionID.Set(SchedulableID) 
+channel add_schedulable : MissionID.SchedulableID
 channel remove_activeSchedulables : MissionID.SchedulableID
 channel get_missionTerminating : MissionID.Bool
 channel get_registeredSchedulables : MissionID.Set(SchedulableID)
@@ -48,6 +50,9 @@ channel cleanupMissionRet : MissionID.Bool
 channel end_mission_app : MissionID
 channel done_mission : MissionID.Bool
 
+channel terminationPendingCall : MissionID
+channel terminationPendingRet : MissionID.Bool
+channel getSequencer : MissionID.SchedulableID 
 
 
 nametype MissionFWCHanSet = union(
@@ -65,12 +70,16 @@ nametype TerminateSync =
   {| schedulables_terminated, schedulables_stopped |}
 
 
+nametype MissionFWHideChan = diff(MissionFWStateChan, {|activate_schedulables|})
+
 MissionFW(mission) = 
+sbisim(diamond(   
 (  
   MissionFWState(mission, {}, {}, False, False, nullSequencerId)
     [|MissionFWStateChan|]
   MissionFWBehaviour(mission)
-) \ diff(MissionFWStateChan, {|activate_schedulables|})
+) \ MissionFWHideChan
+))
 
 
 MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, controllingSequencer) =
@@ -134,7 +143,6 @@ MissionFWState(mission, registeredSchedulables, activeSchedulables, missionTermi
   )
 
 MissionFWBehaviour(mission) =
-
 ( 
   Start_M(mission) ;
     (
@@ -143,7 +151,7 @@ MissionFWBehaviour(mission) =
       (
           InitializePhase(mission) ; 
           MissionPhase(mission) ; 
-       --   CleanupPhase(mission) ; 
+          -- Then do Cleanup Phase 
           MissionFWBehaviour(mission)
       )
       else 
@@ -161,16 +169,16 @@ Start_M(mission) =
   ) 
   []
   (
-  done_safeletFW -> 
-  set_applicationTerminating_M.mission!True ->
-  SKIP
-)
-[]
-(
-  done_toplevel_sequencer ->
-  set_applicationTerminating_M.mission!True ->
-  SKIP
-)
+    done_safeletFW -> 
+    set_applicationTerminating_M.mission!True ->
+    SKIP
+  )
+  []
+  (
+    done_toplevel_sequencer ->
+    set_applicationTerminating_M.mission!True ->
+    SKIP
+  )
 
 InitializePhase(mission) =
   initializeCall.mission ->
@@ -206,33 +214,33 @@ register?s!mission ->
   (
     checkSchedulable.mission?check:({False}) ->
     throw.illegalStateException ->
-    --CHAOS(Events)
-    STOP
+    CHAOS(Events)   
   )
 )
 
 RegisterException(mission) =
   register?s!mission ->
   throw.illegalStateException ->
-  --CHAOS(Events)  
-  STOP
-
+  CHAOS(Events)  
+  
 SetCeilingPriority(mission) =
- setCeilingPriority.mission?o?p -> 
- SKIP
+  setCeilingPriority.mission?o?p -> 
+  SKIP
 
 SetCeilingPriorityException(mission) =
- setCeilingPriority.mission?o?p -> 
- throw.illegalStateException ->
- --CHAOS(Events)
- STOP
+  setCeilingPriority.mission?o?p -> 
+  throw.illegalStateException ->
+  CHAOS(Events)
+ 
 
 MissionPhase(mission) =
+sbisim(diamond( 
 (
   Execute_M(mission)
---   [|  {|done_schedulables|} |] 
--- MissionExceptions(mission)
+    [|  {|done_schedulables|} |] 
+  MissionExceptions(mission)
 )\{|done_schedulables|}
+))
 
 Execute_M(mission) =
  ( 
@@ -244,21 +252,21 @@ Execute_M(mission) =
   )
   else 
   ( 
-     activate_schedulables.mission ->
-    -- set_activeSchedulables.mission!registeredSchedulables ->
-     (
-        TerminateAndDone(mission, registeredSchedulables) 
-          [| {| stop_schedulables, done_schedulables |} |]          
-        Methods_M(mission, registeredSchedulables)
-      );
-     CleanupPhase(mission, registeredSchedulables)
-
+    activate_schedulables.mission ->
+    get_controllingSequencer.mission?controllingSequencer ->
+    (
+      TerminateAndDone(mission, registeredSchedulables) 
+        [| {| stop_schedulables, done_schedulables |} |]          
+      MethodsExtChoice_M(mission, registeredSchedulables, controllingSequencer)
+    );
+    CleanupPhase(mission, registeredSchedulables)
   )
 ) 
 
 TerminateAndDone(mission, activeSchedulables) =
+sbisim(diamond( 
  (
-    (
+  (
     SignalTermination_M(mission)              
       [| TerminateSync |] 
     DoneSchedulables(mission, activeSchedulables)       
@@ -266,6 +274,7 @@ TerminateAndDone(mission, activeSchedulables) =
   done_schedulables.mission ->
   SKIP
 )\TerminateSync
+))
  
 SignalTermination_M(mission) =
  (
@@ -275,20 +284,16 @@ SignalTermination_M(mission) =
   schedulables_stopped.mission ->
   SKIP
 )
---/\ (schedulables_terminated.mission -> SKIP)
 /\ (schedulables_stopped.mission -> SKIP )
 
 StopSchedulables(schedulablesToStop) =
-    (|||  s :  schedulablesToStop @
-          signalTerminationCall.s ->
-          signalTerminationRet.s ->
-          SKIP)
+  (|||  s :  schedulablesToStop @
+        signalTerminationCall.s ->
+        signalTerminationRet.s ->
+        SKIP)
 
 DoneSchedulables(mission, activeSchedulables) =
---get_activeSchedulables.mission?activeSchedulables ->
 (  
-  
- -- []
   (
     (
       (
@@ -324,20 +329,60 @@ DoneSchedulables(mission, activeSchedulables) =
   )
 )
 
-Methods_M(mission, registeredSchedulables) =
+MethodsExtChoice_M(mission, registeredSchedulables, controllingSequencer) =
 (  
-  RequestTerminationMeth(mission, registeredSchedulables)
-    [| {|end_mission_terminations|} |] 
+  RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
+  []
   (
     done_schedulables.mission ->
     end_mission_terminations.mission ->
     SKIP
-  ) 
-) \{| end_mission_terminations |}
+  )
+  []
+  GetSequencer(mission, controllingSequencer)
+) 
 
-RequestTerminationMeth(mission, registeredSchedulables) =
---get_registeredSchedulables.mission?registeredSchedulables ->
-get_controllingSequencer.mission?controllingSequencer ->
+
+Methods_M(mission, registeredSchedulables, controllingSequencer) =
+sbisim(diamond( 
+(  
+  (
+    (
+      TerminationPending_M(mission)
+        [| {|end_mission_terminations|} |] 
+      (
+        RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
+          [| {|end_mission_terminations|} |] 
+        (
+          done_schedulables.mission ->
+          end_mission_terminations.mission ->
+          SKIP
+        ) 
+      )
+    )
+      [| {|end_mission_terminations|} |] 
+    GetSequencer(mission, controllingSequencer)
+  )
+) \{| end_mission_terminations |}
+))
+
+
+TerminationPending_M(mission) =
+(
+  ( 
+    terminationPendingCall.mission ->
+    get_missionTerminating.mission?missionIsTerminating ->
+    terminationPendingRet.mission!missionIsTerminating ->
+    TerminationPending_M(mission)
+  )
+  []
+  (
+    end_mission_terminations.mission -> 
+    SKIP
+  )  
+)
+
+RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer) =
 (  
   (
     end_mission_terminations.mission -> 
@@ -345,24 +390,38 @@ get_controllingSequencer.mission?controllingSequencer ->
   )
   []
   (     
-    (--
+    (
       [] schedulable: union(registeredSchedulables, {|controllingSequencer|})  @
-      requestTermination.mission.schedulable ->
-      SKIP
-    ) ;--
+        requestTermination.mission.schedulable ->
+        SKIP
+    ) 
+    ;
     (
       (
         get_missionTerminating.mission?missionTerminating:({False}) ->
         set_missionTerminating.mission!True ->
         stop_schedulables.mission ->
-        RequestTerminationMeth(mission, registeredSchedulables)
+        RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
       )
       []
       (
         get_missionTerminating.mission?missionTerminating:({True}) ->
-        RequestTerminationMeth(mission, registeredSchedulables)
+        RequestTerminationMeth(mission, registeredSchedulables, controllingSequencer)
       )
     ) 
+  )
+)
+
+GetSequencer(mission, controllingSequencer)=
+(
+  (
+    getSequencer.mission!controllingSequencer ->
+    GetSequencer(mission, controllingSequencer)
+  )
+  []
+  ( 
+    end_mission_terminations.mission -> 
+    SKIP
   )
 )
 
@@ -384,34 +443,33 @@ CleanupPhase(mission, registeredSchedulables) =
   Cleanup_M(mission, registeredSchedulables)
     [|  {|cleanupMissionRet|} |] 
   CleanupExceptions(mission)
-)--\{|cleanupMissionRet|}
+)
 
 Cleanup_M(mission, registeredSchedulables) =
 ( 
   (
     if registeredSchedulables == {} then
-    (
-     --get_registeredSchedulables.mission?registeredSchedulables:({}) ->
       SKIP
-    )
     else  
     ( 
-     -- get_registeredSchedulables.mission?registeredSchedulables:(Set(SchedulableID)) ->
       deregister!registeredSchedulables ->
       CleanupSchedulables(mission, registeredSchedulables) ;
       SKIP
     )    
-  );    
+  )
+  ;    
+  (
     cleanupMissionCall.mission ->
     cleanupMissionRet.mission?continueSequencer ->
     Finish_M(mission, continueSequencer)
+  )
 )
 
 CleanupSchedulables(mission, registeredSchedulables) =
   ||| s : registeredSchedulables @
                 cleanupSchedulableCall.s ->
                 cleanupSchedulableRet.s ->  
-                SKIP
+                SKIP 
 
 CleanupExceptions(mission) =
 ( 
@@ -426,11 +484,12 @@ CleanupExceptions(mission) =
 )
 
 Finish_M(mission, continueSequencer) =
-  
+(  
    done_mission.mission!continueSequencer ->
    SKIP
+)
 
 
--- assert MissionFW(missionA); Loop :[ deadlock free [FD] ]
--- assert MissionFW(missionA) :[ divergence free ]
--- assert MissionFW(missionA) :[ deterministic  [FD] ]
+assert sbdia( MissionFW(missionA) ); Loop :[ deadlock free [FD] ]
+assert sbdia( MissionFW(missionA) ) :[ divergence free ]
+assert sbdia( MissionFW(missionA) ) :[ deterministic  [FD] ]
