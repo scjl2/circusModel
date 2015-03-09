@@ -490,6 +490,3 @@ Finish_M(mission, continueSequencer) =
 )
 
 
-assert sbdia( MissionFW(missionA) ); Loop :[ deadlock free [FD] ]
-assert sbdia( MissionFW(missionA) ) :[ divergence free ]
-assert sbdia( MissionFW(missionA) ) :[ deterministic  [FD] ]

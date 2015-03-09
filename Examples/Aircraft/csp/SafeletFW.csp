@@ -45,10 +45,3 @@ Execute_S =
   else
     end_safelet_app ->
     done_safeletFW -> SKIP
-  
-
-
-
-assert  SafeletFW ; Loop :[ deadlock free [FD] ]
-assert  SafeletFW  :[ divergence free ]
-assert  SafeletFW  :[ deterministic  [FD] ]

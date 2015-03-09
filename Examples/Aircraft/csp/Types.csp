@@ -1,6 +1,8 @@
 --GLOBALS
 transparent sbisim, diamond
 
+sbdia(P) = sbisim(diamond(P))
+
 datatype SchedulableID = nullSequencerId|nullSchedulableId| MainMissionSequencerId 
                           | ACModeChangerId | EnvironmentMonitorId | ControlHandlerId | FlightSensorsMonitorId | CommunicationsHandlerId
                           | TakeOffMonitorId | TakeOffFailureHandlerId | LandingGearHandler1Id
@@ -11,8 +13,8 @@ datatype MissionID = nullMissionId
                     | MainMissionId | TakeOffModeId | CruiseModeId |  LandModeId
 
 
-TopLevelSequencerIDs = {TopLevelSequencerId}
-MissionSequencerIDs = {TopLevelSequencerId,FirstMissionSequencerID,SecondMissionSequencerID ,ThirdMissionSequencerID  }
+TopLevelSequencerIDs = {MainMissionSequencerId}
+MissionSequencerIDs = {MainMissionSequencerId, ACModeChangerId  }
 MissionSequencerIDs_null = union(MissionSequencerIDs, {nullSequencerId})
 SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencerIDs))
 

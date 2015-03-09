@@ -19,6 +19,8 @@ nametype tier = Set(cluster)
 
 include "SafeletFW.csp"
 
+include "GlobalSchedulables.csp"
+
 include "MissionSequencerSharedChan.csp"
 
 include "TopLevelMissionSequencerFW.csp"

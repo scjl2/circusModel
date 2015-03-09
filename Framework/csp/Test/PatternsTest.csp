@@ -1,25 +1,60 @@
-datatype MissionID = nullMissionId|
-                    missionA|missionB 
-                    | TopMission1ID 
-                    | FlatBufferMissionId   
+include "PatternTypes.csp"
+include "PatternUser.csp"
+
+APPInitializePhase(MainMissionId) =  
+--InitializePhase_mm = 
+  initializeCall.MainMissionId   -> 
+  register!ACModeChangerId!MainMissionId  -> 
+  register!EnvironmentMonitorId!MainMissionId  -> 
+  register!FlightSensorsMonitorId!MainMissionId ->
+  register!CommunicationsHandlerId!MainMissionId ->
+  register!ControlHandlerId!MainMissionId  ->  
+  initializeRet.MainMissionId  -> 
+ --SKIP
+ MissionPhase(MainMissionId, {ACModeChangerId, EnvironmentMonitorId, FlightSensorsMonitorId, CommunicationsHandlerId, ControlHandlerId})
+
+APPInitializePhase(TakeOffModeId) =
+--InitializePhase_tom = 
+  initializeCall.TakeOffModeId  -> 
+
+  register!TakeOffMonitorId!TakeOffModeId -> 
+  register!TakeOffFailureHandlerId!TakeOffModeId -> 
+  register!LandingGearHandler1Id!TakeOffModeId ->  
+   
+  initializeRet.TakeOffModeId -> 
+  --SKIP
+    MissionPhase(TakeOffModeId, {TakeOffMonitorId, TakeOffFailureHandlerId, LandingGearHandler1Id})
+
+APPInitializePhase(CruiseModeId) =
+--InitializePhase_cm = 
+  initializeCall.CruiseModeId  -> 
+
+  register!NavigationMonitorId!CruiseModeId ->   
+     
+  register!BeginLandingHandlerId!CruiseModeId ->   
+
+  initializeRet.CruiseModeId -> 
+--  SKIP
+MissionPhase(CruiseModeId, {NavigationMonitorId, BeginLandingHandlerId})
 
 
-channel a : MissionID
-channel b
+APPInitializePhase(LandModeId) =
+--InitializePhase_lam = 
+  initializeCall.LandModeId  -> 
 
-f(missionA)   =      
-	a.missionA -> SKIP
+  register!GroundDistanceMonitorId!LandModeId ->   
+  register!LandingGearHandler2Id!LandModeId -> 
+  register!SafeLandingHandlerId!LandModeId -> 
+  register!InstrumentLandingSystemMonitorId!LandModeId -> 
 
-f(missionB) = 
-	a.missionB -> SKIP      
-
-
-f(_) = b -> SKIP
-
-
-P(mission)
-= f(mission)
+  initializeRet.LandModeId -> 
+--  SKIP
+  MissionPhase(LandModeId, {GroundDistanceMonitorId, LandingGearHandler2Id, SafeLandingHandlerId, InstrumentLandingSystemMonitorId})
 
 
-P' =
-	||| x : MissionID @ f(x)
+
+
+
+
+
+ MissionPhase(m,s) = out.m.s -> SKIP
