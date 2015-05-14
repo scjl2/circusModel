@@ -1,10 +1,4 @@
 \begin{zsection}
   \SECTION ~ AperiodicEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, AperiodicLongEventHandlerMethChan, SchedulableId
 \end{zsection}
-<<<<<<< HEAD
-%
-\begin{circus}
-  \circchannel release\_complete : SchedulableID
-\end{circus}
-=======
->>>>>>> d99c2e79ab5d9912bc1edb13f44e126d71fc4273
+

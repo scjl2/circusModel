@@ -15,5 +15,5 @@
 \end{axdef}
 %
 \begin{axdef}
- nullSchedulableId: SchedulableID
+ nullSchedulableId : SchedulableID
 \end{axdef}
