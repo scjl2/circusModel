@@ -10,9 +10,7 @@
 %
 % done\_safeletFW doesn't exist...
 %
-\begin{circus}
-\circchannel ~ done\_safeletFW
-\end{circus}
+
 %
 \begin{circus}
 \circchannelset ~ TerminateSync == \\ \t1 \lchanset schedulables\_terminated, schedulables\_stopped, get\_activeSchedulables \rchanset

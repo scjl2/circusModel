@@ -28,6 +28,7 @@
   applicationTerminating' = \false \\  
   deadline' = deadlineOfA(aperiodicParameters) \\
   deadlineMissHandler' = missHandlerOfA(aperiodicParameters) \\
+
 \end{schema}
 %
 \begin{circusaction}

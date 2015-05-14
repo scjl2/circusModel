@@ -22,7 +22,7 @@ Run \circdef \\
 \end{circusaction}	
 
 \begin{circusaction}
-\circspot (Methods)% \circinterrupt (end\_managedThread\_app~.~Writer \then \Skip)
+\circspot (Methods) %\circinterrupt (end\_managedThread\_app~.~Writer \then \Skip)
 \end{circusaction}
 
 \begin{circus}

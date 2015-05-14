@@ -7,6 +7,7 @@ AperiodicParameters == JTime \cross SchedulableID
 \end{axdef}
 %
 \begin{axdef}
+
 deadlineOfA : AperiodicParameters \fun JTime 
 \where
 \forall pp: AperiodicParameters @ deadlineOfA(pp) = pp.1
@@ -16,4 +17,5 @@ deadlineOfA : AperiodicParameters \fun JTime
 missHandlerOfA : AperiodicParameters \fun SchedulableID 
 \where
 \forall pp: AperiodicParameters @ missHandlerOfA(pp) = pp.2
+
 \end{axdef}
