@@ -274,5 +274,12 @@ TestProgram =
 
 
 assert Program2 ; Loop :[ deadlock free [FD] ]
+assert Program2  :[ deadlock free [FD] ]
 assert Program2 :[ divergence free ]
 assert Program2 :[ deterministic  [FD] ]
+
+
+ assert STOP [FD= (Program2; Loop  \Events)
+ assert (Program2; Loop \Events) [FD= STOP
+
+assert STOP [T= Program2;Loop \ diff(Events, {|throw|})

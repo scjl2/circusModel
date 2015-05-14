@@ -136,15 +136,12 @@ Tier( Clusters ) =
     [|{|done_toplevel_sequencer, done_safeletFW|}|] (missionID, schedulableIDSet  ) : Clusters @
           Cluster(missionID, schedulableIDSet)
  )
--- ({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB})
+
 Tier0( Clusters )=
 (
     Tier( Clusters )
-    --[| RouterSync |]  
---Router(missionIDs)
+    
 )
---(apeh, type, start, missHandler) : aperiodicEventHanders
-
 
 
 nametype TierCommonChan = {|done_toplevel_sequencer, done_safeletFW|}
