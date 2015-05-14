@@ -1,0 +1,11 @@
+\begin{zsection}
+  \SECTION ~ MissionIds ~ \parents ~ scj\_prelude, MissionId
+\end{zsection}
+\extracircusvspace
+%
+\begin{axdef}
+  FlatBufferMission : MissionID\\
+ 
+\where
+  distinct \langle nullMissionId, FlatBufferMission  \rangle
+\end{axdef}

@@ -1,0 +1,11 @@
+\begin{zsection}
+  \SECTION ~ HandlerFWChan ~ \parents ~ scj\_prelude, SchedulableId, GlobalTypes, JTime 
+\end{zsection}
+%
+\begin{circus}
+  \circchannel end\_releases : SchedulableID \\
+\end{circus}
+
+\begin{circus}
+  \circchannel release\_complete : SchedulableID \\
+\end{circus}

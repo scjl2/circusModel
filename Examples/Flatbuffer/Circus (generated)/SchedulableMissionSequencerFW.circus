@@ -1,0 +1,229 @@
+\begin{zsection}
+  \SECTION ~ SchedulableMissionSequencerFW ~ \parents ~ SchedulableMissionSequencerChan, SchedulableChan, MissionIds, MissionChan,\\
+  \t1 SchedulableId, scj\_prelude, SafeletMethChan, FrameworkChan
+\end{zsection}
+%
+\begin{circus}
+  \circprocess ~ SchedulableMissionSequencerFW ~ \circdef ~ sequencer : SchedulableID \circspot ~ \circbegin 
+\end{circus}
+%
+\begin{schema}{State}
+  currentMission : MissionID\\
+  continueAbove : \boolean \\
+  continueBelow : \boolean \\  
+  controllingMission : MissionID\\
+  applicationTerminating : \boolean  
+\end{schema}
+%
+\begin{parser}
+\begin{circusaction}
+\circstate State
+\end{circusaction}
+\end{parser}
+%
+\begin{schema}{Init}
+  State~'
+\where
+  continueAbove' = \true \\
+  continueBelow' = \true \\
+  applicationTerminating' = \false
+\end{schema}
+%
+\begin{schema}{GetContinue}
+	\Xi State\\
+	continue! : \boolean
+\where	
+	continueAbove = \true \land continueBelow = \true \implies continue! = \true 
+\end{schema}
+%
+\begin{circusaction}
+Start ~ \circdef ~ \\
+\t1 (
+  		Register \circseq\\
+  		Activate\\
+    )\\
+\t1 \extchoice\\
+\t1 (
+		done\_toplevel\_sequencer \then \\
+		applicationTerminating := \true \\		
+	)
+\t1 \extchoice\\
+\t1 (
+		activate\_schedulables~?~someMissionID \then \\
+		Start \\
+	)	
+\end{circusaction}
+%
+\begin{circusaction}
+Register \circdef \\
+\t1	register~.~sequencer~?~mID \then\\
+\t1	controllingMission := mID
+\end{circusaction}
+%
+\begin{circusaction}
+Activate \circdef\\
+\t1	activate\_schedulables.controllingMission \then \\
+\t1	\Skip
+\end{circusaction}
+%
+\begin{circusaction}
+Execute \circdef \\
+\t1  (
+	( 
+    		(
+      			RunMission \circseq\\
+      			end\_methods~.~sequencer \then \\
+      			\Skip\\
+   		 )\\
+      	\lpar\{ currentMission \} | \lchanset end\_methods \rchanset | \emptyset \rpar\\
+   	 Methods\\
+    )  
+   	 \lpar \emptyset | CCSync | \{ continueAbove, continueBelow \} \rpar\\
+    	 ContinueController \\
+  ) \circseq done\_schedulable~.~sequencer \then \Skip
+\end{circusaction}
+%
+\begin{circusaction}
+RunMission \circdef \\
+\t1 GetNextMission \circseq \\
+\t1 StartMission \circseq \\
+\t1 Continue
+\end{circusaction}
+%
+\begin{circusaction}
+GetNextMission ~ \circdef \\ 
+\t1    getNextMissionCall~.~sequencer \then \\
+\t1    getNextMissionRet~.~sequencer~?~next \then \\
+\t1    currentMission := next 
+\end{circusaction}
+%
+\begin{circusaction}
+StartMission ~ \circdef ~\\  
+\t1   \circif ~ currentMission \neq nullMissionId ~ \circthen\\
+\t2   (
+     	start\_mission~.~currentMission~.~sequencer \then\\
+     	initializeRet~.~currentMission \then \\     
+     	(      
+     		SignalTermination\\
+     		\t1 \lpar \emptyset | \lchanset end\_terminations \rchanset | \emptyset \rpar\\
+     		(   
+	    			done\_mission~.~currentMission~?~continueReturn \then \\
+	    			set\_continueBelow~.~sequencer~!~continueReturn \then \\
+	    			end\_terminations~.~sequencer \then \\
+	     		\Skip
+	     	) \\
+   	    ) \\
+      )\\
+\t1   \circelse ~ currentMission = nullMissionId ~ \circthen\\
+\t2   (
+	set\_continueBelow~.~sequencer~!~\false \then \\
+    	\Skip \\
+      )
+\t1  \circfi\\ 
+\end{circusaction}
+%
+\begin{circusaction}
+Continue \circdef \\
+\t1 (
+	get\_continue~.~sequencer~?~continue\prefixcolon(continue = \true) \then \\
+	RunMission \\
+    )
+\t1 \extchoice
+\t1 (
+	get\_continue~.~sequencer~?~continue\prefixcolon(continue = \false) \then \\
+	\Skip\\
+    )
+\end{circusaction}
+%
+\begin{circusaction}
+SignalTermination ~ \circdef ~\\
+( 
+    (
+    	end\_terminations~.~sequencer \then \\
+    	\Skip
+    )\\
+    \extchoice\\
+    ( 
+      signalTerminationCall~.~sequencer \then \\
+      set\_continueAbove~.~sequencer~!~\false \then \\
+      requestTermination~.~currentMission~.~sequencer \then\\  
+      signalTerminationRet~.~sequencer \then  \\    
+      \Skip\\
+    ) \circseq \\
+    end\_terminations~.~sequencer \then \\
+    \Skip\\
+ )
+\end{circusaction}
+%
+\begin{circusaction}
+Methods ~ \circdef \\
+\t1 (
+     	SequenceTerminationPending \circseq\\
+    		Methods\\
+    )\\
+\t1  \extchoice \\
+\t1	(
+	   end\_methods~.~sequencer \then \\ 
+	   \Skip\\
+	)
+\end{circusaction}
+%
+\begin{circusaction}
+SequenceTerminationPending ~ \circdef \\
+
+\t1	sequenceTerminationPendingCall~.~sequencer \then \\
+\t1	get\_continue~.~sequencer~?~continue \then
+ 
+\t1 	 sequenceTerminationPendingRet~.~sequencer~!~continue \then\\
+\t1	  \Skip\\
+
+
+\end{circusaction}
+%
+\begin{circusaction}
+ContinueController \circdef \\
+\circvar continue : \boolean \circspot \\
+\t1 (
+		\lschexpract GetContinue \rschexpract \circseq
+		get\_continue~.~sequencer~!~continue \then \\
+		ContinueController \\
+	)\\
+\t1 \extchoice \\
+\t1 (
+		set\_continueBelow~.~sequencer~?~newContinueBelow \then \\
+		continueBelow := newContinueBelow \circseq \\
+		ContinueController \\
+	) \\
+\t1 \extchoice \\
+\t1 (
+		set\_continueAbove~.~sequencer~?~newContinueAbove \then \\
+		continueAbove := newContinueAbove \circseq \\
+		ContinueController \\
+	)
+\end{circusaction}
+%
+\begin{circusaction}
+Cleanup ~ \circdef\\ 
+\t1	 cleanupSchedulableCall~.~sequencer \then \\
+\t1	 cleanupSchedulableRet~.~sequencer \then \\
+\t1	 Finish
+\end{circusaction}
+%
+\begin{circusaction}
+Finish ~ \circdef ~\\
+\t1	 done\_schedulable~.~sequencer \then \\
+\t1  \Skip
+\end{circusaction}
+%
+\begin{circusaction}
+  \circspot (\circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\ 
+  	(\circif applicationTerminating = \false \circthen \\
+  	 \t2 (Execute \circseq Cleanup \circseq X)\\ 
+  	 \circelse applicationTerminating = \true \circthen \\
+  	 \t2 \Skip\\ 
+  	 \circfi))
+\end{circusaction}
+%
+\begin{circus}
+  \circend
+\end{circus}
