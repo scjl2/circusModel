@@ -1,0 +1,32 @@
+\begin{zsection}
+  \SECTION ~ PeriodicParameters ~ \parents ~ scj\_prelude, JTime, SchedulableId
+\end{zsection}
+%
+\begin{axdef}
+PeriodicParameters == JTime \cross JTime \cross JTime \cross SchedulableID
+\end{axdef}
+%
+\begin{axdef}
+startTimeOf : PeriodicParameters \fun JTime 
+\where
+\forall pp: PeriodicParameters @ startTimeOf(pp) = pp.1
+\end{axdef}
+%
+\begin{axdef}
+periodOf : PeriodicParameters \fun JTime 
+\where
+\forall pp: PeriodicParameters @ periodOf(pp) = pp.2
+\end{axdef}
+%
+\begin{axdef}
+deadlineOfP : PeriodicParameters \fun JTime 
+\where
+\forall pp: PeriodicParameters @ deadlineOfP(pp) = pp.3
+\end{axdef}
+%
+\begin{axdef}
+missHandlerOfP : PeriodicParameters \fun SchedulableID 
+\where
+\forall pp: PeriodicParameters @ missHandlerOfP(pp) = pp.4
+
+\end{axdef}

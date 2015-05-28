@@ -1,5 +1,5 @@
 \begin{circus}
-\circprocess ManagedThreadApp \circdef
+\circprocess ${SchedulableID}App \circdef
 \end{circus}
 
 \begin{circusaction}
@@ -10,13 +10,13 @@ Methods \circdef \\
 \begin{circusaction}
 Run \circdef \\
 \circblockopen
-	runCall~.~[ManagedThread] \then \\
+	runCall~.~${SchedulableID} \then \\
 		
-	runRet~.~[ManagedThread] \then \\
+	runRet~.~${SchedulableID} \then \\
 	\Skip
 \circblockclose
 \end{circusaction}	
 	
 \begin{circus}
-\circspot (Methods) \circinterrupt (end\_managedThread\_app~.~[ManagedThread] \then \Skip)
+\circspot (Methods) \circinterrupt (end\_managedThread\_app~.~${SchedulableID} \then \Skip)
 \end{circus}
