@@ -3,8 +3,7 @@
 \end{zsection}
 %
 \begin{circus}
-  \circchannel ~ start\_mission : MissionID \cross SchedulableID
-  \also
+  \circchannel ~ start\_mission : MissionID \cross SchedulableID \\
   \circchannel ~ done\_mission : MissionID \cross \boolean
 \end{circus}
 %
@@ -18,8 +17,7 @@
 \end{circus}
 %
 \begin{circus}
-  \circchannel ~ end\_mission\_fw : MissionID 
-  \also
+  \circchannel ~ end\_mission\_fw : MissionID \\
   \circchannel ~ end\_mission\_app : MissionID
 \end{circus}
 %

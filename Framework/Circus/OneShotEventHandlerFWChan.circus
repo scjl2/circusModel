@@ -21,5 +21,9 @@
 \end{circus}
 %
 \begin{circus}
-  \circchannel release\_complete : SchedulableID \\
+  \circchannel release\_complete : SchedulableID 
+\end{circus}
+%
+\begin{circus}
+  \circchannel end\_oneShot\_app : SchedulableID
 \end{circus}

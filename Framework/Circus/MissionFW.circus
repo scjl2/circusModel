@@ -85,7 +85,7 @@ Register ~ \circdef ~ \\
 	\circblockopen
 		checkSchedulable~.~mission~?~check\prefixcolon(check = \true) \then\\
 		\lschexpract AddSchedulable  \rschexpract \\
-	)\\
+	\circblockclose\\ 
 	\extchoice \\
 	\circblockopen
 		checkSchedulable~.~mission~?~check\prefixcolon(check = \true) \then\\	
@@ -348,7 +348,10 @@ SetCeilingPriorityException \circblockclose \\
   		\circblockopen\circif applicationTerminating = \false \circthen \\ 
   			\t2\circblockopen InitializePhase \circseq MissionPhase \circseq CleanupPhase \circseq X\circblockclose\\ 
   		\circelse applicationTerminating = \true \circthen 
-  			\t2 \Skip\\ 
+  		\t2 \circblockopen 
+  			end\_mission\_app~.~mission \then \\
+  			\Skip 
+  		\circblockclose
   		\circfi \circblockclose \circblockclose
 \end{circusaction}
 %

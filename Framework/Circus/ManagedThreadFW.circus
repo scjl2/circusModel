@@ -28,27 +28,26 @@
 %
 \begin{circusaction}
 Start \circdef\\
-\t1  (
+\t1 \circblockopen
    Register \circseq \\
    Activate\\
-  )  \\
+  \circblockclose   \\
 \t1  \extchoice\\
-\t1  (
+\t1  \circblockopen
   	activate\_schedulables?someMissionID \then \\
   	Start
-  ) \\
+  \circblockclose  \\
 \t1  \extchoice \\
-\t1  (
+\t1  \circblockopen
 	done\_toplevel\_sequencer \then \\
 	applicationTerminating := \true \\
-      )
+      \circblockclose 
 \end{circusaction}
 %
 
 \begin{circusaction}
 Register \circdef\\
   register~.~schedulable~?~mID \then\\
-  checkSchedulable~.~mID~?~result \then\\
   controllingMission := mID  
 \end{circusaction}
 %
@@ -71,13 +70,13 @@ Run \circdef\\
 \end{circusaction}
 %
 \begin{circusaction}
-  Methods \circdef \\
-  	(SignalTerminationMeth \circseq Methods) \extchoice runRet~.~schedulable \then \Skip  
+Methods \circdef \\
+	\circblockopen SignalTerminationMeth \circseq Methods\circblockclose  \extchoice runRet~.~schedulable \then \Skip  
 
 \end{circusaction}
 %
 \begin{circusaction}
-  SignalTerminationMeth \circdef \\
+SignalTerminationMeth \circdef \\
   \t1 signalTerminationCall~.~schedulable \then \\
   \t1 signalTerminationRet~.~schedulable \then \Skip
 \end{circusaction}  
@@ -89,14 +88,17 @@ Cleanup \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
-  \circspot (\circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\ 
-  		(\circif applicationTerminating = \false \circthen \\
-  		\t2 (Execute \circseq Cleanup \circseq X)\\ 
+  \circspot \circblockopen \circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\ 
+  		\circblockopen\circif applicationTerminating = \false \circthen \\
+  		\t2 \circblockopen Execute \circseq Cleanup \circseq X \circblockclose \\ 
   		\circelse applicationTerminating = \true \circthen \\
-  		\t2 \Skip\\ 
-  		\circfi))
+  		\t2 \circblockopen
+  			end\_managedThread\_app~.~schedulable \then\\
+  			\Skip
+  		\circblockclose 
+  		\circfi \circblockclose \circblockclose 
 \end{circusaction}
-%
+%  
 \begin{circus}
   \circend
 \end{circus}
