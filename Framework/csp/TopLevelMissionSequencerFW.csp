@@ -94,13 +94,13 @@ GetNextMission_TLS(sequencer)  =
 StartMission_TLS(sequencer, currentMission) = 
 (
 	if currentMission != nullMissionId then
-  ( 
-    start_mission.currentMission.sequencer ->
-    done_mission.currentMission?returnedcontinue -> 
-    Continue_TLS(sequencer,returnedcontinue)
-  )
-  else 
-    Continue_TLS(sequencer, False)
+	( 
+		start_mission.currentMission.sequencer ->
+		done_mission.currentMission?returnedcontinue -> 
+		Continue_TLS(sequencer,returnedcontinue)
+	)
+	else 
+		Continue_TLS(sequencer, False)
 )    
  
 Continue_TLS(sequencer, continue) = 

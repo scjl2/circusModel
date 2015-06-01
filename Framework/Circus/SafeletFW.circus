@@ -53,21 +53,21 @@ GetSequencerMeth \circdef \\
 %
 \begin{circusaction}     
 Methods \circdef \\
-\t1   (
-    		(
-    			Register \circseq\\
-    			Methods
-    		)\\
-    		\extchoice \\
-    		(
-    			Deregister \circseq \\
-    			Methods
-    		)\\
-    		\extchoice\\
-    		(
-    			done\_toplevel\_sequencer \then \\
-    			\Skip
-    		)\\
+\t1(
+	(
+		Register \circseq\\
+    		Methods
+    	)\\
+    	\extchoice \\
+    	(
+    		Deregister \circseq \\
+    		Methods
+    	)\\
+    	\extchoice\\
+    	(
+    		done\_toplevel\_sequencer \then \\
+    		\Skip
+    	)\\
   )   
 \end{circusaction}  
 %  
@@ -105,4 +105,3 @@ Deregister \circdef \\
 \begin{circus}
   \circend
 \end{circus}
-

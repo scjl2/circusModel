@@ -52,7 +52,7 @@ Methods \circdef \\
 \end{circusaction}
 
 \begin{circusaction}
-\circspot (Methods) \circinterrupt (end\_mission\_app~.~MainMission \then \Skip)
+\circspot (Methods) %\circinterrupt (end\_mission\_app~.~MainMission \then \Skip)
 \end{circusaction}
 
 \begin{circus}

@@ -13,7 +13,6 @@ GlobalSchedulableRegulator =
 		done_safeletFW -> SKIP
 	)
 
-
 Unregistered(s) =
 (
 	register.s?m  -> 

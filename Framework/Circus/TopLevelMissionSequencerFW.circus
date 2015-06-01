@@ -34,8 +34,8 @@ Start ~ \circdef ~ \\
 \begin{circusaction}
 Execute ~ \circdef
 \t1 ( 
-  	 (
-  	 	(
+	(
+  		(
     			RunMission \circseq\\
     			end\_methods~.~sequencer \then \\
     			\Skip\\
@@ -66,15 +66,15 @@ GetNextMission ~ \circdef ~ \\
 StartMission~ \circdef ~\\
 \t1    \circif currentMission \neq nullMissionId \circthen\\
 \t2    ( 
-      start\_mission~.~currentMission~.~sequencer \then\\
-      done\_mission~.~currentMission~?~returnedcontinue \then \\
-      set\_continue~.~sequencer~!~returnedcontinue \then \\
-      \Skip
+	     start\_mission~.~currentMission~.~sequencer \then\\
+	     done\_mission~.~currentMission~?~returnedcontinue \then \\
+	     set\_continue~.~sequencer~!~returnedcontinue \then \\
+	     \Skip
     )\\
 \t1   \circelse currentMission = nullMissionId \circthen\\
 \t2    ( 
-      set\_continue~.~sequencer~!~\false \then\\
-      \Skip\\
+ 	     set\_continue~.~sequencer~!~\false \then\\
+ 	     \Skip\\
     ) \\
 \t1     \circfi
 
@@ -118,12 +118,12 @@ SequenceTerminationPending ~ \circdef \\
 %
 \begin{circusaction}
 ContinueController \circdef \\
-\t1 ( 
+\t1 (
 	get\_continue~.~sequencer~!~continue \then \\
 	ContinueController\\
     )\\
 \t1 \extchoice \\
-\t1 ( 
+\t1 (
 	set\_continue~.~sequencer~?~newContinue \then \\
 	continue := newContinue \circseq\\
 	ContinueController\\
@@ -132,9 +132,9 @@ ContinueController \circdef \\
 %
 \begin{circusaction}
 Finish ~ \circdef ~\\
-\t1 (  
-  	 done\_toplevel\_sequencer \then\\
-  	 \Skip   \\
+\t1 (
+  	done\_toplevel\_sequencer \then\\
+  	\Skip   \\
     )
 \end{circusaction}
 % 

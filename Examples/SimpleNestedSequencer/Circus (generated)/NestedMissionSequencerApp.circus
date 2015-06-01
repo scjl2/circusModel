@@ -34,7 +34,7 @@ Methods \circdef  \\
 
 \begin{circusaction}
 \circspot (Methods) %\circhide MissionSequencerAppStateSync
-\circinterrupt (end\_sequencer\_app~.~NestedMissionSequencer \then \Skip)
+%\circinterrupt (end\_sequencer\_app~.~NestedMissionSequencer \then \Skip)
 \end{circusaction}
 
 \begin{circus}

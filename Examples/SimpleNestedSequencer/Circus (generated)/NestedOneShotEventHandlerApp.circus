@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ NestedOneShotEventHandlerApp ~ \parents ~ OSEHEventHandlerChan, SchedulableId, SchedulableIds
+  \SECTION ~ NestedOneShotEventHandlerApp ~ \parents ~ OneShotEventHandlerChan, SchedulableId, SchedulableIds, SchedulableChan
 \end{zsection}
 
 \begin{circus}
@@ -23,7 +23,8 @@ handlerAsyncEvent \circdef \\
 \end{circusaction}
     
 \begin{circusaction}
-\circspot (Methods) \circinterrupt (end\_OSEHEventHandler\_app~.~NestedOneShotEventHandler \then \Skip)
+\circspot (Methods) %\circinterrupt 
+\circseq(end\_oneShot\_app~.~NestedOneShotEventHandler \then \Skip)
 \end{circusaction}
 
 \begin{circus}
