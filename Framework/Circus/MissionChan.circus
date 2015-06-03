@@ -1,3 +1,7 @@
 \begin{zsection}
   \SECTION ~ MissionChan ~ \parents ~ MissionFWChan, MissionMethChan
 \end{zsection}
+%
+\begin{circus}
+	\circchanset ~ MissionAppSync ~ == \lchanset initializeCall, initializeRet, register, cleanupMissionCall, cleanupMissionRet \rchanset \\
+\end{circus}
