@@ -1,0 +1,7 @@
+\begin{zsection}
+  \SECTION ~ MissionSequencerChan \parents scj\_prelude, MissionId, SchedulableId
+\end{zsection}
+%
+\begin{circus}
+ \circchannel MissionSequencerAppSync == \lchanset getNextMissionCall, getNextMissionRet, end\_sequencer\_app \rchanset \\
+\end{circus} 
