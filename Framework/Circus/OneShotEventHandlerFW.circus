@@ -26,8 +26,8 @@
  \where
   controllingMission' = nullMissionId\\
   applicationTerminating' = \false \\  
-  deadline' = deadlineOf(aperiodicParameters) \\
-  deadlineMissHandler' = missHandlerOf(aperiodicParameters) \\
+  deadline' = deadlineOfAperiodic(aperiodicParameters) \\
+  deadlineMissHandler' = missHandlerOfAperiodic(aperiodicParameters) \\
 \end{schema}
 %
 \begin{circusaction}
