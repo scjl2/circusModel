@@ -3,8 +3,7 @@
 \end{zsection}
 %
 \begin{circus}
-  \circchannel release\_complete : SchedulableID \\
-  \circchannel end\_aperiodic\_app : SchedulableID
+    \circchannel end\_aperiodic\_app : SchedulableID
 \end{circus}
 %
 \begin{circus}

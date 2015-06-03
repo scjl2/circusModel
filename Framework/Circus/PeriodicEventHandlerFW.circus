@@ -154,7 +154,7 @@ Release \circdef \circval index : \nat \circspot \\
 \t1 \circblockopen 
 	\circblockopen 
 		releaseRet~.~schedulable \then \\
-		release\_complete~.~schedulable~.~index \then \\
+		periodic\_release\_complete~.~schedulable~.~index \then \\
 		\Skip
 	\circblockclose  \\
 \t1	\lpar \emptyset | \lchanset releaseRet \rchanset | \emptyset \rpar
@@ -195,12 +195,12 @@ DeadlineClock \circdef \circval index : \nat \circspot \\
 			\circblockopen 
 				%\circwait valueOf(deadline) \circseq \\
 				fire~.~deadlineMissHandler \then \\
-				release\_complete~.~schedulable~.~index \then \\
+				periodic\_release\_complete~.~schedulable~.~index \then \\
 				\Skip 
 			\circblockclose  \\
 			\extchoice \\
 			\circblockopen 
-		 		release\_complete~.~schedulable~.~index \then \\
+		 		periodic\_release\_complete~.~schedulable~.~index \then \\
 				\Skip 
 			\circblockclose 
 		\circblockclose 
@@ -217,7 +217,7 @@ DeadlineClock \circdef \circval index : \nat \circspot \\
     \circseq%\circinterrupt 
     \circblockopen 
     		end\_releases~.~schedulable \then \\
-    		release\_complete~.~schedulable~?~index \then \\
+    		periodic\_release\_complete~.~schedulable~?~index \then \\
     		\Skip
     \circblockclose 
 \end{circusaction}
