@@ -3,5 +3,5 @@
 \end{zsection}
 %
 \begin{circus}
- \circchannel MissionSequencerAppSync == \lchanset getNextMissionCall, getNextMissionRet, end\_sequencer\_app \rchanset \\
+ \circchannelset MissionSequencerAppSync == \lchanset getNextMissionCall, getNextMissionRet, end\_sequencer\_app \rchanset \\
 \end{circus} 
