@@ -5,7 +5,7 @@
 
 %
 \begin{circus}
-  \circprocess ManagedThread ~ \circdef ~ schedulable : SchedulableID \circspot ~\circbegin
+  \circprocess ManagedThreadFW ~ \circdef ~ schedulable : SchedulableID \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{State}
