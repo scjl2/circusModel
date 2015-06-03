@@ -1,0 +1,9 @@
+\begin{zsection}
+  \SECTION ~ OneShotEventHandlerMethChan ~ \parents ~  SchedulableId, JTime
+\end{zsection}
+%
+\begin{circus}
+\circchannel ~ getNextReleaseTimeCall : SchedulableID \\
+\circchannel ~ getNextReleaseTimeRet : SchedulableID \cross JTime \\
+\circchannel ~ scheduleNextRelease : SchedulableID \cross JTime \\
+\end{circus}
