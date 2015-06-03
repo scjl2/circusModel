@@ -3,5 +3,5 @@
 \end{zsection}
 %
 \begin{circus}
-	\circchanelset ~ MissionAppSync ~ == \lchanset initializeCall, initializeRet, register, cleanupMissionCall, cleanupMissionRet \rchanset \\
+	\circchanelset ~ MissionAppSync ~ == \lchanset initializeCall, initializeRet, register, cleanupMissionCall, cleanupMissionRet, end\_mission\_app \rchanset \\
 \end{circus}
