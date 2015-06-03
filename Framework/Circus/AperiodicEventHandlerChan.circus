@@ -6,3 +6,7 @@
   \circchannel release\_complete : SchedulableID \\
   \circchannel end\_aperiodic\_app : SchedulableID
 \end{circus}
+%
+\begin{circus}
+	\circchannelset APEHSync == \lchanset handleAsyncEventCall, handleAsyncEventRet, end\_aperiodicEventHandler\_app \rchanset \\
+\end{circus}
