@@ -29,8 +29,8 @@
   controllingMission' = nullMissionId\\
   applicationTerminating' = \false \\
   pending' = \false \\
-  deadline' = deadlineOf(aperiodicParameters) \\
-  deadlineMissHandler' = missHandlerOf(aperiodicParameters) \\
+  deadline' = deadlineOfAperiodic(aperiodicParameters) \\
+  deadlineMissHandler' = missHandlerOfAperiodic(aperiodicParameters) \\
 \end{schema}
 %
 \begin{circusaction}

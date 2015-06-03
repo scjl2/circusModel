@@ -37,10 +37,10 @@
   period' = periodOf(periodicParameters)\\
   startTimeOf(periodicParameters) = NULL \implies startTime' = time~(0,0)\\
   startTimeOf(periodicParameters) \neq NULL \implies startTime' = startTimeOf(periodicParameters)\\  
-  deadlineOf(periodicParameters) = NULL \implies deadline' = period'\\
-  deadlineOf(periodicParameters) \neq NULL \implies deadline' =  deadlineOf(periodicParameters) \\
+  deadlineOfPeriodic(periodicParameters) = NULL \implies deadline' = period'\\
+  deadlineOfPeriodic(periodicParameters) \neq NULL \implies deadline' =  deadlineOfPeriodic(periodicParameters) \\
   missedReleases' = 0 \\
-  deadlineMissHandler' = missHandlerOf(periodicParameters) \\
+  deadlineMissHandler' = missHandlerOfPeriodic(periodicParameters) \\
 \end{schema}
 % 
 \begin{circusaction}
