@@ -223,12 +223,14 @@ waitOnMissionMeth=
 --	waitCall.MissionObjectId?thread -> 
 --	waitRet.MissionObjectId.thread -> 
 --	endSyncMeth.MissionObjectId.thread -> 
+	waitOnMission?thread ->
 	SKIP
 	
 notifyOnMissionMeth =
 --	startSyncMeth.MissionObjectId?thread -> 
 --	notify.MissionObjectId?thread ->
 --	endSyncMeth.MissionObjectId.thread -> 
+	notifyOnMission?thread ->
 	SKIP
 
 
@@ -273,6 +275,7 @@ WhileInner_w(empty) =
 			lockAcquired.MissionObjectId.WriterThreadId ->
 		--	waitCall.MissionObjectId.WriterThreadId -> 
 		--	waitRet.MissionObjectId.WriterThreadId -> 
+			waitOnMission.WriterThreadId -> 
 			endSyncMeth.MissionObjectId.WriterThreadId -> 
 			WhileOuter_w(false)
 		)
@@ -286,6 +289,7 @@ WhileInner_w(empty) =
 		startSyncMeth.MissionObjectId.WriterThreadId -> 
 		lockAcquired.MissionObjectId.WriterThreadId ->
 		--notify.MissionObjectId.WriterThreadId ->
+		notifyOnMission.WriterThreadId ->
 		endSyncMeth.MissionObjectId.WriterThreadId -> 
 	
     	RunOuter_w
@@ -336,6 +340,7 @@ WhileInner_r(empty) =
 			lockAcquired.MissionObjectId.ReaderThreadId ->
 		--	waitCall.MissionObjectId.ReaderThreadId -> 
 		--	waitRet.MissionObjectId.ReaderThreadId -> 
+			waitOnMission.ReaderThreadId -> 
 			endSyncMeth.MissionObjectId.ReaderThreadId -> 
 			WhileOuter_r(false)
 		)
@@ -350,6 +355,7 @@ WhileInner_r(empty) =
 		startSyncMeth.MissionObjectId.ReaderThreadId -> 
 		lockAcquired.MissionObjectId.ReaderThreadId ->
 		--notify.MissionObjectId.ReaderThreadId ->
+		notifyOnMission.ReaderThreadId ->
 		endSyncMeth.MissionObjectId.ReaderThreadId -> 
 	
     	RunOuter_r
@@ -422,7 +428,7 @@ Program2 =
   
 (   ( ( (MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp) [| {|  waitCall, waitRet, notify |} |] ThreadObjectSystem(MissionObjectId)  
 	) )
-     [| union(MissionSync, {| lockAcquired, startSyncMeth, endSyncMeth,  waitCall, waitRet, notify, bufferEmptyCall, bufferEmptyRet, readCall, readRet, write, interrupt, isInterrupted, notifyAll, interrupted|}) |]
+     [| union(MissionSync, {| waitOnMission, notifyOnMission, lockAcquired, startSyncMeth, endSyncMeth,  waitCall, waitRet, notify, bufferEmptyCall, bufferEmptyRet, readCall, readRet, write, interrupt, isInterrupted, notifyAll, interrupted|}) |]
    -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
   (
 
