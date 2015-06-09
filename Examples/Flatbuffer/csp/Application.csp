@@ -222,8 +222,8 @@ Read_fbm =
 waitOnMissionMeth=
 --	startSyncMeth.MissionObjectId?thread -> 
 waitOnMissionCall?thread ->
-	waitCall.MissionObjectId?thread -> 
-	waitRet.MissionObjectId.thread -> 
+--	waitCall.MissionObjectId.thread -> 
+--	waitRet.MissionObjectId.thread -> 
 --	endSyncMeth.MissionObjectId.thread -> 
 waitOnMissionRet?thread ->	
 	SKIP
@@ -231,7 +231,7 @@ waitOnMissionRet?thread ->
 notifyOnMissionMeth =
 --	startSyncMeth.MissionObjectId?thread -> 
 notifyOnMission?thread ->
-	notify.MissionObjectId?thread ->
+--	notify.MissionObjectId.thread ->
 --	endSyncMeth.MissionObjectId.thread -> 
 	
 	SKIP
