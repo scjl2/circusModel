@@ -15,9 +15,9 @@ Methods \circdef \\
 \begin{circusaction}
 handlerAsyncEvent \circdef \\
 \circblockopen
-	handleAsyncEventCall~.~NestedOneShotEventHandler \then \\
+%	handleAsyncEventCall~.~NestedOneShotEventHandler \then \\
 
-    handleAsyncEventRet~.~NestedOneShotEventHandler \then \\
+ %   handleAsyncEventRet~.~NestedOneShotEventHandler \then \\
     \Skip
 \circblockclose
 \end{circusaction}

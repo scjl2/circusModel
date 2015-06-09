@@ -4,9 +4,16 @@
 \extracircusvspace
 %
 \begin{axdef}
-  MainMission : MissionID\\
-  NestedMission : MissionID\\
+	MainMission : MissionID\\
+	NestedMission : MissionID\\
+ %eg MainMission : MissionID\\
+%  NestedMission : MissionID\\
  
 \where
-  distinct \langle nullMissionId, MainMission, NestedMission  \rangle
+  distinct \langle nullMissionId, 
+	MainMission
+	,\\
+	NestedMission
+  \rangle
 \end{axdef}
+

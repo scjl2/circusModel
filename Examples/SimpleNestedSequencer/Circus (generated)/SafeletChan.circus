@@ -3,9 +3,5 @@
 \end{zsection}
 %
 \begin{circus}
-\circchannel done\_safeletFW
-\end{circus}
-%
-\begin{circus}
-\circchannelset ~ SafeletAppSync ~ == \lchanset getSequencerCall, getSequencerRet, initializeApplicationCall, initializeApplicationRet, end\_safelet\_app \rchanset\\
+\circchannelset ~ SafeletAppSync ~ == \lchanset getSequencerCall, getSequencerRet, initializeApplicationCall, initializeApplicationRet, end\_safelet\_app \rchanset \\
 \end{circus}

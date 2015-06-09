@@ -98,7 +98,7 @@ Methods_tlms =
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
-nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
+nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet |}
 
 
 

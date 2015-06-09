@@ -21,3 +21,7 @@
 \end{circus}
 %
 
+%
+\begin{circus}
+  \circchannel end\_oneShot\_app : SchedulableID
+\end{circus}

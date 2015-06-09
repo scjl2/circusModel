@@ -1,13 +1,6 @@
 \begin{zsection}
-  \SECTION ~ OneShotEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, OneShotEventHandlerFWChan%, OneShotEventHandlerMethChan 
+  \SECTION ~ OneShotEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, OneShotEventHandlerFWChan, OneShotEventHandlerMethChan 
 \end{zsection}
-%
-\begin{circus}
-\circchannel ~ getNextReleaseTimeCall : SchedulableID \\
-\circchannel ~ getNextReleaseTimeRet : SchedulableID \cross JTime \\
-\circchannel ~ scheduleNextRelease : SchedulableID \cross JTime \\
-\end{circus}
-
 %
 \begin{circus}
 \circchannelset STCSync == \lchanset get\_startTime, set\_startTime \rchanset \\

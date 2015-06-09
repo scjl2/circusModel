@@ -4,7 +4,7 @@
 \extracircusvspace
 %
 \begin{circus}
-  \circchannel ~ start\_toplevel\_sequencer:SchedulableID \\
+  \circchannel ~ start\_toplevel\_sequencer : SchedulableID \\
 \end{circus}
 %
 \begin{circus}

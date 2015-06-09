@@ -7,7 +7,7 @@
   \circchannel increment\_missedReleases : SchedulableID \\
   \circchannel decrement\_missedReleases : SchedulableID \\
   \circchannel stop\_period : SchedulableID \\
-  \circchannel release\_complete\_periodic : SchedulableID \cross \num \\
+  \circchannel periodic\_release\_complete : SchedulableID \cross \num \\
 \end{circus}
 %
 \begin{circus}

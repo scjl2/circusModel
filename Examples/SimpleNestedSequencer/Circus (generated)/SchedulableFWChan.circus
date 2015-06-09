@@ -5,8 +5,5 @@
 \begin{circus}
     \circchannel ~ activate\_schedulables : MissionID\\
     \circchannel ~ done\_schedulable : SchedulableID\\
-    \circchannel ~ end\_periodic\_app : SchedulableID\\
-    \circchannel ~ end\_oneShot\_app : SchedulableID\\
-    \circchannel ~ end\_managedThread\_app : SchedulableID\\
-    \circchannel ~ end\_aperiodic\_app : SchedulableID\\
+    \circchannel ~ end\_ periodic\_app : SchedulableID\\
 \end{circus}
