@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ TopLevelMissionSequencerFW ~ \parents ~ TopLevelMissionSequencerChan,
+  \SECTION ~ TopLevelMissionSequencerFW ~ \parents ~ TopLevelMissionSequencerChan, \\
   \t1 MissionId, MissionMethChan, SchedulableId, MissionFWChan, FrameworkChan 
 \end{zsection}
 %
@@ -30,9 +30,9 @@ Start ~ \circdef ~ \\
 \t1 start\_toplevel\_sequencer~.~sequencer \then \\
 \t1 \Skip \\
 \end{circusaction}
-% \circblockclose
+% 
 \begin{circusaction}
-Execute ~ \circdef
+Execute ~ \circdef \\
 \t1 \circblockopen 
 	\circblockopen
   		\circblockopen
@@ -42,7 +42,7 @@ Execute ~ \circdef
     		\circblockclose\\
     			\lpar \{currentMission \} | \lchanset end\_methods \rchanset | \emptyset \rpar\\
     		Methods\\    	
-    	 \circblockclose   
+    	 \circblockclose   \\
     	 	\lpar \emptyset | CCSync | \{ continue \} \rpar\\
     	 ContinueController \\
     \circblockclose\\ 
@@ -85,8 +85,8 @@ Continue \circdef \\
 \t1 \circblockopen 
 	get\_continue~.~sequencer~?~continue\prefixcolon(continue = \true) \then \\
  	RunMission \\
-    \circblockclose		
-\t1 \extchoice
+    \circblockclose	\\	
+\t1 \extchoice \\
 \t1 \circblockopen
 	get\_continue~.~sequencer~?~continue\prefixcolon(continue = \false) \then \\
  	\Skip\\
@@ -95,17 +95,17 @@ Continue \circdef \\
 %
 \begin{circusaction}
 Methods ~ \circdef \\
-\circblockopen
-   \circblockopen
+
+\t1   \circblockopen
      SequenceTerminationPending \circseq\\
      Methods\\
    \circblockclose\\
-   \extchoice \\
-   \circblockopen 
+\t1   \extchoice \\
+\t1   \circblockopen 
    	end\_methods~.~sequencer \then \\
    	\Skip\\
-   \circblockclose \\
-\circblockclose   
+   \circblockclose 
+   
 \end{circusaction}
 %
 \begin{circusaction}
