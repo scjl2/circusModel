@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ SchedulableMissionSequencerFW ~ \parents ~ SchedulableMissionSequencerChan, SchedulableChan, MissionIds, MissionChan,\\
+  \SECTION ~ SchedulableMissionSequencerFW ~ \parents ~ SchedulableMissionSequencerChan, \\ \t1 SchedulableChan, MissionIds, MissionChan,\\
   \t1 SchedulableId, scj\_prelude, SafeletMethChan, FrameworkChan
 \end{zsection}
 %
@@ -46,7 +46,7 @@ Start ~ \circdef ~ \\
 \t1 \circblockopen
 		done\_toplevel\_sequencer \then \\
 		applicationTerminating := \true \\		
-	\circblockclose 
+	\circblockclose \\
 \t1 \extchoice\\
 \t1 \circblockopen
 		activate\_schedulables~?~someMissionID \then \\
@@ -77,10 +77,11 @@ Execute \circdef \\
    		 \circblockclose \\
       	\lpar\{ currentMission \} | \lchanset end\_methods \rchanset | \emptyset \rpar\\
    	 Methods\\
-    \circblockclose   
+    \circblockclose   \\
    	 \lpar \emptyset | CCSync | \{ continueAbove, continueBelow \} \rpar\\
     	 ContinueController \\
-  \circblockclose  \circseq done\_schedulable~.~sequencer \then \Skip
+  \circblockclose  \circseq \\
+  \t1 done\_schedulable~.~sequencer \then \Skip
 \end{circusaction}
 %
 \begin{circusaction}
@@ -127,8 +128,8 @@ Continue \circdef \\
 \t1 \circblockopen
 	get\_continue~.~sequencer~?~continue\prefixcolon(continue = \true) \then \\
 	RunMission \\
-    \circblockclose 
-\t1 \extchoice
+    \circblockclose \\
+\t1 \extchoice \\
 \t1 \circblockopen
 	get\_continue~.~sequencer~?~continue\prefixcolon(continue = \false) \then \\
 	\Skip\\
@@ -137,7 +138,7 @@ Continue \circdef \\
 %
 \begin{circusaction}
 SignalTermination ~ \circdef ~\\
-\circblockopen 
+\t1 \circblockopen 
     \circblockopen
     	end\_terminations~.~sequencer \then \\
     	\Skip
@@ -170,19 +171,14 @@ Methods ~ \circdef \\
 %
 \begin{circusaction}
 SequenceTerminationPending ~ \circdef \\
-
 \t1	sequenceTerminationPendingCall~.~sequencer \then \\
-\t1	get\_continue~.~sequencer~?~continue \then
- 
+\t1	get\_continue~.~sequencer~?~continue \then \\ 
 \t1 	 sequenceTerminationPendingRet~.~sequencer~!~continue \then\\
-\t1	  \Skip\\
-
-
+\t1	  \Skip
 \end{circusaction}
 %
 \begin{circusaction}
-ContinueController \circdef \\
-\circvar continue : \boolean \circspot \\
+ContinueController \circdef \circvar continue : \boolean \circspot \\
 \t1 \circblockopen
 		\lschexpract GetContinue \rschexpract \circseq
 		get\_continue~.~sequencer~!~continue \then \\
