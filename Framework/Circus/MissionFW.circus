@@ -46,12 +46,12 @@
 %
 \begin{circusaction}
 Start ~ \circdef \\
-\t1\circblockopen\\
+\t1\circblockopen
 	start\_mission~.~mission~?~mySequencer \then\\
 	controllingSequencer := mySequencer \\
   \circblockclose\\
 \t1  \extchoice \\
-\t1\circblockopen\\
+\t1\circblockopen
   	done\_toplevel\_sequencer \then \\
   	applicationTerminating := \true \\
  \circblockclose
@@ -88,7 +88,7 @@ Register ~ \circdef ~ \\
 	\circblockclose\\ 
 	\extchoice \\
 	\circblockopen
-		checkSchedulable~.~mission~?~check\prefixcolon(check = \true) \then\\	
+		checkSchedulable~.~mission~?~check\prefixcolon(check = \false) \then\\	
 		throw.illegalStateException \then \\
   		\Chaos\\
   	\circblockclose\\
@@ -104,13 +104,13 @@ RegisterException ~ \circdef ~ \\
 %
 \begin{circusaction}
 SetCeilingPriority \circdef \\
-\t1 setCeilingPriority~.~mission~?~o~?~p \then 
+\t1 setCeilingPriority~.~mission~?~o~?~p \then \\
 \t1 \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 SetCeilingPriorityException \circdef \\
-\t1 setCeilingPriority~.~mission~?~o~?~p \then 
+\t1 setCeilingPriority~.~mission~?~o~?~p \then \\
 \t1 throw.illegalStateException \then \\
 \t1 \Chaos
 \end{circusaction}
@@ -121,17 +121,17 @@ MissionPhase \circdef \\
 \t2 \lpar \{ registeredSchedulables, activeSchedulables, missionTerminating, applicationTerminating, controllingSequencer \} | \lchanset done\_schedulables \rchanset | \emptyset \rpar\\
 \t1 Exceptions
 \end{circusaction}
-% \circblockopen \circblockclose
+%
 \begin{circusaction}
 Execute ~ \circdef\\
 \t1 \circblockopen 
 	\circif registeredSchedulables = \emptyset \circthen \\
-	\t2\circblockopen
+	\t1\circblockopen
 		done\_schedulables~.~mission \then \\
 		\Skip\\
-	\circblockclose
+	\circblockclose\\
 	\circelse registeredSchedulables \neq \emptyset \circthen\\
-	\t2\circblockopen
+	\t1\circblockopen
 		activate\_schedulables~.~mission ~ \then\\
 		activeSchedulables := registeredSchedulables \circseq	\\  
 		\circblockopen\\
@@ -146,8 +146,8 @@ Execute ~ \circdef\\
 %
 \begin{circusaction}
 TerminateAndDone \circdef \\
-\t1 \circblockopen\\
-    	\circblockopen\\
+\t1 \circblockopen
+    	\circblockopen
 		SignalTermination              
 		\t1 \lpar \emptyset | TerminateSync | \{activeSchedulables\} \rpar\\
 		DoneSchedulables  \\		
@@ -159,7 +159,7 @@ TerminateAndDone \circdef \\
 
 \begin{circusaction}
 SignalTermination \circdef \\
-\t1 \circblockopen\\
+\t1 \circblockopen
   stop\_schedulables~.~mission \then \\
   get\_activeSchedulables~.~mission~?~schedulablesToStop \then \\
   StopSchedulables(schedulablesToStop) \circseq\\
@@ -191,19 +191,19 @@ DoneSchedulables \circdef\\
 	get\_activeSchedulables~.~mission~!~activeSchedulables \then\\
 	DoneSchedulables
      \circblockclose\\
-     \extchoice\\
-     \circblockopen
+\t1     \extchoice\\
+\t1     \circblockopen
 	\circblockopen
 		\Extchoice schedulable : activeSchedulables \circspot\\ 
 			done\_schedulable~.~schedulable \then\\  
 			activeSchedulables := activeSchedulables \setminus \{schedulable\} \circseq\\
 			\Skip
-	\circblockclose\circseq       
+	\circblockclose \circseq       \\
 	\circif activeSchedulables = \emptyset \circthen\\		
 	\t2 \circblockopen
 		schedulables\_terminated~.~mission \then\\
 		\Skip\\
-	     \circblockclose
+	     \circblockclose \\
 	\circelse activeSchedulables \neq \emptyset \circthen\\
 	\t2   DoneSchedulables\\
 	\circfi   \\
@@ -212,8 +212,7 @@ DoneSchedulables \circdef\\
 %
 \begin{circusaction}
 Methods ~ \circdef ~ \\
-\t1 \circblockopen
-      	\circblockopen 	
+\t1     	\circblockopen 	
       		\circblockopen
       			RequestTerminationMeth\\
       				\lpar \emptyset | \lchanset end\_mission\_terminations \rchanset | \emptyset \rpar\\
@@ -223,12 +222,12 @@ Methods ~ \circdef ~ \\
       		MissionTerminatingController
       	\circblockclose\\
       	\lpar \{missionTerminating\} | \lchanset end\_mission\_terminations \rchanset | \emptyset \rpar\\
-      	\circblockopen
+\t1      	\circblockopen
       		done\_schedulables~.~mission \then \\
       		end\_mission\_terminations~.~mission \then\\
       		\Skip
       	\circblockclose \\
-    \circblockclose\\
+
 \end{circusaction}
 %
 \begin{circusaction}
@@ -245,16 +244,17 @@ RequestTerminationMeth ~ \circdef\\
 	   	requestTermination~.~mission~.~schedulable \then \\
 	   	\Skip\\
 	  \circblockclose\circseq\\
+	  
 	  \circblockopen
 	  	\circblockopen
-	  		get\_missionTerminating~.~mission?missionTerminating\prefixcolon(missionTerminating = \false) \then
+	  		get\_missionTerminating~.~mission?missionTerminating\prefixcolon(missionTerminating = \false) \then \\
 	  		set\_missionTerminating~.~mission~!~\true \then \\
 	  		stop\_schedulables~.~mission \then \\
 	  		RequestTerminationMeth\\
 	  	\circblockclose\\
 	  	\extchoice \\
 	  	\circblockopen
-	  		get\_missionTerminating~.~mission?missionTerminating\prefixcolon(missionTerminating = \true) \then
+	  		get\_missionTerminating~.~mission?missionTerminating\prefixcolon(missionTerminating = \true) \then \\
 	  		RequestTerminationMeth\\
 	  	\circblockclose\\
 	  \circblockclose \\
@@ -288,7 +288,7 @@ MissionTerminatingController \circdef \\
 	set\_missionTerminating~.~mission~?~newMissionTerminating \then \\
 	missionTerminating := newMissionTerminating \circseq \\
 	MissionTerminatingController
-    \circblockclose  
+    \circblockclose  \\
 \t1 \extchoice \\
 \t1 \circblockopen 
 	end\_mission\_terminations~.~mission \then \\
@@ -318,10 +318,12 @@ Cleanup ~ \circdef ~ \\
 %
 \begin{circusaction}
 CleanupSchedulables \circdef \\
-	\t1	\Interleave s : registeredSchedulables \circspot\\
-                cleanupSchedulableCall~.~s \then \\
-                cleanupSchedulableRet~.~s \then \\	
-                \Skip
+	\t1	\circblockopen
+	\Interleave s : registeredSchedulables \circspot\\
+      \t1          cleanupSchedulableCall~.~s \then \\
+       \t1         cleanupSchedulableRet~.~s \then \\	
+        \t1        \Skip
+                \circblockclose
 \end{circusaction}
 %
 \begin{circusaction}
@@ -333,11 +335,13 @@ Finish ~ \circdef ~\circval continueSequencer : \boolean \circspot  \\
 %
 \begin{circusaction}
 Exceptions \circdef \\
-\t1 \circblockopen RegisterException \\
+\t1 \circblockopen 
+RegisterException \\
  \interleave \\
-SetCeilingPriorityException \circblockclose \\
-\extchoice \\
-\circblockopen
+SetCeilingPriorityException 
+\circblockclose \\
+\t1 \extchoice \\
+\t1 \circblockopen
 	done\_schedulables~.~mission \then \\
 	\Skip \\
 \circblockclose
@@ -347,11 +351,11 @@ SetCeilingPriorityException \circblockclose \\
   \circspot \circblockopen\circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\ 
   		\circblockopen\circif applicationTerminating = \false \circthen \\ 
   			\t2\circblockopen InitializePhase \circseq MissionPhase \circseq CleanupPhase \circseq X\circblockclose\\ 
-  		\circelse applicationTerminating = \true \circthen 
+  		\circelse applicationTerminating = \true \circthen \\
   		\t2 \circblockopen 
   			end\_mission\_app~.~mission \then \\
   			\Skip 
-  		\circblockclose
+  		\circblockclose\\
   		\circfi \circblockclose \circblockclose
 \end{circusaction}
 %
