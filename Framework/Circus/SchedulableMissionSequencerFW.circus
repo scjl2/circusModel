@@ -195,7 +195,13 @@ ContinueController \circdef \circvar continue : \boolean \circspot \\
 		set\_continueAbove~.~sequencer~?~newContinueAbove \then \\
 		continueAbove := newContinueAbove \circseq \\
 		ContinueController \\
-	\circblockclose 
+	\circblockclose \\
+\t1   \extchoice \\
+\t1   \circblockopen 
+   	end\_methods~.~sequencer \then \\
+   	\Skip\\
+   \circblockclose 
+	
 \end{circusaction}
 %
 \begin{circusaction}
