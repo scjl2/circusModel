@@ -60,15 +60,20 @@ Start ~ \circdef \\
 \begin{circusaction}
 InitializePhase ~ \circdef \\
 \t1  initializeCall~.~mission ~ \then \\
+\t1 Initialize
+\end{circusaction}
+% 
+\begin{circusaction}
+Initialize ~ \circdef \\
 \t1\circblockopen
 	\circblockopen	
 		Register \circseq \\
-		InitializePhase
+		Initialize
 	\circblockclose \\
 	\extchoice \\
 	\circblockopen
 		SetCeilingPriority \circseq \\
-		InitializePhase
+		Initialize
 	\circblockclose \\
 	\extchoice \\
 	\circblockopen
@@ -77,7 +82,7 @@ InitializePhase ~ \circdef \\
 	\circblockclose \\
 \circblockclose	
 \end{circusaction}
-% 
+%
 \begin{circusaction}
 Register ~ \circdef ~ \\
 \t1  register~?~s~!~mission \then \\
