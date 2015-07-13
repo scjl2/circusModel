@@ -187,16 +187,6 @@ SignalTermination \circdef \\
 %              
 \begin{circusaction}
 DoneSchedulables \circdef\\
-\t1   \circblockopen
-	schedulables\_stopped~.~mission \then \\
-	\Skip
-      \circblockclose\\
-\t1  \extchoice\\
-\t1  \circblockopen
-	get\_activeSchedulables~.~mission~!~activeSchedulables \then\\
-	DoneSchedulables
-     \circblockclose\\
-\t1     \extchoice\\
 \t1     \circblockopen
 	\circblockopen
 		\Extchoice schedulable : activeSchedulables \circspot\\ 
@@ -206,13 +196,18 @@ DoneSchedulables \circdef\\
 	\circblockclose \circseq       \\
 	\circif activeSchedulables = \emptyset \circthen\\		
 	\t2 \circblockopen
-		schedulables\_terminated~.~mission \then\\
+		schedulables\_stopped~.~mission \then\\
 		\Skip\\
 	     \circblockclose \\
 	\circelse activeSchedulables \neq \emptyset \circthen\\
 	\t2   DoneSchedulables\\
 	\circfi   \\
-    \circblockclose
+    \circblockclose \\
+\t1     \extchoice\\
+\t1  \circblockopen
+	get\_activeSchedulables~.~mission~!~activeSchedulables \then\\
+	DoneSchedulables
+     \circblockclose
 \end{circusaction}
 %
 \begin{circusaction}

@@ -317,14 +317,6 @@ DoneSchedulables(mission, activeSchedulables) =
             )
           )
         )
-            --get_activeSchedulables.mission?activeSchedulables ->
-     -- if activeSchedulables == {} then    
-   --   (
-   --     schedulables_terminated.mission ->
-  --     SKIP
-  --    ) 
-   --   else 
-   --     DoneSchedulables(mission)
     )
   )
 )
