@@ -127,7 +127,12 @@ ContinueController \circdef \\
 	set\_continue~.~sequencer~?~newContinue \then \\
 	continue := newContinue \circseq\\
 	ContinueController\\
-     \circblockclose
+     \circblockclose \\
+     \t1   \extchoice \\
+\t1   \circblockopen 
+   	end\_methods~.~sequencer \then \\
+   	\Skip\\
+   \circblockclose 
 \end{circusaction}
 %
 \begin{circusaction}
