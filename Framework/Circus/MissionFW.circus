@@ -139,7 +139,7 @@ Execute ~ \circdef\\
   	  			\t1 \lpar \{activeSchedulables\} | \lchanset stop\_schedulables, done\_schedulables \rchanset | \{missionTerminating\} \rpar\\         
   	  		Methods\\
   	  	\circblockclose \\
-  	\circblockclose
+  	\circblockclose \\
 	\circfi  \\
   \circblockclose \circhide \lchanset done\_schedulables \rchanset\\
 \end{circusaction}
@@ -148,7 +148,7 @@ Execute ~ \circdef\\
 TerminateAndDone \circdef \\
 \t1 \circblockopen
     	\circblockopen
-		SignalTermination              
+		SignalTermination \\             
 		\t1 \lpar \emptyset | TerminateSync | \{activeSchedulables\} \rpar\\
 		DoneSchedulables  \\		
 	\circblockclose\circseq\\
