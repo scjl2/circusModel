@@ -221,7 +221,7 @@ Methods ~ \circdef ~ \\
       			\lpar \emptyset | MTCSync | \{missionTerminating\} \rpar\\
       		MissionTerminatingController
       	\circblockclose\\
-      	\lpar \{missionTerminating\} | \lchanset end\_mission\_terminations \rchanset | \emptyset \rpar\\
+\t1      	\lpar \{missionTerminating\} | \lchanset end\_mission\_terminations \rchanset | \emptyset \rpar\\
 \t1      	\circblockopen
       		done\_schedulables~.~mission \then \\
       		end\_mission\_terminations~.~mission \then\\
