@@ -119,8 +119,8 @@ StartMission ~ \circdef ~\\
 \t2   \circblockopen
 	set\_continueBelow~.~sequencer~!~\false \then \\
     	\Skip \\
-      \circblockclose 
-\t1  \circfi\\ 
+      \circblockclose \\
+\t1  \circfi
 \end{circusaction}
 %
 \begin{circusaction}
