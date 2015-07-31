@@ -4,8 +4,13 @@
 \extracircusvspace
 %
 \begin{axdef}
-  FlatBufferMission : MissionID\\
+	FlatBufferMission : MissionID\\
+ %eg MainMission : MissionID\\
+%  NestedMission : MissionID\\
  
 \where
-  distinct \langle nullMissionId, FlatBufferMission  \rangle
+  distinct \langle nullMissionId, 
+	FlatBufferMission
+  \rangle
 \end{axdef}
+

@@ -1,25 +1,46 @@
 \begin{zsection}
-  \SECTION ~ ReaderApp ~ \parents ~ ManagedThreadChan, SchedulableId, SchedulableIds
+  \SECTION ~ ReaderApp ~ \parents ~ ManagedThreadChan, SchedulableId, SchedulableIds, ReaderClass
 \end{zsection}
 %
 \begin{circus}
 \circprocess ReaderApp \circdef \circbegin
 \end{circus}
 
+\begin{schema}{State}
+  this : \circreftype ReaderClass\\ 
+\end{schema}
+% 
 \begin{circusaction}
-Methods \circdef \\
-	Run \circseq Methods
+\circstate State
 \end{circusaction}
+%
+\begin{schema}{Init}
+  State~'
+\where
+  this' = \circnew ReaderClass()\\ 
+\end{schema}
 
 \begin{circusaction}
 Run \circdef \\
 \circblockopen
 	runCall~.~Reader \then \\
-		
+	this~.~run() \circseq \\
 	runRet~.~Reader \then \\
 	\Skip
 \circblockclose
 \end{circusaction}	
+
+\begin{circusaction}
+Methods \circdef \\
+\circblockopen
+	Run \\
+%
+%
+%
+\circblockclose 
+	 \circseq Methods
+\end{circusaction}
+
 
 \begin{circusaction}
 \circspot (Methods) %\circinterrupt (end\_managedThread\_app~.~Reader \then \Skip)

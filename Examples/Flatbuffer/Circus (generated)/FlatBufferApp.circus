@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ FlatBufferApp ~ \parents ~ scj\_prelude, SchedulableId, SchedulableIds, SafeletChan
+  \SECTION ~ FlatBufferApp ~ \parents ~ scj\_prelude, SchedulableId, SchedulableIds, SafeletChan%, FlatBufferClass
 \end{zsection}
 %\begin{circus}
 %\circchannelset FlatBufferAppSync \circdef \\
@@ -37,12 +37,16 @@ GetSequencer \circdef \\
 \circblockclose
 \end{circusaction}
 
+
 \begin{circusaction}
 Methods \circdef \\
 \circblockopen
 	GetSequencer \\
 	\extchoice  \\
 	InitializeApplication  \\
+%
+%
+%
 \circblockclose
 \circseq Methods
 \end{circusaction}

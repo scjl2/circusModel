@@ -8,20 +8,16 @@
 		\t1 FrameworkChan, SafeletChan
 \end{zsection}
 %
-% done\_safeletFW doesn't exist...
-%
-
-%
 \begin{circus}
 \circchannelset ~ TerminateSync == \\ \t1 \lchanset schedulables\_terminated, schedulables\_stopped, get\_activeSchedulables \rchanset
 \end{circus}
 %
 \begin{circus}	
-\circchannelset ~ SafeletTierSync ==\\ \t1 \lchanset start\_toplevel\_sequencer, done\_toplevel\_sequencer, done\_safeletFW \rchanset
+\circchannelset ~ ControlTierSync ==\\ \t1 \lchanset start\_toplevel\_sequencer, done\_toplevel\_sequencer, done\_safeletFW \rchanset
 \end{circus}
-%Start Mission and Done Mission wont parse?
+% IDs wont type check again   Start Mission and Done Mission wont parse?
 \begin{circus}
-\circchannelset ~ TierSync == \\ \t1 \lchanset start\_mission, done\_mission,\\ \t1 done\_safeletFW, done\_toplevel\_sequencer\rchanset 
+\circchannelset ~ TierSync == \\ \t1 \lchanset start\_mission~.~FlatBufferMission, done\_mission~.~FlatBufferMission,\\ \t1 done\_safeletFW, done\_toplevel\_sequencer\rchanset 
 \end{circus}
 %
 \begin{circus}
@@ -39,41 +35,47 @@
 \end{circus}
 %
 \begin{circus}
-\circchannelset ~ AppSync == \lchanset \rchanset %\\ \t1  \bigcup \{SafeltAppSync, MissionSequencerAppSync, MissionAppSync, \\ \t1 MTAppSync, OSEHSync , APEHSync,  \\ \t1
-%	\lchanset getSequencer, end\_mission\_app, end\_managedThread\_app, \\ \t1 setCeilingPriority, requestTerminationCall,requestTerminationRet, terminationPendingCall, \\ \t1 terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet\rchanset  \}    
+\circchannelset ~ AppSync == \\ \t1  \bigcup \{SafeltAppSync, MissionSequencerAppSync, MissionAppSync, \\ \t1 MTAppSync, OSEHSync , APEHSync,  \\ \t1
+	\lchanset getSequencer, end\_mission\_app, end\_managedThread\_app, \\ \t1 setCeilingPriority, requestTerminationCall,requestTerminationRet, terminationPendingCall, \\ \t1 terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet\rchanset  \}    
 \end{circus}
 
+%IDs wont type check
+%
+%
+%
+\newpage
+
+%
+%+++ Program +++
+%
 \begin{zsection}
-  \SECTION ~ Program ~ \parents ~ scj\_prelude, 
- %MissionId,
- %MissionIds, \\
- %SchedulableId,
- %SchedulableIds,
- MissionChan,
- MissionFW,\\
- SafeletFW,
- TopLevelMissionSequencerFW,
- NetworkChannels, 
- ManagedThreadFW, \\
- %SchedulableMissionSequencerFW,
- %PeriodicEventHandlerFW, 
- %OneShotEventHandlerFW,\\
- FlatBufferApp,
- FlatBufferMissionSequencerApp, \\
- FlatBufferMissionApp, 
- ReaderApp,
- WriterApp 
+  \SECTION ~ Program ~ \parents ~ scj\_prelude, MissionId, MissionIds, \\
+  \t1 SchedulableId, SchedulableIds, MissionChan, SchedulableMethChan, MissionFW,\\
+  \t1 SafeletFW, TopLevelMissionSequencerFW, NetworkChannels, ManagedThreadFW, \\
+  \t1 SchedulableMissionSequencerFW, PeriodicEventHandlerFW, OneShotEventHandlerFW,\\
+  \t1 AperiodicEventHandlerFW, FlatBufferApp, FlatBufferMissionSequencerApp, \\
+  \t1 
+
+
+FlatBufferMissionApp, 
+
+
+ReaderApp 
+,
+WriterApp 
 \end{zsection}
 %
 \begin{circus}
 \circprocess ControlTier \circdef \\
 \circblockopen
 SafeletFW \\
-\t1 \lpar TierSync \rpar \\
+\t1 \lpar ControlTierSync \rpar \\
 TopLevelMissionSequencerFW(FlatBufferMissionSequencer)
 \circblockclose
 \end{circus}
 %
+
+
 \begin{circus}
 \circprocess Tier0 \circdef \\
 
@@ -81,14 +83,18 @@ TopLevelMissionSequencerFW(FlatBufferMissionSequencer)
 	MissionFW(FlatBufferMission)\\
 		\t1 	\lpar MissionSync \rpar \\
 		\circblockopen
+
+
+\circblockopen
 			ManagedThreadFW(Reader)\\
 			\t1 \lpar SchedulablesSync \rpar\\
 			ManagedThreadFW(Writer)\\
 
 
+\circblockclose \\
 
 
-
+\t1 \lpar SchedulablesSync \rpar\\
 
 
 
@@ -105,7 +111,7 @@ TopLevelMissionSequencerFW(FlatBufferMissionSequencer)
 \circblockopen
 ControlTier \\
 \t1 \lpar TierSync \rpar \\
-\circblockopen
+ \circblockopen
 Tier0
 \circblockclose
 \circblockclose
@@ -113,23 +119,22 @@ Tier0
 %
 \begin{circus}
 \circprocess  Application \circdef \\
+\circblockopen
 
 FlatBufferApp\\
 \interleave \\
-(FlatBufferMissionSequencerApp\\
+FlatBufferMissionSequencerApp\\
 \interleave \\
-FlatBufferMissionSequencerApp)\\
+FlatBufferMissionApp\\
+\interleave \\
 
-
-%\interleave \\
-%FlatBufferMissionApp
-%\interleave \\
-%ReaderApp\\
-%	\interleave \\
-%WriterApp\\
-
+ReaderApp\\
+\interleave \\
+WriterApp\\
+\circblockclose
 \end{circus}
 %
 \begin{circus}
 \circprocess Program \circdef Framework \lpar AppSync \rpar Application
 \end{circus}
+

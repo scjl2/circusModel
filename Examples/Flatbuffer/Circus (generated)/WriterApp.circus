@@ -1,28 +1,49 @@
 \begin{zsection}
-  \SECTION ~ WriterApp ~ \parents ~ ManagedThreadChan, SchedulableId, SchedulableIds
+  \SECTION ~ WriterApp ~ \parents ~ ManagedThreadChan, SchedulableId, SchedulableIds%, WriterClass
 \end{zsection}
 %
 \begin{circus}
 \circprocess WriterApp \circdef \circbegin
 \end{circus}
 
+\begin{schema}{State}
+  this : \bool %\circreftype WriterClass\\ 
+\end{schema}
+% 
 \begin{circusaction}
-Methods \circdef \\
-	Run \circseq Methods
+\circstate State
 \end{circusaction}
+%
+\begin{schema}{Init}
+  State~'
+%\where
+ % this' = \circnew WriterClass()\\ 
+\end{schema}
 
 \begin{circusaction}
 Run \circdef \\
 \circblockopen
 	runCall~.~Writer \then \\
-		
+	%this~.~run() \circseq \\
 	runRet~.~Writer \then \\
 	\Skip
 \circblockclose
 \end{circusaction}	
 
 \begin{circusaction}
-\circspot (Methods) %\circinterrupt (end\_managedThread\_app~.~Writer \then \Skip)
+Methods \circdef \\
+\circblockopen
+	Run \\
+%
+%
+%
+\circblockclose 
+	 \circseq Methods
+\end{circusaction}
+
+
+\begin{circusaction}
+\circspot (Methods)% \circinterrupt (end\_managedThread\_app~.~Writer \then \Skip)
 \end{circusaction}
 
 \begin{circus}
