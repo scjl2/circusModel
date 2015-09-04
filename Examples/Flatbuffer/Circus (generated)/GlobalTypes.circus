@@ -9,7 +9,7 @@
 \begin{axdef}
 	SafeletThreadId:ThreadID
 \end{axdef}
-%
+% 
 \begin{axdef}
 	nullThreadId : ThreadID
 \end{axdef}

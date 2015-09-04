@@ -5,7 +5,7 @@
 \end{zsection}
 %
 \begin{circus}
-  \circprocess Object  ~ \circdef ~ object: ObjectID ~ \circspot ~\circbegin
+  \circprocess ObjectFW  ~ \circdef ~ object: ObjectID ~ \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore ~ State}
