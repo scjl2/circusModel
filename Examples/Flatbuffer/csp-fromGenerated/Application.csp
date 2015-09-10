@@ -471,6 +471,3 @@ assert Program2 :[ deterministic  [FD] ]
 assert MissionAndThreads  :[ deadlock free [FD] ]
 assert MissionAndThreads :[ divergence free ]
 assert MissionAndThreads :[ deterministic  [FD] ]
-
-
---assert STOP [T= (Program2 \ diff(Events, {|throw|}))
