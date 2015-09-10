@@ -214,5 +214,5 @@ ThreadObjectSystem(o) =
 		)
 			[| union(WaitQueueSync, QueueForLockSync ) |]
 		PriorityQueues)
-	\ Union({ QueueForLockSync, WaitQueueSync, {| lock_released, removeFromQueueForLock, waitQueueEmpty,removeFromWaitQueue, queueForLockEmpty|} })
+	--\ Union({ QueueForLockSync, WaitQueueSync, {| lock_released, removeFromQueueForLock, waitQueueEmpty,removeFromWaitQueue, queueForLockEmpty|} })
 )

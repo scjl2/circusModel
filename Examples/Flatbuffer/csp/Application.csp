@@ -441,8 +441,28 @@ TestProgram =
 				{ (FlatBufferMissionId , ({}, {}, {},  {}, {WriterId, ReaderId})  )   }	                 
             )
 
+
+MissionAndThreads=
+( 
+	( 
+		(MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp) [| {|  lockAcquired, startSyncMeth, endSyncMeth, waitCall, waitRet, notify |} |] ThreadObjectSystem(MissionObjectId)  
+	) 
+)
+     [| union(MissionSync, {| waitOnMissionCall, waitOnMissionRet, notifyOnMission, bufferEmptyCall, bufferEmptyRet, readCall, readRet, write, interrupt, isInterrupted, notifyAll, interrupted|}) |]
+(
+
+    sbdia( ManagedThreadFW(WriterId) [| MTAppSync |] WriterApp )
+	    [|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+    sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp )
+)  
+
+
 assert Program2  :[ deadlock free [FD] ]
 assert Program2 :[ divergence free ]
 assert Program2 :[ deterministic  [FD] ]
+
+assert MissionAndThreads  :[ deadlock free [FD] ]
+assert MissionAndThreads :[ divergence free ]
+assert MissionAndThreads :[ deterministic  [FD] ]
 
 --assert STOP [T= (Program2 \ diff(Events, {|throw|}))
