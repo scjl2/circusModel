@@ -128,17 +128,17 @@ FlatBufferMissionApp =
 	)
 	/\ 
 	(end_mission_app.FlatBufferMissionId -> SKIP )
-)\FlatBufferMissionStateSync
+)--\FlatBufferMissionStateSync
 
 
 FlatBufferMissionState(bufferContents) =
 (
 	if bufferContents == 0 then
 		get_bufferEmpty.FlatBufferMissionId!true -> 
-		FlatBufferMissionState(bufferContents)
+		FlatBufferMissionState(0)
 	else
 		get_bufferEmpty.FlatBufferMissionId!false ->	
-		FlatBufferMissionState(bufferContents)
+		FlatBufferMissionState(0)
 )
 []
 (
@@ -172,9 +172,9 @@ Methods_fbm =
 ( 	
 	BufferEmpty_fbm
 	|||
-	WriteSyncMeth_fbm
+	 (||| thread : Threads @	WriteSyncMeth_fbm(thread))
 	|||
-	ReadSyncMeth_fbm
+	 (||| thread : Threads @	ReadSyncMeth_fbm(thread))
 	|||
     (||| thread : Threads @	waitOnMissionSyncMeth_fbm(thread))
 	
@@ -186,8 +186,8 @@ BufferEmpty_fbm =
 	bufferEmptyRet.FlatBufferMissionId!bufferEmpty ->
 	BufferEmpty_fbm
 
-WriteSyncMeth_fbm =
-	writeCall.FlatBufferMissionId?thread?update ->
+WriteSyncMeth_fbm(thread) =
+	writeCall.FlatBufferMissionId.thread?update ->
 	startSyncMeth.FlatBufferMissionObject.thread -> 
 	lockAcquired.FlatBufferMissionObject.thread ->
 	set_bufferContents.FlatBufferMissionId!update ->
@@ -196,22 +196,22 @@ WriteSyncMeth_fbm =
 
 	endSyncMeth.FlatBufferMissionObject.thread -> 
     writeRet.FlatBufferMissionId.thread -> 
-	WriteSyncMeth_fbm
+	WriteSyncMeth_fbm(thread)
 
-ReadSyncMeth_fbm =
-	readCall.FlatBufferMissionId?thread -> 
+ReadSyncMeth_fbm(thread) =
+	readCall.FlatBufferMissionId.thread -> 
 
 	startSyncMeth.FlatBufferMissionObject.thread -> 
 	lockAcquired.FlatBufferMissionObject.thread ->
 
 	get_bufferConetents.FlatBufferMissionId?out ->
-    set_bufferContents.FlatBufferMissionId!0 ->
+    --set_bufferContents.FlatBufferMissionId!0 ->
     
 	notify.FlatBufferMissionObject.thread ->
 
    	endSyncMeth.FlatBufferMissionObject.thread -> 
 	readRet.FlatBufferMissionId.thread!out ->
-    ReadSyncMeth_fbm
+    ReadSyncMeth_fbm(thread)
 
 waitOnMissionSyncMeth_fbm(thread) =
 	waitOnMissionCall.FlatBufferMissionId.thread ->
@@ -220,6 +220,7 @@ waitOnMissionSyncMeth_fbm(thread) =
 
 
 	waitCall.FlatBufferMissionObject!thread -> 
+	lockAcquired.FlatBufferMissionObject.thread ->
 	waitRet.FlatBufferMissionObject!thread -> 
 
 	endSyncMeth.FlatBufferMissionObject.thread -> 
@@ -293,7 +294,10 @@ WhileInner_w(fbMission, bufferEmpty) =
 			waitOnMissionCall.fbMission.WriterThreadId -> 
 			waitOnMissionRet.fbMission.WriterThreadId -> 
 
-			WhileInner_w(fbMission, bufferEmpty)
+
+			bufferEmptyCall.fbMission ->
+			bufferEmptyRet.fbMission?bufferEmptyNew ->	
+			WhileInner_w(fbMission, bufferEmptyNew)
 		)
 		
 	else
@@ -342,8 +346,11 @@ WhileInner_r(fbMission, bufferEmpty) =
 	if bufferEmpty == true then
 		(
 			waitOnMissionCall.fbMission.ReaderThreadId -> 
-			waitOnMissionRet.fbMission.ReaderThreadId ->		
-			WhileInner_r(fbMission, bufferEmpty)
+			waitOnMissionRet.fbMission.ReaderThreadId ->	
+
+			bufferEmptyCall.fbMission ->
+			bufferEmptyRet.fbMission?bufferEmptyNew ->	
+			WhileInner_r(fbMission, bufferEmptyNew)
 		)		
 	else
 		SKIP
@@ -419,7 +426,7 @@ Program2 =
                         	[| MissionAppSync |]  
                     	FlatBufferMissionApp
                     ) 
-                    	[|{|lockAcquired, startSyncMeth, endSyncMeth, waitCall, waitRet, notify |} |]  
+                    	[|{|lockAcquired, startSyncMeth, endSyncMeth, waitCall, notify |} |]  
                     ThreadObjectSystem(FlatBufferMissionObject)  
                 )
             )
@@ -435,25 +442,24 @@ Program2 =
 GlobalSchedulableRegulator
 )
 
-
-
-TestProgram = 
-	Program(
-				{FlatBufferSequencerId},
-				{ (FlatBufferMissionId , ({}, {}, {},  {}, {WriterId, ReaderId})  )   }	                 
-            )
-
-
-MissionAndThreads =
-(   
+Program3 =
+(	
+    ( 
+        (
+            sbdia(SafeletFW [| SafeltAppSync |] FlatBufferApp)
+                [|SafeletTierSync|]
+            sbdia(TopLevelMissionSequencers({FlatBufferSequencerId}) [|MissionSequencerAppSync|]   FlatBufferSequencerApp)
+        )
+        [|TierSync|]
+        (   
             (
                 ( 
                     (	MissionFW(FlatBufferMissionId) 
                         	[| MissionAppSync |]  
                     	FlatBufferMissionApp
                     ) 
-                    	[|{|lockAcquired, startSyncMeth, endSyncMeth, waitCall, waitRet, notify |} |]  
-                    ThreadObjectSystem(FlatBufferMissionObject)  
+                  --  	[|{|lockAcquired, startSyncMeth, endSyncMeth, waitCall, waitRet, notify |} |]  
+                  --  ThreadObjectSystem(FlatBufferMissionObject)  
                 )
             )
                 [| union(MissionSync, {| waitOnMissionCall, waitOnMissionRet, notifyOnMission, bufferEmptyCall, bufferEmptyRet, readCall, readRet, writeCall, writeRet, interrupt, isInterrupted, notifyAll, interrupted|}) |]
@@ -463,11 +469,26 @@ MissionAndThreads =
                 sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp(FlatBufferMissionId) )
             )
     	)
+)
+    [| GSRSync |]
+GlobalSchedulableRegulator
+)
+
+
+TestProgram = 
+	Program(
+				{FlatBufferSequencerId},
+				{ (FlatBufferMissionId , ({}, {}, {},  {}, {WriterId, ReaderId})  )   }	                 
+            )
+
+
+
 
 assert Program2  :[ deadlock free [FD] ]
 assert Program2 :[ divergence free ]
 assert Program2 :[ deterministic  [FD] ]
 
-assert MissionAndThreads  :[ deadlock free [FD] ]
-assert MissionAndThreads :[ divergence free ]
-assert MissionAndThreads :[ deterministic  [FD] ]
+assert Program3  :[ deadlock free [FD] ]
+assert Program3 :[ divergence free ]
+assert Program3 :[ deterministic  [FD] ]
+																										

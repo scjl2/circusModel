@@ -16,7 +16,7 @@ channel isInterrupted : ThreadID . Bool
 channel interrupted : ThreadID . Bool 
 
 channel lock_released :ObjectID.ThreadID
-
+channel notifyComplete:ObjectID
 
 channel addToWaitQueue : ObjectID.PriQueueItem
 channel removeFromWaitQueue : ObjectID.PriQueueItem
@@ -81,9 +81,9 @@ ThreadObjState(o, t) =
 			[]
 			startSyncMeth.o.t -> Aquiring(interruptedVar, 1)
 			[]
-			waitCall.o.t -> throw.illegalMonitorStateException -> CHAOS({|waitCall|})
+			waitCall.o.t -> throw.illegalMonitorStateException ->  CHAOS({|waitCall|})
 			[]
-			notify.o.t ->throw.illegalMonitorStateException -> STOP
+			notify.o.t ->throw.illegalMonitorStateException ->  STOP
 			[]
 			notifyAll.o.t -> throw.illegalMonitorStateException -> STOP
 
@@ -96,11 +96,11 @@ ThreadObjState(o, t) =
 			[]
 			lockAcquired.o.t -> Locked(interruptedVar, locks)
 			[]
-			waitCall.o.t -> throw.illegalMonitorStateException -> STOP
+			waitCall.o.t -> throw.illegalMonitorStateException ->  STOP
 			[]
-			notify.o.t ->throw.illegalMonitorStateException -> STOP
+			notify.o.t ->throw.illegalMonitorStateException ->  STOP
 			[]
-			notifyAll.o.t -> throw.illegalMonitorStateException -> STOP
+			notifyAll.o.t -> throw.illegalMonitorStateException ->  STOP
 
 		Locked(interruptedVar, locks)	=
 			interrupt.t -> Locked(True, locks)
@@ -121,9 +121,10 @@ ThreadObjState(o, t) =
 					Locked(interruptedVar, locks-1)
 			)
 			[]
-			notify.o.t -> Locked(interruptedVar, locks)
+			notify.o.t ->  notifyComplete.o -> Locked(interruptedVar, locks)
+								
 			[]
-			notifyAll.o.t -> Locked(interruptedVar, locks)
+			notifyAll.o.t -> notifyComplete.o -> Locked(interruptedVar, locks)
 
 		Waiting(interruptedVar, locks) = 
 			interrupt.t -> Waiting(True, locks)
@@ -134,7 +135,7 @@ ThreadObjState(o, t) =
 			[]
 			lockAcquired.o.t -> 
 			(	if interruptedVar then
-					throw.interruptedException -> STOP
+					throw.interruptedException -> SKIP -- STOP
 				else
 					Locked(interruptedVar, locks)
 			)
@@ -142,11 +143,12 @@ ThreadObjState(o, t) =
 
 
 AlphaMonitorController(o)=
-	union({|startSyncMeth.o, lockAcquired.o,
+	Union({{|startSyncMeth.o, lockAcquired.o,
 			 waitCall.o, lock_released.o, removeFromQueueForLock.o, 
-			 queueForLockEmpty.o, addToWaitQueue.o |},
+			 queueForLockEmpty.o, addToWaitQueue.o, notifyComplete.o |},
 
-			{| get_priorityLevel.t.o | t<- ThreadID |}
+			{| get_priorityLevel.t.o | t<- ThreadID |},
+			{| notify.o.t | t<- ThreadID|}}
 		)
 
 MonitorController(o) =
@@ -164,33 +166,35 @@ MonitorController(o) =
 			lock_released.o.t -> FindNext
 			[]
 			waitCall.o.t -> get_priorityLevel.t.o?0 -> addToWaitQueue.o.(t,0) -> FindNext
+			[]
+			notify.o?_ -> notifyComplete.o -> Locked(t)
 
 		FindNext = 
-			removeFromQueueForLock.o?(t,p) -> lockAcquired.o.t -> Locked(t)
+			removeFromQueueForLock.o?(t,p) ->  lockAcquired.o.t -> Locked(t)
 			[]
 			queueForLockEmpty.o.True -> Unlocked
 
 	within Unlocked
 
 AlphaNotifyController(o) =
-	{|notify.o, notifyAll.o, removeFromWaitQueue.o, addToQueueForLock.o, waitQueueEmpty.o |}
+	{|notify.o, notifyAll.o, removeFromWaitQueue.o, addToQueueForLock.o, waitQueueEmpty.o, notifyComplete.o |}
 
 
 NotifyController(o) =
 	notify.o?_ -> 
 	(	
-		removeFromWaitQueue.o?(t,p) -> addToQueueForLock.o.(t,p) -> NotifyController(o)
+		removeFromWaitQueue.o?(t,p) -> addToQueueForLock.o.(t,p) -> notifyComplete.o -> NotifyController(o)
 		[]
-		waitQueueEmpty.o.True -> NotifyController(o)
+		waitQueueEmpty.o.True -> notifyComplete.o  -> NotifyController(o)
 	)
 	[]
 	notifyAll.o?_ -> NotifyAllHandler(o)
 
 
 NotifyAllHandler(o)=
-	removeFromWaitQueue.o?(t,p) -> addToQueueForLock.o.(t,p) -> NotifyController(o)
+	removeFromWaitQueue.o?(t,p) -> addToQueueForLock.o.(t,p) -> notifyComplete.o -> NotifyController(o)
 	[]
-	waitQueueEmpty.o.True -> NotifyController(o)
+	waitQueueEmpty.o.True -> notifyComplete.o -> NotifyController(o)
 
 
 ObjectProcesses(o) =
@@ -199,6 +203,8 @@ ObjectProcesses(o) =
 
 AlphaThreadObjectSystem(o) =
 	Union({ AlphaMonitorController(o), AlphaNotifyController(o), AlphaThreadObjState(o, t) | t<- ThreadID})
+
+--channel DIE
 
 ThreadObjectSystem(o) =
 	--(|| (p,a') : ObjectProcesses(o) @ [a'] p)
@@ -209,10 +215,20 @@ ThreadObjectSystem(o) =
 					[| inter(AlphaNotifyController(o), AlphaMonitorController(o)) |]
 				MonitorController(o)
 			)
-				[| inter(union(AlphaMonitorController(o), AlphaNotifyController(o)), Union({AlphaThreadObjState(o, t) | t <- ThreadID})) |]
+				[| union({|notifyComplete|} ,inter(union(AlphaMonitorController(o), AlphaNotifyController(o)), Union({AlphaThreadObjState(o, t) | t <- ThreadID}))) |]
 			||| t: diff(ThreadID, {nullThreadId}) @ ThreadObjState(o, t)
 		)
 			[| union(WaitQueueSync, QueueForLockSync ) |]
-		PriorityQueues)
-	--\ Union({ QueueForLockSync, WaitQueueSync, {| lock_released, removeFromQueueForLock, waitQueueEmpty,removeFromWaitQueue, queueForLockEmpty|} })
+		PriorityQueues) 
+	--\ Union({ QueueForLockSync, WaitQueueSync, {|notifyComplete, lock_released, removeFromQueueForLock, waitQueueEmpty,removeFromWaitQueue, queueForLockEmpty|} })
 )
+
+
+NotifyAndMonitorControllers(o)=
+(
+	NotifyController(o)
+		[| inter(AlphaNotifyController(o), AlphaMonitorController(o)) |]
+	MonitorController(o)
+)
+[| union(WaitQueueSync, QueueForLockSync ) |]
+		PriorityQueues
