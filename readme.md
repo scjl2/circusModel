@@ -1,4 +1,4 @@
-SCJ L2--Circus 
+SCJ L2--Circus
 =======
 
 Matt Luckcuck <ml881@york.ac.uk> 2014
@@ -18,7 +18,7 @@ Within these models the following abbreviations are often used:
 * APEH = `AperiodicEventHandler`
 * OSEH = `OneShotEventHandler`
 * MT = `ManagedThread`
-* SMS = Schedulable `MissionSequencer` (the flvaour of mission sequencer that is started by a 		`Mission`)
+* SMS = Schedulable `MissionSequencer` (the flavour of mission sequencer that is started by a `Mission`)
 
 
 When describing the structure of our SCJ examples we note the use of the following terminology:
@@ -29,5 +29,3 @@ When describing the structure of our SCJ examples we note the use of the followi
   - We define the *SafeletTier* to be the `Safelet` and the Top-Level `MissionSequencer`
   - Tier0 (which every program will have) consistes of at least one cluster, collecting the missions that may be returned by the Top-Level `MissionSequencer` and their respective schedulables
  - More deeply nested tiers will be the result of using nested mission sequencers, which are only availabl at SCJ Level 2
-	
-
