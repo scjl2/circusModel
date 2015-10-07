@@ -204,7 +204,6 @@ ObjectProcesses(o) =
 AlphaThreadObjectSystem(o) =
 	Union({ AlphaMonitorController(o), AlphaNotifyController(o), AlphaThreadObjState(o, t) | t<- ThreadID})
 
---channel DIE
 
 ThreadObjectSystem(o) =
 	--(|| (p,a') : ObjectProcesses(o) @ [a'] p)
