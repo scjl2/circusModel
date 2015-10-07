@@ -17,19 +17,19 @@ channel end_aperiodicEventHandler_app : SchedulableID
 channel releaseLong : SchedulableID . num
 
 channel handleAsyncLongEventCall : SchedulableID . num
-channel handleAsyncLongEventRet : SchedulableID 
+channel handleAsyncLongEventRet : SchedulableID
 
 
-channel scheduleNextRelease : SchedulableID.num 
+channel scheduleNextRelease : SchedulableID.num
 
 nametype APEHFWChanSet = union(
   union(ManagedSchedulableFWChanSet, APEHStateSync),
-   {|done_safeletFW, releaseLong,release, handleAsyncLongEventCall, handleAsyncEventRet, 
-     releaseLong, end_releases, circwait, 
+   {|done_safeletFW, releaseLong,release, handleAsyncLongEventCall, handleAsyncEventRet,
+     releaseLong, end_releases, circwait,
      release_complete, done_schedulable, done_toplevel_sequencer |}  )
 
 nametype DeadlineSync_APEH =  {| end_releases, deschedule_handler, release_complete|}
-nametype APEHStateSync = 
+nametype APEHStateSync =
   {| get_pending, set_pending, get_data, set_data, end_aperiodicEventHandlerState|}
 
 
@@ -72,64 +72,65 @@ AperiodicEventHandlerState(schedulable, pending, data, deadline, deadlineMissHan
 
 
 AperiodicEventHandlerBehaviour(schedulable,aperiodicType, deadline, deadlineMissHandler) =
-(   
+(
   Start_APEH(schedulable) ;
-  Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) ; 
-  Cleanup_APEH(schedulable)  ; 
+  Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) ;
+  Cleanup_APEH(schedulable)  ;
   Terminate_apehfw(schedulable)
 )
 
 Terminate_apehfw(schedulable) =
-(  
+(
   (
-    done_safeletFW ->   
+    done_safeletFW ->
     SKIP
   )
-  [] 
-  ( 
-    done_toplevel_sequencer ->    
+  []
+  (
+    done_toplevel_sequencer ->
     SKIP
   )
 );
 end_aperiodicEventHandlerState.schedulable ->
 end_aperiodicEventHandler_app.schedulable ->
-SKIP 
+SKIP
 
 
 Start_APEH(schedulable) =
-  Register_APEH(schedulable)   
-  
+  Register_APEH(schedulable)
 
-Register_APEH(schedulable) = 
-  register.schedulable?controllingMission -> 
-  Activate_APEH(schedulable, controllingMission)  
-  
-Activate_APEH(schedulable, controllingMission)  =  
-  activate_schedulables.controllingMission -> 
+
+Register_APEH(schedulable) =
+  register.schedulable?controllingMission ->
+  Activate_APEH(schedulable, controllingMission)
+
+Activate_APEH(schedulable, controllingMission)  =
+  activate_schedulables.controllingMission ->
   SKIP
 
-Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) =  
-if deadlineMissHandler != nullSchedulableId then 
-( 
+Execute_APEH(schedulable,aperiodicType, deadline, deadlineMissHandler) =
+if deadlineMissHandler != nullSchedulableId then
+(
   (
     (
-      if aperiodicType == aperiodic then 
+      if aperiodicType == aperiodic then
         Ready_APEH(schedulable)
-      else 
-        ReadyLong(schedulable)    
+      else
+        ReadyLong(schedulable)
     )
       [| union(DeadlineSync_APEH, {|release.schedulable, releaseLong.schedulable|}) |]
-   ( 
+   (
    		(
    			(
    		    	release.schedulable ->  SKIP
    		     	[]
    		     	releaseLong.schedulable?data -> SKIP
    		    ); DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
-   		) 
+   		)
    		/\
 	    (
-	        end_releases.schedulable -> 	         
+	        end_releases.schedulable ->
+          release_complete.schedulable ->
 	        SKIP
 	    )
     )
@@ -138,29 +139,29 @@ if deadlineMissHandler != nullSchedulableId then
   SignalTermination_APEH(schedulable)
 )
 else
-(    
+(
   (
-    if aperiodicType == aperiodic then 
+    if aperiodicType == aperiodic then
       Ready_APEH(schedulable)
-    else 
-      ReadyLong(schedulable)    
+    else
+      ReadyLong(schedulable)
   )
     [|{| end_releases |}|]
   SignalTermination_APEH(schedulable)
 )\{| end_releases |}
 
-DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) = 
-( 	
+DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) =
+(
   (
-    (   
+    (
       (
-        circwait.deadline -> 
-        release.deadlineMissHandler ->  
+        circwait.deadline ->
+        release.deadlineMissHandler ->
         DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
-      ) 
-      [] 
+      )
+      []
       (
-        release_complete.schedulable -> 
+        release_complete.schedulable ->
         (
     		release.schedulable ->  SKIP
     	 	[]
@@ -168,14 +169,14 @@ DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler) =
     	)
     	;
         DeadlineClock_APEH(schedulable, deadline, deadlineMissHandler)
-      )       
+      )
     )
   )
-) 
-    
-Ready_APEH(schedulable) = 
+)
+
+Ready_APEH(schedulable) =
 (
-  release.schedulable -> 
+  release.schedulable ->
   (
 		(
 	   	end_releases.schedulable ->
@@ -183,7 +184,7 @@ Ready_APEH(schedulable) =
 	  )
 	  []
 	  (
-	   	handleAsyncEventCall.schedulable -> 
+	   	handleAsyncEventCall.schedulable ->
 	   	Release_APEH(schedulable, False)
 	  )
 	)
@@ -194,9 +195,9 @@ Ready_APEH(schedulable) =
   SKIP
 )
 
-ReadyLong(schedulable) = 
-(  
-  releaseLong.schedulable?data -> 
+ReadyLong(schedulable) =
+(
+  releaseLong.schedulable?data ->
   (
 		(
 	   	end_releases.schedulable ->
@@ -204,8 +205,8 @@ ReadyLong(schedulable) =
 	  )
 	  []
 	  (
-	  	handleAsyncLongEventCall.schedulable.data -> 
-  		ReleaseLong(schedulable, data, False) 
+	  	handleAsyncLongEventCall.schedulable.data ->
+  		ReleaseLong(schedulable, data, False)
 	  )
 	)
 )
@@ -216,13 +217,13 @@ ReadyLong(schedulable) =
 )
 
 
-SignalTermination_APEH(schedulable) = 
-( 
+SignalTermination_APEH(schedulable) =
+(
   signalTerminationCall.schedulable ->
   end_releases.schedulable ->
   signalTerminationRet.schedulable ->
   done_schedulable.schedulable ->
-  SKIP 
+  SKIP
 )
   [| {|end_releases, done_schedulable |} |]
 (
@@ -237,65 +238,68 @@ NuetralRelease_APEH(schedulable)=
 )
 []
 (
-  done_schedulable.schedulable -> 
+  done_schedulable.schedulable ->
   SKIP
 )
 
-Release_APEH(schedulable, pending) =  
-( 
-  release.schedulable -> 
+Release_APEH(schedulable, pending) =
+(
+  release.schedulable ->
   Release_APEH(schedulable, True)
 )
 []
 (
-  handleAsyncEventRet.schedulable -> 
-  release_complete.schedulable -> 
+  handleAsyncEventRet.schedulable ->
+  release_complete.schedulable ->
   if pending == True then
-  ( 
-    handleAsyncEventCall.schedulable -> 
+  (
+    handleAsyncEventCall.schedulable ->
     Release_APEH(schedulable, False)
   )
-  else 
-    Ready_APEH(schedulable)   
+  else
+    Ready_APEH(schedulable)
 )
 []
 (
   end_releases.schedulable ->
-  handleAsyncEventRet.schedulable -> 
-  release_complete.schedulable -> 
+  handleAsyncEventRet.schedulable ->
+  release_complete.schedulable ->
  -- if pending == True then
- -- ( 
- --   handleAsyncEventCall.schedulable -> 
+ -- (
+ --   handleAsyncEventCall.schedulable ->
  --   handleAsyncEventRet.schedulable ->
  --   SKIP
  -- )
- -- else 
+ -- else
     SKIP
 )
 
 
-ReleaseLong(schedulable, data, pending ) =  
-( 
-  releaseLong.schedulable?data -> 
+ReleaseLong(schedulable, data, pending ) =
+(
+  releaseLong.schedulable?data ->
   ReleaseLong(schedulable, data, True)
 )
 []
 (
-  handleAsyncLongEventRet.schedulable -> 
+  handleAsyncLongEventRet.schedulable ->
   if pending == True then
-  ( 
-    release_complete.schedulable -> 
-    handleAsyncLongEventCall.schedulable.data -> 
+  (
+    release_complete.schedulable ->
+    handleAsyncLongEventCall.schedulable.data ->
     ReleaseLong(schedulable, data, False)
   )
-  else 
-    ReadyLong(schedulable) 
+  else
+    ReadyLong(schedulable)
 )
 
-Cleanup_APEH(schedulable) = 
+Cleanup_APEH(schedulable) =
 (
   cleanupSchedulableCall.schedulable ->
-  cleanupSchedulableRet.schedulable -> 
-  SKIP 
+  cleanupSchedulableRet.schedulable ->
+  SKIP
 )
 
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB); Loop :[ deadlock free [FD] ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ divergence free ]
+assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ deterministic  [FD] ]

@@ -78,7 +78,7 @@ Execute \circdef  \\
 \t1\circblockopen 
   	\circblockopen  
 		\circblockopen 
-			%\circwait valueOf(startTime) \circseq \\
+			\circwait valueOf(startTime) \circseq \\
 			\circif deadlineMissHandler \neq nullSchedulableId \circthen \\
   			\t1	RunningWithDeadlineDetection \\
   			\circelse deadlineMissHandler = nullSchedulableId \circthen \\
@@ -107,8 +107,6 @@ Running \circdef \\
    \circblockclose 
 \end{circusaction}
 %
-
-
 \begin{circusaction}
 RunningWithDeadlineDetection \circdef \\
 \t1\circblockopen 

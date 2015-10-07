@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ MissionSequencerChan \parents scj\_prelude, MissionId, SchedulableId
+  \SECTION ~ MissionSequencerChan \parents scj\_prelude, MissionId, SchedulableId, MissionSequencerMethChan, MissionSequencerFWChan
 \end{zsection}
 %
 \begin{circus}

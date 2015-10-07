@@ -35,17 +35,17 @@
 %
 \begin{circusaction}
 Start \circdef\\
-\t1  \circblockopen 
+\t1  \circblockopen
    	Register \circseq \\
    	Activate
   \circblockclose  \\
 \t1  \extchoice\\
-\t1  \circblockopen 
+\t1  \circblockopen
   	activate\_schedulables?someMissionID \then \\
   	Start
   \circblockclose \\
 \t1  \extchoice \\
-\t1  \circblockopen  
+\t1  \circblockopen
 	done\_toplevel\_sequencer \then \\
 	applicationTerminating := \true \\
      \circblockclose
@@ -54,9 +54,9 @@ Start \circdef\\
 \begin{circusaction}
 Register \circdef \\
 \t1    register~.~schedulable~?~missionID \then \\
-\t1    controllingMission := missionID 
+\t1    controllingMission := missionID
 \end{circusaction}
-%  
+%
 \begin{circusaction}
 Activate ~ \circdef ~ \\
 \t1    activate\_schedulables~.~controllingMission \then \\
@@ -65,8 +65,36 @@ Activate ~ \circdef ~ \\
 %
 \begin{circusaction}
 Execute \circdef  \\
-\t1 \circblockopen  
-	\circblockopen 
+\t1 \circif deadlineMissHandler != nullSchedulableId \circthen \\
+\t1 \circblockopen
+\circblockopen
+  \circif aperiodicType = aperiodic \circthen \\
+    Ready\\
+  \circelse aperiodicType = aperiodicLong \circthen \\
+    ReadyLong \\
+  \circfi
+\circblockclose
+   \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar \\
+SignalTermination\\
+\circblockclose
+  \lpar \{pending, data\} | DeadlineClockSync \cup \lchanset  release~.~schedulable, releaseLong.schedulable \rchanset | \emptyset \rpar \\
+\circblockopen
+\circblockopen
+  \circblockopen
+      release~.~schedulable \then \Skip
+      \extchoice
+      releaseLong~.~schedulable?data \then \Skip
+    \circblockclose \circseq DeadlineClock
+\circblockclose
+\circinterupt
+\circblockopen
+    end\_releases.schedulable \then
+    \Skip
+\circblockclose
+\circblockclose
+\t1 \circelse deadlineMissHandler == nullSchedulableId \circthen \\
+\t1 \circblockopen
+	\circblockopen
 		\circif aperiodicType = aperiodic \circthen \\
 			Ready\\
 		\circelse aperiodicType = aperiodicLong \circthen \\
@@ -76,28 +104,28 @@ Execute \circdef  \\
    	 \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar\\
   SignalTermination\\
 \circblockclose
+\circfi
 \end{circusaction}
 %
 \begin{circusaction}
 DeadlineClock \circdef \\
-
-\t1 releaseCall~.~schedulable \then \\ 
-\t1	\circblockopen 
-		\circblockopen 		
-			\circblockopen 
-				%\circwait valueOf(deadline) \circseq \\
-				fire~.~deadlineMissHandler \then \\				
-				DeadlineClock 
+\t1 releaseCall~.~schedulable \then \\
+\t1	\circblockopen
+		\circblockopen
+			\circblockopen
+				\circwait valueOf(deadline) \circseq \\
+				fire~.~deadlineMissHandler \then \\
+				DeadlineClock
 			\circblockclose \\
 			\extchoice \\
-			\circblockopen 
+			\circblockopen
 	 			release\_complete~.~schedulable \then \\
-				DeadlineClock 
-			\circblockclose				
+				DeadlineClock
+			\circblockclose
 		\circblockclose
-	\circblockclose	
-    \circseq%\circinterrupt 
-    \circblockopen 
+	\circblockclose
+    \circinterrupt
+    \circblockopen
     		end\_releases~.~schedulable \then \\
     		%release\_complete~.~schedulable \then \\
 	    	\Skip
@@ -106,13 +134,13 @@ DeadlineClock \circdef \\
 %short
 \begin{circusaction}
 Ready \circdef \\
-\t1 \circblockopen 
-	fire.schedulable \then\\ 
-	releaseCall~.~schedulable \then\\ 
+\t1 \circblockopen
+	fire.schedulable \then\\
+	releaseCall~.~schedulable \then\\
 	Release
     \circblockclose\\
 \t1 \extchoice\\
-\t1 \circblockopen 
+\t1 \circblockopen
 	end\_releases~.~schedulable \then\\
 	\Skip
     \circblockclose
@@ -120,14 +148,14 @@ Ready \circdef \\
 %long
 \begin{circusaction}
 ReadyLong \circdef \\
-\t1 \circblockopen 	
-	fireLong~.~schedulable~?~longData \then\\ 
+\t1 \circblockopen
+	fireLong~.~schedulable~?~longData \then\\
 	data := longData \circseq \\
-	releaseLongCall~.~schedulable~.~data \then\\ 
-	ReleaseLong 
+	releaseLongCall~.~schedulable~.~data \then\\
+	ReleaseLong
      \circblockclose\\
 \t1 \extchoice\\
-\t1 \circblockopen 
+\t1 \circblockopen
 	end\_releases~.~schedulable \then\\
 	\Skip
      \circblockclose
@@ -135,30 +163,30 @@ ReadyLong \circdef \\
 %
 \begin{circusaction}
 SignalTermination \circdef \\
-\t1	\circblockopen  
+\t1	\circblockopen
 		signalTerminationCall~.~schedulable \then\\
 		end\_releases~.~schedulable \then\\
 		signalTerminationRet~.~schedulable \then\\
 		done\_schedulable~.~schedulable \then\\
-		\Skip 
+		\Skip
 	\circblockclose
 \end{circusaction}
 %short
 \begin{circusaction}
-Release \circdef \\	
-\t1 \circblockopen  
-		fire.schedulable \then\\ 
-		pending := \true \circseq\\ 
+Release \circdef \\
+\t1 \circblockopen
+		fire.schedulable \then\\
+		pending := \true \circseq\\
 		Release
 	\circblockclose\\
 \t1	\extchoice\\
-\t1	\circblockopen 
+\t1	\circblockopen
 		releaseRet.schedulable \then \\
 		\circif pending = \true \circthen\\
-\t2		\circblockopen  
-			pending := \false \circseq \\ 
+\t2		\circblockopen
+			pending := \false \circseq \\
 			release\_complete~.~schedulable \then \\
-			releaseCall.schedulable \then\\ 
+			releaseCall.schedulable \then\\
 			Release
 		\circblockclose\\
 		\circelse pending = \false \circthen\\
@@ -166,28 +194,28 @@ Release \circdef \\
 		\circfi
 \t1	\circblockclose\\
 \t1	 \extchoice\\
-\t1	\circblockopen 
+\t1	\circblockopen
 		end\_releases.schedulable \then \\
 		\Skip
 	\circblockclose\\
 \end{circusaction}
 %long
 \begin{circusaction}
-ReleaseLong \circdef \\	
-\t1 \circblockopen  
-		fireLong.schedulable~?~longData \then\\ 
+ReleaseLong \circdef \\
+\t1 \circblockopen
+		fireLong.schedulable~?~longData \then\\
 		data := longData \circseq \\
-		pending := \true \circseq\\ 
+		pending := \true \circseq\\
 		ReleaseLong
 	\circblockclose\\
 \t1		\extchoice\\
-\t1	\circblockopen 
+\t1	\circblockopen
 		releaseLongRet.schedulable \then \\
 		\circif pending = \true \circthen\\
-\t2		\circblockopen  
-			pending := \false \circseq \\ 
+\t2		\circblockopen
+			pending := \false \circseq \\
 			release\_complete~.~schedulable \then \\
-			releaseLongCall.schedulable.data \then\\ 
+			releaseLongCall.schedulable.data \then\\
 			ReleaseLong
 		\circblockclose\\
 		\circelse pending = \false \circthen\\
@@ -195,7 +223,7 @@ ReleaseLong \circdef \\
 		\circfi
 \t1	\circblockclose\\
 \t1	 \extchoice\\
-\t1	\circblockopen 
+\t1	\circblockopen
 		end\_releases.schedulable \then \\
 		\Skip
 	\circblockclose\\
@@ -205,18 +233,18 @@ ReleaseLong \circdef \\
 Cleanup \circdef \\
 \t1 cleanupSchedulableCall~.~schedulable \then\\
 \t1 cleanupSchedulableRet~.~schedulable \then \\
-\t1 \Skip  
+\t1 \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 \circspot \circblockopen  \circmu X \circspot \circblockopen   \lschexpract Init \rschexpract \circseq Start \circseq\\
    \circblockopen  \circif applicationTerminating = \false \circthen \\
 	\t2 \circblockopen Execute \circseq Cleanup \circseq X \circblockclose\\
- \circelse applicationTerminating = \true \circthen \\ 
- \t2 \circblockopen 
-	end\_aperiodic\_app~.~schedulable \then \\ 
+ \circelse applicationTerminating = \true \circthen \\
+ \t2 \circblockopen
+	end\_aperiodic\_app~.~schedulable \then \\
 	\Skip
- \circblockclose 
+ \circblockclose
 \circfi \circblockclose \circblockclose \circblockclose
 \end{circusaction}
 %

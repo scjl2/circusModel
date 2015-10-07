@@ -7,7 +7,7 @@ channel a
 Loop = a-> Loop
 
 channel circwait : num
-channel  throw : ExceptionType 
+channel  throw : ExceptionType
 channel apiError
 
 
@@ -35,7 +35,6 @@ include "OneShotEventHandlerFW.csp"
 
 include "PeriodicEventHandlerFW.csp"
 
-include "ManagedThreadFW.csp" 
+include "ManagedThreadFW.csp"
 
 --include "LockingModel.csp"
-

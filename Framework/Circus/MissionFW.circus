@@ -255,8 +255,7 @@ RequestTerminationMeth ~ \circdef\\
 	  		RequestTerminationMeth\\
 	  	\circblockclose\\
 	  \circblockclose \\
-	\circblockclose\\
-
+	\circblockclose
 \end{circusaction}
 %
 \begin{circusaction}
@@ -315,24 +314,24 @@ Cleanup ~ \circdef ~ \\
 %
 \begin{circusaction}
 CleanupSchedulables \circdef \\
-	\t1	\circblockopen
-	\Interleave s : registeredSchedulables \circspot\\
-      \t1          cleanupSchedulableCall~.~s \then \\
-       \t1         cleanupSchedulableRet~.~s \then \\
-        \t1        \Skip
-                \circblockclose
+\t1	\circblockopen
+  \Interleave s : registeredSchedulables \circspot\\
+    \t1          cleanupSchedulableCall~.~s \then \\
+    \t1         cleanupSchedulableRet~.~s \then \\
+    \t1        \Skip
+\circblockclose
 \end{circusaction}
 %
 \begin{circusaction}
 Finish ~ \circdef ~\circval continueSequencer : \boolean \circspot  \\
-\t1    end\_mission\_app~.~mission \then\\
-\t1    done\_mission~.~mission~!~continueSequencer \then\\
-\t1   \Skip
+  \t1    end\_mission\_app~.~mission \then\\
+  \t1    done\_mission~.~mission~!~continueSequencer \then\\
+  \t1   \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 Exceptions \circdef \\
-\t1 \circblockopen
+  \t1 \circblockopen
 RegisterException \\
  \interleave \\
 SetCeilingPriorityException
