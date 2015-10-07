@@ -9,31 +9,31 @@ include "FrameworkProcess.csp"
 
 -- SAFELET: MY APP
 
-nametype SafeltAppSync = 
+nametype SafeltAppSync =
     {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
 
-MyApp  = 
+MyApp  =
 	(
-	 	Methods_s 
-	)		
+	 	Methods_s
+	)
  /\	(end_safelet_app -> SKIP)
 
-InitializeApplication_s =  
-     initializeApplicationCall -> 
+InitializeApplication_s =
+     initializeApplicationCall ->
      initializeApplicationRet ->
      SKIP
 
-GetSequencer_s = 
-	getSequencerCall -> 
+GetSequencer_s =
+	getSequencerCall ->
 	getSequencerRet!TopLevelSequencerId ->
 	SKIP
 
-Methods_s = 
- ( 
+Methods_s =
+ (
 	GetSequencer_s
-	[] 
-	InitializeApplication_s 
+	[]
+	InitializeApplication_s
  ); Methods_s
 
 
@@ -48,14 +48,14 @@ nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_s
 
 
 
-MainSequencerApp = 
+MainSequencerApp =
 (
-  Methods_tlms 
-    [|MissionSequencerAppStateSync|] 
-  DoneController_tlms(False) 
+  Methods_tlms
+    [|MissionSequencerAppStateSync|]
+  DoneController_tlms(False)
 )\ MissionSequencerAppStateSync
 /\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
-   
+
 
 DoneController_tlms(done) =
 (
@@ -69,8 +69,8 @@ DoneController_tlms(done) =
 )
 
 
-GetNextMission_tlms = 
-    getNextMissionCall.TopLevelSequencerId -> 
+GetNextMission_tlms =
+    getNextMissionCall.TopLevelSequencerId ->
 	get_sequencer_done.TopLevelSequencerId?done ->
 	(
 	  if done == False then
@@ -79,17 +79,17 @@ GetNextMission_tlms =
 		getNextMissionRet.TopLevelSequencerId!Tier0MissionId  ->
 		SKIP
       )
-	  else 
+	  else
 	  (
 			getNextMissionRet.TopLevelSequencerId!nullMissionId ->
 		    SKIP
 	  )
     )
 
-Methods_tlms = 
+Methods_tlms =
  (
-	GetNextMission_tlms 
- ) ; Methods_tlms  
+	GetNextMission_tlms
+ ) ; Methods_tlms
 
 
 
@@ -98,37 +98,37 @@ Methods_tlms =
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
-nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet  
+nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet
 							getSequencer, terminationPendingCall, terminationPendingRet, end_mission_app |}
 
 
-MainMissionApp = 
-( 
+MainMissionApp =
+(
 	(
 	--	(Methods_tlm1 )
-	--	/\ 
+	--	/\
 		(end_mission_app.Tier0MissionId -> SKIP )
-	) 
+	)
 )
 
 APPInitializePhase(mission) =
---InitializePhase_tlm1 = 
-  initializeCall.Tier0MissionId   -> 
-  register!Tier0PEHId!Tier0MissionId  -> 
-  register!Tier0APEHId!Tier0MissionId  ->  
-  initializeRet.Tier0MissionId  -> 
+--InitializePhase_tlm1 =
+  initializeCall.Tier0MissionId   ->
+  register!Tier0PEHId!Tier0MissionId  ->
+  register!Tier0APEHId!Tier0MissionId  ->
+  initializeRet.Tier0MissionId  ->
  MissionPhase(mission, {Tier0PEHId, Tier0APEHId})
 
 APPCleanupMission(mission) =
---CleanupPhase_tlm1 = 
+--CleanupPhase_tlm1 =
  cleanupMissionCall.Tier0MissionId  ->
  cleanupMissionRet.Tier0MissionId?false ->
  SKIP
 
-{-Methods_tlm1 = 
-( 
-	InitializePhase_tlm1 
-	[] 
+{-Methods_tlm1 =
+(
+	InitializePhase_tlm1
+	[]
 	CleanupPhase_tlm1
 ) ; Methods_tlm1
   -}
@@ -153,23 +153,23 @@ Tier0OPEHApp =
 Tier0OPEHAppState(released) =
 (
 	get_released.Tier0PEHId!released ->
-	Tier0OPEHAppState(released) 
+	Tier0OPEHAppState(released)
 )
 []
 (
 	set_released.Tier0PEHId?newReleased ->
-	Tier0OPEHAppState(newReleased) 
+	Tier0OPEHAppState(newReleased)
 )
 
 Methods_t0peh =
-	handlerAsyncEvent_t0peh ; Methods_t0peh
+	handleAsyncEvent_t0peh ; Methods_t0peh
 
 handlerAsyncEvent_t0peh =
-	handleAsyncEventCall.Tier0PEHId -> 
+	handleAsyncEventCall.Tier0PEHId ->
 	(
 		(
 			get_released.Tier0PEHId?released:({False}) ->
-			release.Tier0APEHId -> 
+			release.Tier0APEHId ->
 			SKIP
 		)
 		[]
@@ -179,7 +179,7 @@ handlerAsyncEvent_t0peh =
 		)
 	);
     handleAsyncEventRet.Tier0PEHId ->  
-    SKIP 
+    SKIP
 
 
 
@@ -195,11 +195,11 @@ Methods_t0apeh =
 	handlerAsyncEvent_t0apeh ; Methods_t0apeh
 
 handlerAsyncEvent_t0apeh =
-	handleAsyncEventCall.Tier0APEHId -> 
+	handleAsyncEventCall.Tier0APEHId ->
 	requestTerminationCall.Tier0MissionId.Tier0APEHId ->
 	requestTerminationRet.Tier0MissionId.Tier0APEHId?b ->
     handleAsyncEventRet.Tier0APEHId ->
-    SKIP  
+    SKIP
 
 
 
@@ -211,7 +211,7 @@ handlerAsyncEvent_t0apeh =
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
 Mission_PEH_APEH =
-(  
+(
 	MyApp
 	|||
 	MainSequencerApp
@@ -221,26 +221,26 @@ Mission_PEH_APEH =
 	Tier0OPEHApp
 	|||
 	Tier0APEHApp
-)	
+)
 
 
 nametype APEHSync = {| handleAsyncEventCall, handleAsyncEventRet,  end_aperiodicEventHandler_app|}
 --nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
 
-Program(topLevelSequencerIDs, tier0) = 
+Program(topLevelSequencerIDs, tier0) =
 
-(  
+(
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  APEHSync, 
-		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, 
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  APEHSync,
+		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app,
 		 	end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
-	Mission_PEH_APEH	
+	Mission_PEH_APEH
 )
 
 Program2 =
-(	
+(
 
-( 
+(
  (
  	sbdia(SafeletFW [| SafeltAppSync |] MyApp)
   	[|SafeletTierSync|]
@@ -263,11 +263,11 @@ GlobalSchedulableRegulator
 )
 
 
-TestProgram = 
+TestProgram =
 	Program(
 				{TopLevelSequencerId},
 
-				{ (Tier0MissionId , ({}, {(Tier0APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier0PEHId, 1,0,0,nullSchedulableId)}, {})  )   }	                 
+				{ (Tier0MissionId , ({}, {(Tier0APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier0PEHId, 1,0,0,nullSchedulableId)}, {})  )   }
             )
 
 

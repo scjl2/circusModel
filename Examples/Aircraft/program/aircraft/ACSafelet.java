@@ -1,11 +1,10 @@
 /** Aircraft - Mode Change Example
-* 
+*
 * This safelet is the top level of the application and loads the main mission sequencer
-* 
+*
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
 package aircraft;
-
 
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
@@ -21,7 +20,7 @@ public class ACSafelet implements Safelet<Mission>
 	{
 		StorageParameters storageParameters = new StorageParameters(150 * 1000, new long[] { Const.HANDLER_STACK_SIZE },
 				 Const.PRIVATE_MEM_SIZE-25*1000, Const.IMMORTAL_MEM_SIZE-50*1000, Const.MISSION_MEM_SIZE-100*1000);
-		
+
 		return new MainMissionSequencer(new PriorityParameters(5),storageParameters);
 	}
 
@@ -33,6 +32,6 @@ public class ACSafelet implements Safelet<Mission>
 
 	@Override
 	public void initializeApplication()
-	{			
-	} 
+	{
+	}
 }
