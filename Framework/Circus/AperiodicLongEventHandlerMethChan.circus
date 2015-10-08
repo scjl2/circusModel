@@ -3,7 +3,7 @@
 \end{zsection}
 %
 \begin{circus}
-\circchannel fireLong : SchedulableID \cross \num \\
-\circchannel releaseLongCall : SchedulableID \cross \num \\
-\circchannel releaseLongRet : SchedulableID \\
+\circchannel releaseLong : SchedulableID \cross \num \\
+\circchannel handleAsyncLongEventCall : SchedulableID \cross \num \\
+\circchannel handleAsyncLongEventRet : SchedulableID \\
 \end{circus}

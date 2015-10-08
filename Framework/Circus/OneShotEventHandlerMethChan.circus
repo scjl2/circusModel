@@ -6,4 +6,6 @@
 \circchannel ~ getNextReleaseTimeCall : SchedulableID \\
 \circchannel ~ getNextReleaseTimeRet : SchedulableID \cross JTime \\
 \circchannel ~ scheduleNextRelease : SchedulableID \cross JTime \\
+\circchannel ~ descheduleCall : SchedulableID \\
+\circchannel ~ descheduleRet : SchedulableID \cross \boolean \\
 \end{circus}

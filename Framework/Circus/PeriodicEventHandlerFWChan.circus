@@ -17,6 +17,6 @@
 %
 \begin{circus}
 \circchannelset MRCSync == \lchanset get\_missedReleases, increment\_missedReleases, decrement\_missedReleases \rchanset \\
-\circchannelset ReleaseSync == \lchanset fire,  stop\_period \rchanset \\
-\circchannelset PTCSYnc == \lchanset get\_periodicTerminating, set\_periodicTerminating \rchanset \\ 
+\circchannelset ReleaseSync == \lchanset release,  stop\_period \rchanset \\
+\circchannelset PTCSYnc == \lchanset get\_periodicTerminating, set\_periodicTerminating \rchanset \\
 \end{circus}

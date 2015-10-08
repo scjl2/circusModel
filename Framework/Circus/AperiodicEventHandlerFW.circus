@@ -209,12 +209,12 @@ ReleaseLong \circdef \\
 	\circblockclose\\
 \t1		\extchoice\\
 \t1	\circblockopen
-		releaseLongRet.schedulable \then \\
+		handleAsyncLongEventRet.schedulable \then \\
 		\circif pending = \true \circthen\\
 \t2		\circblockopen
 			pending := \false \circseq \\
 			release\_complete~.~schedulable \then \\
-			releaseLongCall.schedulable.data \then\\
+			handleAsyncLongEventCall.schedulable.data \then\\
 			ReleaseLong
 		\circblockclose\\
 		\circelse pending = \false \circthen\\
