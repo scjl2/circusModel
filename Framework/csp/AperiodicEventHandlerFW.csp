@@ -180,6 +180,7 @@ Ready_APEH(schedulable) =
   (
 		(
 	   	end_releases.schedulable ->
+      release_complete.schedulable ->
 	   	SKIP
 	  )
 	  []
@@ -192,6 +193,7 @@ Ready_APEH(schedulable) =
 []
 (
   end_releases.schedulable ->
+  release_complete.schedulable ->
   SKIP
 )
 
