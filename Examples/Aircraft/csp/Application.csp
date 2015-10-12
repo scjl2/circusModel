@@ -411,21 +411,20 @@ GetNextMission_mc =
 AdvanceMode_mc =
 	get_modesLeft.ACModeChangerId?modesLeft ->
 	if modesLeft == 3 then
-    (
+  (
 		set_modesLeft.ACModeChangerId!2 ->
 		set_currentMode.ACModeChangerId!TakeOffModeId ->
 		SKIP
 	)
-    else
-    (
-
-	    if modesLeft == 2 then
-	    (
+  else
+  (
+    if modesLeft == 2 then
+	  (
 			set_modesLeft.ACModeChangerId!1 ->
 			set_currentMode.ACModeChangerId!CruiseModeId ->
 			SKIP
 		)
-	    else
+	  else
 		(
 			if modesLeft == 1 then
 			(
@@ -439,23 +438,14 @@ AdvanceMode_mc =
 				SKIP
 			)
 		)
-    )
-
-
-
-
+  )
 
 Methods_mc =
 (
 	GetNextMission_mc
 	[]
 	AdvanceMode_mc
-
 ) ; Methods_mc
-
-
-
-
 
 --- Environment Monitor
 
@@ -468,15 +458,15 @@ EnvironmentMonitorApp =
 /\ (end_periodicEventHandler_app.EnvironmentMonitorId -> SKIP)
 
 Methods_em =
-	handlerAsyncEvent_em ; Methods_em
+	handleAsyncEvent_em ; Methods_em
 
-handlerAsyncEvent_em =
+handleAsyncEvent_em =
 	handleAsyncEventCall.EnvironmentMonitorId ->
 	setCabinPressure.MainMissionId!0 ->
 	setEmergencyOxygen.MainMissionId!0 ->
 	setFuelRemaining.MainMissionId!0 ->
-    handleAsyncEventRet.EnvironmentMonitorId ->
-    SKIP
+  handleAsyncEventRet.EnvironmentMonitorId ->
+  SKIP
 
 
 --- Control Handler
@@ -490,13 +480,13 @@ ControlHandlerApp =
 /\ (end_aperiodicEventHandler_app.ControlHandlerId -> SKIP)
 
 Methods_ch =
-	handlerAsyncEvent_ch ; Methods_ch
+	handleAsyncEvent_ch ; Methods_ch
 
-handlerAsyncEvent_ch =
+handleAsyncEvent_ch =
 	handleAsyncEventCall.ControlHandlerId ->
-		handleControls.ControlHandlerId ->
-    handleAsyncEventRet.ControlHandlerId ->
-    SKIP
+	handleControls.ControlHandlerId ->
+  handleAsyncEventRet.ControlHandlerId ->
+  SKIP
 
 --- CommunicationsHandler
 
@@ -513,10 +503,9 @@ Methods_comh =
 
 handlerAsyncEvent_comh =
 	handleAsyncEventCall.CommunicationsHandlerId ->
-		handleComms.CommunicationsHandlerId ->
-    handleAsyncEventRet.CommunicationsHandlerId ->
-    SKIP
-
+	handleComms.CommunicationsHandlerId ->
+  handleAsyncEventRet.CommunicationsHandlerId ->
+  SKIP
 
 --FlightSensorsMonitor
 FlightSensorsMonitorApp =
@@ -533,9 +522,8 @@ handlerAsyncEvent_fsm =
 	setAirSpeed.MainMissionId!2 ->
 	setAltitude.FlightSensorsMonitorId.MainMissionId!2 ->
 	setHeading.MainMissionId!2 ->
-    handleAsyncEventRet.FlightSensorsMonitorId ->
-    SKIP
-
+  handleAsyncEventRet.FlightSensorsMonitorId ->
+  SKIP
 
 -- TakeOffMission
 
