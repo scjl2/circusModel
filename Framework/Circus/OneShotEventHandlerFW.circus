@@ -132,7 +132,7 @@ Release \circdef \\
 %
 \begin{circusaction}
 DeadlineClock \circdef \\
-\t1 handleAsyncEventCall~.~schedulable \then \\
+\t1 release~.~schedulable \then \\
 \t1	\circblockopen
 		\circblockopen
 			\circblockopen
@@ -155,7 +155,6 @@ DeadlineClock \circdef \\
     \circinterrupt
     \circblockopen
     		end\_releases~.~schedulable \then \\
-    		%release\_complete~.~schedulable \then \\
 	    	\Skip
     \circblockclose
 \end{circusaction}
@@ -166,6 +165,7 @@ Scheduled \circdef \\
 \t1 \circblockopen
   \circblockopen
 		\circwait valueOf(startTime) \\
+    release~.~schedulable \then \\
 		handleAsyncEventCall~.~schedulable \then \\
 	 	NotScheduled
      \circblockclose \\
