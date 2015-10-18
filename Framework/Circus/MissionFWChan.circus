@@ -23,10 +23,12 @@
 %
 \begin{circus}
 \circchannel get\_missionTerminating : MissionID \cross \boolean \\
-\circchannel set\_missionTerminating : MissionID \cross \boolean \\
+\circchannel set\_missionTerminating : MissionID \cross \boolean
 \end{circus}
 %
 \begin{circus}
-	\circchannelset ~ TerminateSync == \lchanset schedulables\_terminated, schedulables\_stopped, get\_activeSchedulables \rchanset\\
-	\circchannelset ~ MTCSync == \lchanset get\_missionTerminating, set\_missionTerminating, end\_mission\_terminations \rchanset\\
+	\circchannelset ~ TerminateSync == \\
+  \quad \lchanset schedulables\_terminated, schedulables\_stopped, get\_activeSchedulables \rchanset\\
+	\circchannelset ~ MTCSync == \\
+   \quad\lchanset get\_missionTerminating, set\_missionTerminating, end\_mission\_terminations \rchanset
 \end{circus}

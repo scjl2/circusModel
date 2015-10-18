@@ -1,11 +1,14 @@
 \begin{zsection}
   \SECTION ~ AperiodicEventHandlerFW ~ \parents ~ MissionChan, SchedulableChan, SchedulableId, \\
-  \t1 MissionId, MissionIds, TopLevelMissionSequencerChan,\\
-  \t1 SafeletMethChan, FrameworkChan, AperiodicEventHandlerChan, AperiodicParameters
+  \quad MissionId, MissionIds, TopLevelMissionSequencerChan, SafeletMethChan, FrameworkChan,\\
+  \quad  AperiodicEventHandlerChan, AperiodicParameters
   \end{zsection}
 %
 \begin{circus}
-  \circprocess AperiodicEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; aperiodicType : AperiodicType ; aperiodicParameters : AperiodicParameters \circspot ~\circbegin
+  \circprocess AperiodicEventHandlerFW ~ \circdef ~ \\
+  \quad  schedulable : SchedulableID; aperiodicType : AperiodicType ; \\
+  \quad aperiodicParameters : AperiodicParameters \circspot \\
+  \quad~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
@@ -35,17 +38,17 @@
 %
 \begin{circusaction}
 Start \circdef\\
-\t1  \circblockopen
+ \circblockopen
    	Register \circseq \\
    	Activate
   \circblockclose  \\
-\t1  \extchoice\\
-\t1  \circblockopen
+\quad  \extchoice\\
+  \circblockopen
   	activate\_schedulables?someMissionID \then \\
   	Start
   \circblockclose \\
-\t1  \extchoice \\
-\t1  \circblockopen
+\quad  \extchoice \\
+  \circblockopen
 	done\_toplevel\_sequencer \then \\
 	applicationTerminating := \true \\
      \circblockclose
@@ -53,63 +56,67 @@ Start \circdef\\
 %
 \begin{circusaction}
 Register \circdef \\
-\t1    register~.~schedulable~?~missionID \then \\
-\t1    controllingMission := missionID
+\quad    register~.~schedulable~?~missionID \then \\
+\quad    controllingMission := missionID
 \end{circusaction}
 %
 \begin{circusaction}
 Activate ~ \circdef ~ \\
-\t1    activate\_schedulables~.~controllingMission \then \\
-\t1    \Skip
+\quad    activate\_schedulables~.~controllingMission \then \\
+\quad    \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 Execute \circdef  \\
-\t1 \circif deadlineMissHandler != nullSchedulableId \circthen \\
-\t1 \circblockopen
+ \circif deadlineMissHandler != nullSchedulableId \circthen \\
+\quad \circblockopen
+\circblockopen
 \circblockopen
   \circif aperiodicType = aperiodic \circthen \\
-    Ready\\
+  \quad  Ready\\
   \circelse aperiodicType = aperiodicLong \circthen \\
-    ReadyLong \\
+\quad    ReadyLong \\
   \circfi
-\circblockclose
-   \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar \\
+\circblockclose \\
+\quad   \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar \\
 SignalTermination\\
-\circblockclose
-  \lpar \{pending, data\} | DeadlineClockSync \cup \lchanset  release~.~schedulable, releaseLong.schedulable \rchanset | \emptyset \rpar \\
-\circblockopen
+\circblockclose \\
+\quad  \lpar \{pending, data\} | \\
+\qquad DeadlineClockSync \cup \lchanset  release~.~schedulable, releaseLong.schedulable \rchanset | \\
+\quad \emptyset \rpar \\
+ \quad \circblockopen
 \circblockopen
   \circblockopen
-      release~.~schedulable \then \Skip
-      \extchoice
-      releaseLong~.~schedulable?data \then \Skip
-    \circblockclose \circseq DeadlineClock
-\circblockclose
-\circinterupt
+      release~.~schedulable \then \Skip \\
+      \extchoice \\
+      releaseLong~.~schedulable?data \then \Skip \\
+    \circblockclose \\ \circseq DeadlineClock
+\circblockclose \\
+\circinterrupt
 \circblockopen
-    end\_releases.schedulable \then
+    end\_releases.schedulable \then \\
     \Skip
 \circblockclose
 \circblockclose
-\t1 \circelse deadlineMissHandler == nullSchedulableId \circthen \\
-\t1 \circblockopen
+\circblockclose \\
+ \circelse deadlineMissHandler == nullSchedulableId \circthen \\
+\quad \circblockopen
 	\circblockopen
 		\circif aperiodicType = aperiodic \circthen \\
-			Ready\\
+		\quad	Ready\\
 		\circelse aperiodicType = aperiodicLong \circthen \\
-			ReadyLong \\
+		\quad	ReadyLong \\
 		\circfi
-	\circblockclose
-   	 \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar\\
+	\circblockclose \\
+   \quad	 \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar\\
   SignalTermination\\
-\circblockclose
+\circblockclose \\
 \circfi
 \end{circusaction}
 %
 \begin{circusaction}
 DeadlineClock \circdef \\
-\t1	\circblockopen
+\quad	\circblockopen
 		\circblockopen
 			\circblockopen
 				\circwait valueOf(deadline) \circseq \\
@@ -122,8 +129,8 @@ DeadlineClock \circdef \\
 				DeadlineClock
 			\circblockclose
 		\circblockclose
-	\circblockclose
-    \circinterrupt
+	\circblockclose \\
+\quad    \circinterrupt
     \circblockopen
     		end\_releases~.~schedulable \then \\
     		%release\_complete~.~schedulable \then \\
@@ -131,15 +138,16 @@ DeadlineClock \circdef \\
     \circblockclose
 \end{circusaction}
 %short
+
 \begin{circusaction}
 Ready \circdef \\
-\t1 \circblockopen
+\quad \circblockopen
 	release.schedulable \then\\
 	handleAsyncEventCall~.~schedulable \then\\
 	Release
     \circblockclose\\
-\t1 \extchoice\\
-\t1 \circblockopen
+\quad \extchoice\\
+\quad \circblockopen
 	end\_releases~.~schedulable \then\\
 	\Skip
     \circblockclose
@@ -147,14 +155,14 @@ Ready \circdef \\
 %long
 \begin{circusaction}
 ReadyLong \circdef \\
-\t1 \circblockopen
+\quad \circblockopen
 	releaseLong~.~schedulable~?~longData \then\\
 	data := longData \circseq \\
 	handleAsyncLongEventCall~.~schedulable~.~data \then\\
 	ReleaseLong
      \circblockclose\\
-\t1 \extchoice\\
-\t1 \circblockopen
+\quad \extchoice\\
+\quad \circblockopen
 	end\_releases~.~schedulable \then\\
 	\Skip
 \circblockclose
@@ -162,7 +170,7 @@ ReadyLong \circdef \\
 %
 \begin{circusaction}
 SignalTermination \circdef \\
-\t1	\circblockopen
+\quad	\circblockopen
 		signalTerminationCall~.~schedulable \then\\
 		end\_releases~.~schedulable \then\\
 		signalTerminationRet~.~schedulable \then\\
@@ -173,27 +181,27 @@ SignalTermination \circdef \\
 %short
 \begin{circusaction}
 Release \circdef \\
-\t1 \circblockopen
+\quad \circblockopen
 		release.schedulable \then\\
 		pending := \true \circseq\\
 		Release
 	\circblockclose\\
-\t1	\extchoice\\
-\t1	\circblockopen
+\quad	\extchoice\\
+\quad	\circblockopen
 		handleAsyncEventRet.schedulable \then \\
 		\circif pending = \true \circthen\\
-\t2		\circblockopen
+\quad		\circblockopen
 			pending := \false \circseq \\
 			release\_complete~.~schedulable \then \\
 			handleAsyncEventCall.schedulable \then\\
 			Release
 		\circblockclose\\
 		\circelse pending = \false \circthen\\
-\t2			 Ready\\
+\quad			 Ready\\
 		\circfi
-\t1	\circblockclose\\
-\t1	 \extchoice\\
-\t1	\circblockopen
+\quad	\circblockclose\\
+\quad	 \extchoice\\
+\quad	\circblockopen
 		end\_releases.schedulable \then \\
 		\Skip
 	\circblockclose\\
@@ -201,28 +209,28 @@ Release \circdef \\
 %long
 \begin{circusaction}
 ReleaseLong \circdef \\
-\t1 \circblockopen
+\quad \circblockopen
 		releaseLong.schedulable~?~longData \then\\
 		data := longData \circseq \\
 		pending := \true \circseq\\
 		ReleaseLong
 	\circblockclose\\
-\t1		\extchoice\\
-\t1	\circblockopen
+\quad		\extchoice\\
+\quad	\circblockopen
 		handleAsyncLongEventRet.schedulable \then \\
 		\circif pending = \true \circthen\\
-\t2		\circblockopen
+\quad		\circblockopen
 			pending := \false \circseq \\
 			release\_complete~.~schedulable \then \\
 			handleAsyncLongEventCall.schedulable.data \then\\
 			ReleaseLong
 		\circblockclose\\
 		\circelse pending = \false \circthen\\
-\t2			 ReadyLong \\
+\quad			 ReadyLong \\
 		\circfi
-\t1	\circblockclose\\
-\t1	 \extchoice\\
-\t1	\circblockopen
+\quad	\circblockclose\\
+\quad	 \extchoice\\
+\quad	\circblockopen
 		end\_releases.schedulable \then \\
 		\Skip
 	\circblockclose\\
@@ -230,20 +238,20 @@ ReleaseLong \circdef \\
 %
 \begin{circusaction}
 Cleanup \circdef \\
-\t1 cleanupSchedulableCall~.~schedulable \then\\
-\t1 cleanupSchedulableRet~.~schedulable \then \\
-\t1 \Skip
+\quad cleanupSchedulableCall~.~schedulable \then\\
+\quad cleanupSchedulableRet~.~schedulable \then \\
+\quad \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 \circspot \circblockopen  \circmu X \circspot \circblockopen   \lschexpract Init \rschexpract \circseq Start \circseq\\
    \circblockopen  \circif applicationTerminating = \false \circthen \\
-	\t2 \circblockopen Execute \circseq Cleanup \circseq X \circblockclose\\
+	\qquad \circblockopen Execute \circseq Cleanup \circseq X \circblockclose\\
  \circelse applicationTerminating = \true \circthen \\
- \t2 \circblockopen
+ \qquad \circblockopen
 	end\_aperiodic\_app~.~schedulable \then \\
 	\Skip
- \circblockclose
+ \circblockclose \\
 \circfi \circblockclose \circblockclose \circblockclose
 \end{circusaction}
 %

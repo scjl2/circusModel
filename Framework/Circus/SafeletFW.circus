@@ -1,5 +1,6 @@
 \begin{zsection}
-  \SECTION ~ SafeletFW ~ \parents ~ scj\_prelude, SchedulableId, SchedulableIds, SafeletChan, TopLevelMissionSequencerChan, FrameworkChan, SchedulableChan
+  \SECTION ~ SafeletFW ~ \parents ~ scj\_prelude, SchedulableId, SchedulableIds, SafeletChan, \\
+  \quad TopLevelMissionSequencerChan, FrameworkChan, SchedulableChan
 \end{zsection}
 %
 \begin{circus}
@@ -24,68 +25,68 @@
 \end{circusaction}
 \end{parser}
 %
-\begin{circusaction}       
-InitializeApplication \circdef \\ 
-\t1     initializeApplicationCall \then \\
-\t1     initializeApplicationRet \then\\
-\t1     \Skip
+\begin{circusaction}
+InitializeApplication \circdef \\
+\quad     initializeApplicationCall \then \\
+\quad     initializeApplicationRet \then\\
+\quad     \Skip
 \end{circusaction}
 %
-\begin{circusaction}    
+\begin{circusaction}
 Execute \circdef \\
-\t1     GetSequencerMeth \circseq \\
-\t1     \circif topLevelSequencer \neq nullSequencerId \circthen\\
-\t1     \circblockopen 
-     		 start\_toplevel\_sequencer~.~topLevelSequencer \then\\ 
+\quad     GetSequencerMeth \circseq \\
+\quad     \circif topLevelSequencer \neq nullSequencerId \circthen\\
+\quad     \circblockopen
+     		 start\_toplevel\_sequencer~.~topLevelSequencer \then\\
      		 Methods \\
         \circblockclose   \\
-\t1    \circelse topLevelSequencer = nullSequencerId \circthen\\
-\t2       \Skip\\
-\t1    \circfi	
-\end{circusaction}      
+\quad    \circelse topLevelSequencer = nullSequencerId \circthen\\
+\qquad       \Skip\\
+\quad    \circfi
+\end{circusaction}
 %
 \begin{circusaction}
 GetSequencerMeth \circdef \\
-\t1 	getSequencerCall \then\\ 
-\t1     getSequencerRet~?~sequencer \then\\
-\t1     topLevelSequencer := sequencer
+\quad 	getSequencerCall \then\\
+\quad     getSequencerRet~?~sequencer \then\\
+\quad     topLevelSequencer := sequencer
 \end{circusaction}
 %
-\begin{circusaction}     
+\begin{circusaction}
 Methods \circdef \\
-\t1\circblockopen 
-	\circblockopen 
+\quad\circblockopen
+	\circblockopen
 		Register \circseq\\
     		Methods
     	\circblockclose \\
     	\extchoice \\
-    	\circblockopen 
+    	\circblockopen
     		Deregister \circseq \\
     		Methods
     	\circblockclose \\
     	\extchoice\\
-    	\circblockopen 
+    	\circblockopen
     		done\_toplevel\_sequencer \then \\
     		\Skip
     	\circblockclose \\
-  \circblockclose    
-\end{circusaction}  
-%  
+  \circblockclose
+\end{circusaction}
+%
 \begin{circusaction}
 Register \circdef \\
 
-    \circblockopen 
+    \circblockopen
     	register~?~schedulable\prefixcolon(schedulable \notin globallyRegistered)~?~mission \then \\
-    	\circblockopen  
+    	\circblockopen
     		globallyRegistered := globallyRegistered \cup \{schedulable\} \circseq \\
-    		checkSchedulable~.~mission~!~\true \then \\ 
+    		checkSchedulable~.~mission~!~\true \then \\
     		\Skip\\
 	\circblockclose  \\
     \circblockclose \\
     \extchoice \\
-    \circblockopen 
-      register~?~schedulable\prefixcolon(schedulable \in globallyRegistered)~?~mission \then \\		
-      checkSchedulable~.~mission~!~\false \then \\ 
+    \circblockopen
+      register~?~schedulable\prefixcolon(schedulable \in globallyRegistered)~?~mission \then \\
+      checkSchedulable~.~mission~!~\false \then \\
      \Skip\\
     \circblockclose \\
 
@@ -93,13 +94,13 @@ Register \circdef \\
 %
 \begin{circusaction}
 Deregister \circdef \\
-\t1     deregister~?~schedulables \then \\
-\t1     globallyRegistered := (globallyRegistered \setminus schedulables) \circseq \\
-\t1    \Skip
+\quad     deregister~?~schedulables \then \\
+\quad     globallyRegistered := (globallyRegistered \setminus schedulables) \circseq \\
+\quad    \Skip
 \end{circusaction}
 %
 \begin{circusaction}
-  \circspot \circblockopen  \lschexpract Init \rschexpract \circseq InitializeApplication \circseq Execute\circblockclose 
+  \circspot \circblockopen  \lschexpract Init \rschexpract \circseq InitializeApplication \circseq Execute\circblockclose
 \end{circusaction}
 %
 \begin{circus}

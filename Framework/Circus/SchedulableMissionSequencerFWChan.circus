@@ -4,13 +4,14 @@
 %
 \begin{circus}
   \circchannel ~ set\_continueBelow : SchedulableID \cross \boolean \\
-  \circchannel ~ set\_continueAbove: SchedulableID \cross \boolean \\
-\end{circus} 
-%
-\begin{circus}
-  \circchannelset ~ CCSync ~ == ~ \lchanset get\_continue,  set\_continueBelow, set\_continueAbove \rchanset \\
+  \circchannel ~ set\_continueAbove: SchedulableID \cross \boolean
 \end{circus}
 %
 \begin{circus}
-  \circchannelset ~ SchedulableMissionSequencerFWChan ~ == ~ \lchanset end\_sequencer\_app, end\_methods, end\_terminations, get\_continue \rchanset
+  \circchannelset ~ CCSync ~ == ~ \lchanset get\_continue,  set\_continueBelow, set\_continueAbove \rchanset
+\end{circus}
+%
+\begin{circus}
+  \circchannelset ~ SchedulableMissionSequencerFWChan ~ == ~\\
+  \qquad  \lchanset end\_sequencer\_app, end\_methods, end\_terminations, get\_continue \rchanset
 \end{circus}
