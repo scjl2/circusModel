@@ -10,24 +10,43 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{comment}
-%COMMENTS
+\usepackage{soul}
+\usepackage{circus}
+\usepackage{hijac}
+
+
+%Content Toggles
 \includecomment{comment} %show comments
 %\excludecomment{comment}  %do not show comments
 
 %\includecomment{parser} %show comments
 \excludecomment{parser}  %do not show comments
 
-%\includecomment{plumbing} %show comments
-\excludecomment{plumbing}  %do not show comments
+\includecomment{plumbing} %show comments
+%\excludecomment{plumbing}  %do not show comments
 
-\usepackage{soul}
-%\usepackage{wasysym}
+\includecomment{report} %display the title
+%\excludecomment{fureportllDoc}  %do not display the title
 
-\usepackage{circus}
-\usepackage{hijac}
 
+
+
+\title{SCJ Level~2 Framework Model}
+
+\author{Matt Luckcuck \\\\Department of Computer Science, \\University of York, UK \\\\ml881@york.ac.uk}
+
+\date{\today}
 
 \begin{document}
+
+\begin{report}
+\maketitle
+
+\tableofcontents
+
+\newpage
+\end{report}
+
 \begin{plumbing}
 \section{GlobalTypes}
 \input{../GlobalTypes.circus}
@@ -103,11 +122,11 @@
 \newpage
 \end{plumbing}
 
-\section{Object}
+\section{ObjectFW}
 \input{../ObjectFW.circus}
 \newpage
 
-\section{Thread}
+\section{ThreadFW}
 \input{../ThreadFW.circus}
 \newpage
 
