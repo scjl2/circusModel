@@ -13,6 +13,7 @@
 \usepackage{soul}
 \usepackage{circus}
 \usepackage{hijac}
+\usepackage{hyperref}
 
 
 %Content Toggles
@@ -31,7 +32,7 @@
 
 
 
-\title{SCJ Level~2 Framework Model}
+\title{Safety-Critical Java Level~2 Framework Model}
 
 \author{Matt Luckcuck \\\\Department of Computer Science, \\University of York, UK \\\\ml881@york.ac.uk}
 
@@ -45,6 +46,15 @@
 \tableofcontents
 
 \newpage
+
+\section{Introduction}
+
+Safety-Critical Java (SCJ)~\cite{SCJ_Spec_0.100} is a Java-based language for applications that must be certified. To aid certification efforts, SCJ is organised into three compliance levels. Level~0 applications are simple single-processor programs executed by a cyclic executive. By contrast, Level~2 applications are highly concurrent, potentially multi-processor, and make use of suspension and a variety of release patterns.
+
+We model SCJ Level~2 applications using the state-rich process algebra \Circus{}~\cite{circus_woodcock_cavalcanti_2002}. We approach this by splitting our models into a reusable \textit{Framework} model, which captures the API behaviour of SCJ, and a specific \textit{Application} model, which captures the application's behaviour.
+
+Here we present our SCJ Level~2 Framework model, which captures the unchanging behaviour of the API. It is intended that the Framework model be combined with a Application model to produce a model of that specific application. 
+
 \end{report}
 
 \begin{plumbing}
@@ -163,5 +173,7 @@
 \input{../ManagedThreadFW.circus}
 \newpage
 
+\bibliographystyle{plain}
+\bibliography{FrameworkBib}
 
 \end{document}
