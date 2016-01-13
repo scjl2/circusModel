@@ -36,7 +36,7 @@ InitializeApplication \circdef \\
 Execute \circdef \\
 \quad     GetSequencerMeth \circseq \\
 \quad     \circif topLevelSequencer \neq nullSequencerId \circthen\\
-\quad     \circblockopen
+\qquad     \circblockopen
      		 start\_toplevel\_sequencer~.~topLevelSequencer \then\\
      		 Methods \\
         \circblockclose   \\

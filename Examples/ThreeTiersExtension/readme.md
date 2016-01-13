@@ -1,8 +1,10 @@
-ThreeTiersExtension Example
+ThreeTiersExtension Example (NestedSequencer5)
 =======
 
 Matt Luckcuck <ml881@york.ac.uk> 2014
 -----------------------------------
+
+### Classes: 15
 
 ### Features:
 	* Three tiers

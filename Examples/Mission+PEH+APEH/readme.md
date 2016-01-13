@@ -1,8 +1,9 @@
-Mission+PEH+APEH Example
+Mission+PEH+APEH Example (Mission1)
 =======
 
 Matt Luckcuck <ml881@york.ac.uk> 2014
 -----------------------------------
+### Number of Classes: 5
 
 ### Features:
 	* Mission with Multiple Schedulable Objects

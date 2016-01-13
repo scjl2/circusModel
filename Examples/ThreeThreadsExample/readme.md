@@ -4,6 +4,8 @@ ThreeThreads Example
 Matt Luckcuck <ml881@york.ac.uk> 2014
 -----------------------------------
 
+### Classes: 6
+
 ### Features:
 	* Mission with Multiple Schedulable Objects of the Same Type (`ManagedThread`s)
 	* Use of `ManagedThread`

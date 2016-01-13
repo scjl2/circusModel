@@ -1,8 +1,10 @@
-ThreeThreads Example
+Two Sequential Missions Example
  =======
 
 Matt Luckcuck <ml881@york.ac.uk> 2014
 -----------------------------------
+
+### Classes: 8 
 
 ### Features:
 	* MissionSequencer with two `Mission`s

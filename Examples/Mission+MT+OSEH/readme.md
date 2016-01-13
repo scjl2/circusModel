@@ -1,8 +1,10 @@
-Mission+MT+OSEH Example
+Mission+MT+OSEH Example (Mission2)
 =======
 
 Matt Luckcuck <ml881@york.ac.uk> 2014
 -----------------------------------
+
+###Classes: 5
 
 ### Features:
 	* Mission with Multiple Schedulable Objects
