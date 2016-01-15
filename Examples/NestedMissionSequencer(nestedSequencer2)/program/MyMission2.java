@@ -1,4 +1,4 @@
-package simpleNestedSequencer;
+package nestedSequencer2;
 
 import javax.realtime.Clock;
 import javax.realtime.PeriodicParameters;

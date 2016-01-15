@@ -1,4 +1,4 @@
-package simpleNestedSequencer;
+package nestedSequencer2;
 
 import javax.safetycritical.Mission;
 import javax.safetycritical.PeriodicEventHandler;
@@ -13,7 +13,7 @@ public class MyPEH3 extends PeriodicEventHandler
 
 	public MyPEH3(PriorityParameters priority, PeriodicParameters release, StorageParameters storage, Mission m) 
 	{
-		super(priority, release, storage, "mission3--peh1");
+		super(priority, release, storage);
 		this.m = m;			
 	}
 

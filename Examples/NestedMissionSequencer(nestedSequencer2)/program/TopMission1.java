@@ -1,4 +1,4 @@
-package simpleNestedSequencer;
+package nestedSequencer2;
 
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;

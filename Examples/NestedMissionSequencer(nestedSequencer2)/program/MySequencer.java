@@ -1,24 +1,25 @@
-package simpleNestedSequencer;
+package nestedSequencer2;
 
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
 import javax.safetycritical.MissionSequencer;
 import javax.safetycritical.StorageParameters;
 
-public class ThirdMissionSequencer extends MissionSequencer<Mission>
+public class MySequencer extends MissionSequencer<Mission> 
 {
-   private Mission myMission;
+    private Mission myMission;
     private boolean done = false;
 
-    public  ThirdMissionSequencer(PriorityParameters priority, StorageParameters storage) 
-	{
-		super(priority, storage,"3ms");
-		myMission = new MyMission3();
+    public MySequencer(PriorityParameters priority, StorageParameters storage) 
+    {
+	    super(priority, storage,"OM--ms");
+
+    	myMission = new TopMission1();
     }
-    
+
     @Override
     protected Mission getNextMission() 
-	{
+    {
     	devices.Console.println(getName() + ":getNextMission");
 	    if (done == false) 
 		{
@@ -29,5 +30,5 @@ public class ThirdMissionSequencer extends MissionSequencer<Mission>
 		{
 			return null;
 		}
-    }    
+    }
 }
