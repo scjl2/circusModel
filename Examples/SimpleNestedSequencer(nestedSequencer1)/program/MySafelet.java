@@ -3,7 +3,7 @@
  * 
  *   @author Matt Luckcuck <ml881@york.ac.uk>
  */
-package scjlevel2examples.simpleNestedSequencer;
+package nestedSequencer1;
 
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
@@ -14,7 +14,7 @@ import javax.scj.util.Const;
 
 import devices.Console;
 
-public class TestSafelet implements Safelet<Mission>
+public class MySafelet implements Safelet<Mission>
 {
 
 	// public static StorageParameters storageParametersSchedulable;
@@ -28,12 +28,10 @@ public class TestSafelet implements Safelet<Mission>
 		Console.println("TestSafelet: getSequencer");
 
 		storageParameters_topLevelSequencer = new StorageParameters(
-				1000000,
+				Const.OVERALL_BACKING_STORE_DEFAULT - 1000000,
 				new long[] { Const.HANDLER_STACK_SIZE },
-				100000, 
-				10000 ,
-				100000);
-
+				Const.PRIVATE_MEM_DEFAULT, 10000 * 2, Const.MISSION_MEM_DEFAULT);
+		
 		return new MainMissionSequencer(new PriorityParameters(5),
 				storageParameters_topLevelSequencer);
 	}

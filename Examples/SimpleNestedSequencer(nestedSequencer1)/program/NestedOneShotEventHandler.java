@@ -1,4 +1,4 @@
-package scjlevel2examples.simpleNestedSequencer;
+package nestedSequencer1;
 
 import javax.safetycritical.OneShotEventHandler;
 import javax.safetycritical.StorageParameters;

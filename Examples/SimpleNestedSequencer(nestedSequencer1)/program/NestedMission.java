@@ -3,15 +3,12 @@
  *   
  *   @author Matt Luckcuck <ml881@york.ac.uk>
  */
-package scjlevel2examples.simpleNestedSequencer;
+package nestedSequencer1;
 
 import javax.realtime.AperiodicParameters;
-import javax.realtime.HighResolutionTime;
 import javax.realtime.PriorityParameters;
 import javax.realtime.RelativeTime;
 import javax.safetycritical.Mission;
-
-import javax.scj.util.Const;
 
 import devices.Console;
 
@@ -27,7 +24,7 @@ public class NestedMission extends Mission
 		NestedOneShotEventHandler nestedOneShot = new NestedOneShotEventHandler(
 				new PriorityParameters(5), new RelativeTime(5, 0),
 				new AperiodicParameters(),
-				TestSafelet.storageParameters_Schedulable);
+				MySafelet.storageParameters_Schedulable);
 
 		nestedOneShot.register();
 

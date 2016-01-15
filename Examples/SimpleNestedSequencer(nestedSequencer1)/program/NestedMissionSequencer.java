@@ -3,7 +3,7 @@
  * 
  *   @author Matt Luckcuck <ml881@york.ac.uk>
  */
-package scjlevel2examples.simpleNestedSequencer;
+package nestedSequencer1;
 
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;

@@ -3,11 +3,10 @@
  *
  *   @author Matt Luckcuck <ml881@york.ac.uk>
  */
-package scjlevel2examples.simpleNestedSequencer;
+package nestedSequencer1;
 
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
-import javax.scj.util.Const;
 
 import devices.Console;
 
@@ -20,7 +19,7 @@ public class MainMission extends Mission
 
 		NestedMissionSequencer sPModeChanger = new NestedMissionSequencer(
 				new PriorityParameters(5),
-				TestSafelet.storageParameters_nestedSequencer);
+				MySafelet.storageParameters_nestedSequencer);
 
 		Console.println("Main Mission: Nested Sequencers Init");
 
