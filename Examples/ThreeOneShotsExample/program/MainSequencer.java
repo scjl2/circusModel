@@ -1,4 +1,4 @@
-package mission2;
+package threeOneShots;
 
 import javax.realtime.PriorityParameters;
 import javax.safetycritical.Mission;
@@ -12,7 +12,7 @@ import devices.Console;
 class MainSequencer extends MissionSequencer<Mission>
 {
 	private boolean notReleased = true;
-
+	
 	public MainSequencer(PriorityParameters priority, StorageParameters storage,
 			String name) throws IllegalStateException
 	{
@@ -24,9 +24,11 @@ class MainSequencer extends MissionSequencer<Mission>
 	protected Mission getNextMission()
 	{
 		Console.println(getName()+  " getNextMission");
+		
 		if (notReleased)
 		{
-			MissionA mission = new MissionA();
+			Mission mission = new MissionA();
+		
 			notReleased = false;
 			return mission;
 		}

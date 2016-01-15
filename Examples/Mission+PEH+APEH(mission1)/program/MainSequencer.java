@@ -6,8 +6,11 @@ import javax.safetycritical.StorageParameters;
 import javax.safetycritical.annotate.Level;
 import javax.safetycritical.annotate.SCJAllowed;
 
+import devices.Console;
+
 class MainSequencer extends MissionSequencer<MyMission>
 {
+	private boolean notReleased = true;
 
 	public MainSequencer(PriorityParameters priority, StorageParameters storage,
 			String name) throws IllegalStateException
@@ -19,8 +22,17 @@ class MainSequencer extends MissionSequencer<MyMission>
 	@SCJAllowed(Level.SUPPORT)
 	protected MyMission getNextMission()
 	{
-		MyMission mission = new MyMission();
-		return mission;
+		Console.println(getName()+  " getNextMission");
+		if (notReleased)
+		{
+			MyMission mission = new MyMission();
+			notReleased = false;
+			return mission;
+		}
+		else
+		{
+			return null;
+		}
 	}
-	
+
 }
