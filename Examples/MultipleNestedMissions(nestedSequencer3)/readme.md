@@ -1,5 +1,5 @@
 Multiple Nested Missions Sequencer Example (NestedSequencer3)
-=======
+=============================================================
 
 Matt Luckcuck 15th of December 2014
 -----------------------------------
