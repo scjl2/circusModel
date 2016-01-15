@@ -5,8 +5,6 @@ import javax.realtime.PriorityParameters;
 import javax.safetycritical.AperiodicEventHandler;
 import javax.safetycritical.PeriodicEventHandler;
 import javax.safetycritical.StorageParameters;
-import javax.safetycritical.annotate.Level;
-import javax.safetycritical.annotate.SCJAllowed;
 
 import devices.Console;
 
