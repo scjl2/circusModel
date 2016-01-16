@@ -15,7 +15,7 @@
    id="svg2"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="ThreeTiersExtStucture.svg"
-   inkscape:export-filename="/home/matt/Documents/Model/Examples/ThreeTiersExtension(nestedSequencer5)/ThreeTiersExtStucture.svg.png"
+   inkscape:export-filename="/home/matt/Documents/Model/Examples/ThreeTiersExtension(nestedSequencer5)/ThreeTiersExtStucture.png"
    inkscape:export-xdpi="500"
    inkscape:export-ydpi="500">
   <sodipodi:namedview
@@ -32,8 +32,8 @@
      id="namedview122"
      showgrid="false"
      inkscape:zoom="1.2467191"
-     inkscape:cx="322.06533"
-     inkscape:cy="613.90129"
+     inkscape:cx="315.9151"
+     inkscape:cy="576.18459"
      inkscape:window-x="65"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
@@ -322,24 +322,24 @@
      height="48.286221"
      width="190.8051" />
   <rect
-     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.51338416;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.4823398;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-7"
-     y="93.44278"
-     x="298.74133"
+     y="93.427254"
+     x="298.7258"
      ry="0"
-     height="43.242359"
-     width="333.04962"
+     height="43.273403"
+     width="293.7775"
      inkscape:export-filename="/home/matt/Uni/Model/Examples/ThreeTiers/ThreeTiersStucture.png"
      inkscape:export-xdpi="500"
      inkscape:export-ydpi="500" />
   <rect
-     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.64138168;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.60400796;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-0"
-     y="276.78522"
-     x="318.86792"
+     y="276.76654"
+     x="318.84924"
      ry="0"
-     height="55.004715"
-     width="408.66422" />
+     height="55.042088"
+     width="362.17947" />
   <rect
      style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.65162849;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-5"
@@ -365,21 +365,21 @@
      height="65.16404"
      width="324.57053" />
   <rect
-     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.49427447;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.62120098;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-9"
-     y="632.56989"
-     x="15.655899"
+     y="632.63336"
+     x="15.719362"
      ry="0"
-     height="65.146957"
-     width="204.91589" />
+     height="65.020027"
+     width="324.30264" />
   <rect
-     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.46729717;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.59938622;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-1"
-     y="651.29706"
-     x="509.32623"
+     y="651.3631"
+     x="382.65964"
      ry="0"
-     height="61.149212"
-     width="195.13219" />
+     height="61.017124"
+     width="321.73273" />
   <rect
      style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.38177329;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-17"
@@ -389,13 +389,13 @@
      height="69.246841"
      width="115.01235" />
   <rect
-     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.41729769;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.34038666;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-4"
-     y="281.56036"
-     x="18.445889"
+     y="281.52191"
+     x="40.866383"
      ry="0"
-     height="55.363247"
-     width="171.87149" />
+     height="55.440155"
+     width="114.19682" />
   <rect
      style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.33956981;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-2"
@@ -453,7 +453,7 @@
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1"
-     transform="translate(-113.97743,37.793534)"><flowRegion
+     transform="translate(-117.97743,37.793534)"><flowRegion
        id="flowRegion3070-3"><rect
          style="stroke:#ffffff"
          id="rect3072-8"
@@ -461,19 +461,19 @@
          x="422.14285"
          height="55.351273"
          width="403.17294" /></flowRegion><flowPara
-       id="flowPara3074-9">MainSequencer</flowPara></flowRoot>  <rect
-     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.46831715;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="flowPara3074-9">TopSequencer</flowPara></flowRoot>  <rect
+     style="fill:#cccccc;fill-opacity:1;stroke:#ffffff;stroke-width:0.44394684;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:17.39999962;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
      id="rect2985-7-8"
-     y="164.9689"
-     x="307.2674"
+     y="164.95673"
+     x="324.09943"
      ry="0"
-     height="44.800308"
-     width="267.5054" />
+     height="44.824677"
+     width="240.25818" />
   <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8"
-     transform="translate(-95.80436,110.45273)"><flowRegion
+     transform="translate(-85.80436,110.45273)"><flowRegion
        id="flowRegion3070-3-4"><rect
          style="stroke:#ffffff"
          id="rect3072-8-2"
@@ -481,11 +481,11 @@
          x="422.14285"
          height="52.142857"
          width="282.85715" /></flowRegion><flowPara
-       id="flowPara3074-9-9">MainMission</flowPara></flowRoot>  <flowRoot
+       id="flowPara3074-9-9">TopMission</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-2"
-     transform="translate(-100.50125,237.60356)"><flowRegion
+     transform="translate(-94.50125,231.60356)"><flowRegion
        id="flowRegion3070-3-4-7"><rect
          style="stroke:#ffffff"
          id="rect3072-8-2-0"
@@ -494,7 +494,7 @@
          height="62.142853"
          width="462.85715" /></flowRegion><flowPara
        style="font-size:32px;stroke:#ffffff"
-       id="flowPara3074-9-9-0">NestedMissionSequencer</flowPara></flowRoot>  <flowRoot
+       id="flowPara3074-9-9-0">MidMissionSequencer</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-2-1"
@@ -507,11 +507,11 @@
          height="66.428566"
          width="531.42859" /></flowRegion><flowPara
        style="font-size:32px;stroke:#ffffff"
-       id="flowPara3074-9-9-0-3">NestedMissionSequencerA</flowPara></flowRoot>  <flowRoot
+       id="flowPara3074-9-9-0-3">BottomMissionSequencerA</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-2-4"
-     transform="translate(-110.01976,517.58117)"><flowRegion
+     transform="translate(-116.01976,515.58117)"><flowRegion
        id="flowRegion3070-3-4-7-4"><rect
          style="stroke:#ffffff"
          id="rect3072-8-2-0-24"
@@ -520,11 +520,11 @@
          height="62.142853"
          width="462.85715" /></flowRegion><flowPara
        style="font-size:32px;stroke:#ffffff"
-       id="flowPara3074-9-9-0-1">NestedMissionSequencerB</flowPara></flowRoot>  <flowRoot
+       id="flowPara3074-9-9-0-1">BottomMissionSequencerB</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-7"
-     transform="matrix(1.0284846,0,0,1,-41.955448,319.65727)"><flowRegion
+     transform="matrix(1.0284846,0,0,1,-8.2670253,319.65727)"><flowRegion
        id="flowRegion3070-3-4-8"><rect
          style="stroke:#ffffff"
          id="rect3072-8-2-7"
@@ -532,31 +532,31 @@
          x="433.06134"
          height="52.142857"
          width="335.88971" /></flowRegion><flowPara
-       id="flowPara3074-9-9-9">NestedMissionB</flowPara></flowRoot>  <flowRoot
+       id="flowPara3074-9-9-9">MidMissionB</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-1"
-     transform="translate(-398.9929,588.85432)"><flowRegion
+     transform="translate(-408.9929,588.85432)"><flowRegion
        id="flowRegion3070-3-4-88"><rect
          style="stroke:#ffffff"
          id="rect3072-8-2-72"
          y="49.094482"
          x="422.14285"
-         height="52.142857"
-         width="282.85715" /></flowRegion><flowPara
-       id="flowPara3074-9-9-90">MissionA</flowPara></flowRoot>  <flowRoot
+         height="50.538643"
+         width="339.80661" /></flowRegion><flowPara
+       id="flowPara3074-9-9-90">BottomMissionA</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-20"
-     transform="translate(100.46645,605.34945)"><flowRegion
+     transform="translate(-39.901978,606.95366)"><flowRegion
        id="flowRegion3070-3-4-0"><rect
          style="stroke:#ffffff"
          id="rect3072-8-2-1"
          y="49.094482"
          x="422.14285"
-         height="52.142857"
-         width="282.85715" /></flowRegion><flowPara
-       id="flowPara3074-9-9-6">MissionB</flowPara></flowRoot>  <flowRoot
+         height="52.142853"
+         width="345.42136" /></flowRegion><flowPara
+       id="flowPara3074-9-9-6">BottomMissionB</flowPara></flowRoot>  <flowRoot
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-7-2"
@@ -612,9 +612,9 @@
      d="m 442.11942,138.1453 0,26.51023" />
   <path
      inkscape:connector-curvature="0"
-     style="fill:none;stroke:#000000;stroke-width:1.44962192;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend)"
+     style="fill:none;stroke:#000000;stroke-width:1.53968811;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend)"
      id="path4589-7"
-     d="m 438.3796,209.33183 0,19.51303" />
+     d="m 445.20081,209.09328 0,22.37051" />
   <path
      inkscape:connector-curvature="0"
      style="fill:none;stroke:#000000;stroke-width:2.84426546;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend)"
@@ -709,7 +709,7 @@
      style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
      xml:space="preserve"
      id="flowRoot3068-1-8-7-4"
-     transform="matrix(1.0917444,0,0,1,-450.96943,322.91428)"><flowRegion
+     transform="matrix(1.0917444,0,0,1,-412.46838,322.91428)"><flowRegion
        id="flowRegion3070-3-4-8-8"><rect
          style="stroke:#ffffff"
          id="rect3072-8-2-7-7"
@@ -717,7 +717,7 @@
          x="422.14285"
          height="52.142857"
          width="318.92459" /></flowRegion><flowPara
-       id="flowPara3074-9-9-9-5">NestedMissionA</flowPara></flowRoot>  <path
+       id="flowPara3074-9-9-9-5">MidMissionA</flowPara></flowRoot>  <path
      inkscape:connector-curvature="0"
      style="fill:none;stroke:#000000;stroke-width:1.79485953;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Mend)"
      id="path4589-8-6"

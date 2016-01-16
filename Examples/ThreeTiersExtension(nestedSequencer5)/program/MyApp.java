@@ -27,7 +27,7 @@ class MyApp implements Safelet<Mission>
 	@SCJRestricted(Phase.INITIALIZE)
 	public MissionSequencer<Mission> getSequencer()
 	{		
-		MissionSequencer<Mission> mainSequencer = new MainSequencer(pri, storage, "Main Sequencer");
+		MissionSequencer<Mission> mainSequencer = new TopSequencer(pri, storage, "Main Sequencer");
 		return mainSequencer;
 	}
 
