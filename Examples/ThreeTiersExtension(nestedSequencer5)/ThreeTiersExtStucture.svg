@@ -13,9 +13,9 @@
    width="744.09448"
    height="1052.3622"
    id="svg2"
-   inkscape:version="0.48.5 r10040"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="ThreeTiersExtStucture.svg"
-   inkscape:export-filename="/home/matt/Uni/Model/Examples/ThreeTiers/ThreeTiersStucture.png"
+   inkscape:export-filename="/home/matt/Documents/Model/Examples/ThreeTiersExtension(nestedSequencer5)/ThreeTiersExtStucture.svg.png"
    inkscape:export-xdpi="500"
    inkscape:export-ydpi="500">
   <sodipodi:namedview
@@ -27,13 +27,13 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1301"
-     inkscape:window-height="744"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
      id="namedview122"
      showgrid="false"
      inkscape:zoom="1.2467191"
      inkscape:cx="322.06533"
-     inkscape:cy="389.31181"
+     inkscape:cy="613.90129"
      inkscape:window-x="65"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
@@ -309,7 +309,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
