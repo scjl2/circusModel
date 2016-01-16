@@ -15,7 +15,7 @@
    id="svg2"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="ThreeThreadsStructure.svg"
-   inkscape:export-filename="/usr/userfs/m/ml881/Documents/Model/Examples/ThreeThreadsExample/ThreeThreadsStructure.png"
+   inkscape:export-filename="/home/matt/Documents/Model/Examples/ThreeThreadsExample/ThreeThreadsStructure.png"
    inkscape:export-xdpi="1000.0132"
    inkscape:export-ydpi="1000.0132">
   <sodipodi:namedview
@@ -27,15 +27,15 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1134"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
      id="namedview122"
      showgrid="false"
      inkscape:zoom="1.2467191"
      inkscape:cx="328.48217"
      inkscape:cy="836.88657"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
      inkscape:window-maximized="1"
      inkscape:current-layer="g3135" />
   <defs
@@ -490,7 +490,7 @@
        inkscape:export-xdpi="1000"
        inkscape:export-ydpi="1000" />
     <flowRoot
-       transform="translate(100.46645,605.34945)"
+       transform="translate(96.46645,607.34945)"
        id="flowRoot3068-1-8-20"
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;font-family:Sans"
@@ -504,7 +504,7 @@
            y="49.094482"
            id="rect3072-8-2-1"
            style="stroke:#ffffff" /></flowRegion><flowPara
-         id="flowPara3074-9-9-6">Mission</flowPara></flowRoot>    <flowRoot
+         id="flowPara3074-9-9-6">MissionA</flowPara></flowRoot>    <flowRoot
        transform="translate(135.11455,694.4)"
        id="flowRoot3068-1-8-7-38"
        xml:space="preserve"
