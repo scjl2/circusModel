@@ -17,6 +17,6 @@ This example program is an extension of the ThreeTires example and has three tie
 
 The second tier contains the nested mission sequencers's single mission and its two nested mission sequencers. 
 
-The tird tier contains two clusters, each having the single mission of one of the nested mission sequencers from the tier above. MissionA has a `ManagedThread` and a `OneShotEventHandler`, the managed thread runs and releases the one shot event handler, which terminates MissionA. MisisonB has a `PeriodicEventHandler` and an `AperiodicEventHandler`, the periodic event handler releases a number of times and then releases the aperiodic event handler, whcih terminates MissionB. 
+The third tier contains two clusters, each having the single mission of one of the nested mission sequencers from the tier above. MissionA has a `ManagedThread` and a `OneShotEventHandler`, the managed thread runs and releases the one shot event handler, which terminates MissionA. MisisonB has a `PeriodicEventHandler` and an `AperiodicEventHandler`, the periodic event handler releases a number of times and then releases the aperiodic event handler, whcih terminates MissionB. 
 
 

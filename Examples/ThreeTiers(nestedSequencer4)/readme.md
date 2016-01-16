@@ -17,6 +17,6 @@ This example program has three tiers. The first contains a `Mission`, a `Managed
 
 The second tier contains the nested mission sequencers's single mission and its two nested mission sequencers.
 
-The tird tier contains two clusters, each having the single mission of one of the nested mission sequencers from the tier above and a `ManagedThread`. The execution is simple but this example is for testing the structure. 
+The third tier contains two clusters, each having the single mission of one of the nested mission sequencers from the tier above and a `ManagedThread`. The execution is simple but this example is for testing the structure. 
 
 
