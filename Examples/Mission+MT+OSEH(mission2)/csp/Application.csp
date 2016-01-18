@@ -101,13 +101,13 @@ Methods_tlms =
 nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet  
 							getSequencer, terminationPendingCall, terminationPendingRet, setCeilingPriority |}
 
-
+channel systemAction : MissionID 
 
 MainMissionApp = 
 ( 
 	(
-		--(Methods_mm )
-		--/\ 
+		(Methods_mm(Tier0MissionId) )
+		/\ 
 		(end_mission_app.Tier0MissionId -> SKIP )
 	) 
 )
@@ -128,12 +128,14 @@ APPCleanupMission(mission) =
  cleanupMissionRet.Tier0MissionId?false ->
  SKIP
 
---Methods_mm = 
---( 
---	--InitializePhase_mm
-	--[] 
-	--CleanupPhase_mm
---) ; Methods_mm
+SystemActionMeth_mm(mission) = 
+	systemAction.mission ->
+	SKIP
+
+Methods_mm(mission) = 
+( 
+	SystemActionMeth_mm(mission)
+) ; Methods_mm(mission)
   
 
 -- Tier0 MANAGED THRED APP
@@ -151,11 +153,13 @@ Methods_t0mt =
 
 Run_t0mt =
 	runCall.Tier0ManagedThreadId -> 
-	systemActions.Tier0ManagedThreadId ->	
+	binder_systemAction.Tier0MissionId ->
+		--systemActions.Tier0ManagedThreadId ->	
 	runRet.Tier0ManagedThreadId ->
 	SKIP
 
   
+
 
 
 -- Tier 0 OSEH APP
@@ -212,28 +216,26 @@ Program(topLevelSequencerIDs, tier0) =
 )
 
 Program2 =
-(	
-
-( 
- (
- 	sbdia(SafeletFW [| SafeltAppSync |] MyApp)
-  	[|SafeletTierSync|]
-   sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
- )
-    [|TierSync|]
-  (
-   sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
-     [|MissionSync|]
-   -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
-  (
-    sbdia(OneShotEventHandlerFW(Tier0OSEHId, 1, 0, nullSchedulableId) [| OSEHSync |] Tier0OSEHApp )
-      [|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
-   sbdia( ManagedThreadFW(Tier0ManagedThreadId) [| MTAppSync |] Tier0ManagedThreadApp )
-  )
-  )
-)
+(
+	( 
+ 		(
+ 			sbdia(SafeletFW [| SafeltAppSync |] MyApp)
+  				[|SafeletTierSync|]
+   			sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
+ 		)
+    	[|TierSync|]
+ 		(
+	   		sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
+	     		[|MissionSync|]
+	  		(
+	    		sbdia(OneShotEventHandlerFW(Tier0OSEHId, 1, 0, nullSchedulableId) [| OSEHSync |] Tier0OSEHApp )
+	      			[|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+	   			sbdia( ManagedThreadFW(Tier0ManagedThreadId) [| MTAppSync |] Tier0ManagedThreadApp )
+	  		)
+  		)
+	)
     [| GSRSync |]
-GlobalSchedulableRegulator
+	GlobalSchedulableRegulator
 )
 
 
@@ -249,3 +251,15 @@ assert TestProgram :[ divergence free ]
 assert TestProgram :[ deterministic  [FD] ]
 
 assert Program2 ; Loop :[ deadlock free [F] ]
+
+assert (Program2 [| {|binder_systemAction, systemAction, done_toplevel_sequencer|} |] MethodBinderProcess ) ; Loop :[ deadlock free [F] ]
+
+channel binder_systemAction : MissionID
+
+MethodBinderProcess = 
+	Binder_SystemActionMeth /\ done_toplevel_sequencer -> SKIP
+
+Binder_SystemActionMeth = 
+	binder_systemAction?m ->
+	systemAction.m -> 
+	SKIP	

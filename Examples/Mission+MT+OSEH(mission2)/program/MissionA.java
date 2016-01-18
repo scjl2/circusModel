@@ -6,6 +6,8 @@ import javax.safetycritical.Mission;
 import javax.safetycritical.annotate.Level;
 import javax.safetycritical.annotate.SCJAllowed;
 
+import devices.Console;
+
 class MissionA extends Mission
 {
 	@Override
@@ -17,10 +19,8 @@ class MissionA extends Mission
 		OneShot.register();
 		
 		
-		MT thread = new MT(MyApp.pri, MyApp.storage);
-		thread.register();
-		
-		
+		MT thread = new MT(MyApp.pri, MyApp.storage, this);
+		thread.register();		
 	}
 
 	@Override
@@ -28,6 +28,11 @@ class MissionA extends Mission
 	public long missionMemorySize()
 	{
 		return 1048576;
+	}
+
+	public void systemAction()
+	{
+		Console.println("Mission System Actions");		
 	}
 	
 }
