@@ -1,10 +1,8 @@
-FlatBuffer example
+Flatbuffer example
 ==================
 
 Matt Luckcuck <ml881@york.ac.uk> 2014
 -----------------------------------
-
-### Classes: 6
 
 ### Features:
 	* One `Mission`

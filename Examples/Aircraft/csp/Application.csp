@@ -539,12 +539,6 @@ channel isLandingGearDeployedCall : SchedulableID.MissionID
 channel isLandingGearDeployedRet : SchedulableID.MissionID.Bool
 channel deployLandingGear : SchedulableID.MissionID
 
-channel binder_abort : MissionID
-channel binder_stowLandingGear : SchedulableID.MissionID
-channel binder_isLandingGearDeployedCall : SchedulableID.MissionID
-channel binder_isLandingGearDeployedRet : SchedulableID.MissionID.Bool
-channel binder_deployLandingGear : SchedulableID.MissionID
-
 TakeOffMissionStateSync = {| get_abort, set_abort, get_landingGearDeployed, set_landingGearDeployed  |}
 TakeOffMissionMethSync = {|abort, stowLandingGear, isLandingGearDeployedCall, isLandingGearDeployedRet, deployLandingGear |}
 
@@ -1131,7 +1125,6 @@ T1Cluster0 =
 	sbdia(AperiodicEventHandlerFW(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId)  [| APEHSync |]   TakeOffFailureHandlerApp(0))
 )
 
-
 T1Cluster1 =
 (
 				sbdia(MissionFW(CruiseModeId) [| MissionAppSync |] CruiseMissionApp	)
@@ -1241,7 +1234,3 @@ TestTakeOffMission =
 assert Aircraft2 ; Loop :[ deadlock free [FD] ]
 assert Aircraft2 :[ divergence free ]
 assert Aircraft2 :[ deterministic  [FD] ]
-
-
-
-	
