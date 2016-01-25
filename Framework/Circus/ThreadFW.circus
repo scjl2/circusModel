@@ -1,6 +1,6 @@
 \begin{zsection}
-  \SECTION ~ ThreadFW ~ \parents ~ scj\_prelude, GlobalTypes,\\
-  \quad  ThreadChan, ObjectFWChan, FrameworkChan, Priority
+  \SECTION ~ ThreadFW ~ \parents ~ scj\_prelude, GlobalTypes, ThreadChan, ObjectFWChan, FrameworkChan, \\
+   \t1 Priority 
 \end{zsection}
 %
 \begin{circus}
@@ -23,121 +23,121 @@
 %
 \begin{schema}{Init}
 	\Delta State  \\
-\where
+\where	
 	priorityStack' = \langle basePriority \rangle \\
-	interrupted' = \false
-\end{schema}
+	interrupted' = \false 
+\end{schema}	
 %
 \begin{circusaction}
 Execute \circdef \\
-\quad 	 \circblockopen
-		 \circblockopen
-			 \circblockopen
+\t1 	( 
+		(
+			(
 				Priority \\
 				\linter \{ basePriority \} | \{ interrupted \} \rinter\\
-				Interrupts
-			 \circblockclose \\
+				Interrupts 
+			) \\
 			\interleave \\
 			GetPriorityLevel \\
-		 \circblockclose
-	 \circblockclose \\
-\circinterrupt
-		 \circblockopen
+		)
+	)
+	\circseq %\circinterrupt \\
+		(
 			done\_toplevel\_sequencer \then \\
-			\Skip
-		 \circblockclose
+			\Skip 
+		)	
 \end{circusaction}
 %
 \begin{circusaction}
 Priority \circdef \\
-\quad \circif priorityStack = \langle basePriority \rangle \circthen \\
-\qquad	IncreasePriority \\
-\quad \circelse priorityStack \neq \langle basePriority \rangle \circthen \\
-\qquad	 \circblockopen
+\t1 \circif priorityStack = \langle basePriority \rangle \circthen \\
+\t2	IncreasePriority
+\t1 \circelse priorityStack \neq \langle basePriority \rangle \circthen \\
+\t2	(
 		IncreasePriority \\
 		\extchoice
 		DecreasePriority
-	 \circblockclose\\
-\quad \circfi
+	)\\
+\t1 \circfi
 \end{circusaction}
 %
 \begin{circusaction}
 IncreasePriority \circdef \\
-\quad	raise\_thread\_priority~.~thread~?~ceilingPriority \then \\
-\quad	activePriority := ceilingPriority \circseq \\
-\quad	IncreasePriority
+\t1	raise\_thread\_priority~.~thread~?~ceilingPriority \then \\
+\t1	activePriority := ceilingPriority \circseq \\
+\t1	IncreasePriority
 \end{circusaction}
 %
 \begin{circusaction}
 DecreasePriority \circdef \\
-\quad	lower\_thread\_priority~.~thread \then \\
-\quad	activePriority := basePriority \circseq \\
-\quad 	DecreasePriority
+\t1	lower\_thread\_priority~.~thread \then \\
+\t1	activePriority := basePriority \circseq \\
+\t1 	DecreasePriority 
 \end{circusaction}
 %
 \begin{circusaction}
 Interrupts \circdef \\
-\quad  \circblockopen
-	 \circblockopen
-		 \circblockopen
+\t1 (
+	(
+		(
 			Interrupt \\
-			\quad \linter \emptyset | \emptyset \rinter \\
+			\t1 \linter \emptyset | \emptyset \rinter \\
 			IsInterrupted
-		 \circblockclose \\
-		\quad \linter \emptyset | \emptyset \rinter \\
+		) \\
+		\t1 \linter \emptyset | \emptyset \rinter \\
 		Interrupted
-	 \circblockclose \\
-	\quad \lpar \emptyset | \lchanset set\_interrupted, get\_interrupted \rchanset | \emptyset \rpar \\
-	InterruptedController
-     \circblockclose
+	)
+	\t1 \lpar \emptyset | \lchanset set\_interrupted, get\_interrupted \rchanset | \emptyset \rpar \\
+	InterruptedController	
+    )
 \end{circusaction}
 %
 \begin{circusaction}
 Interrupt \circdef \\
-\quad interrupt~.~thread \then \\
-\quad set\_interrupted~.~thread~!~True \then \\
-\quad \Skip
+\t1 interrupt~.~thread \then \\
+\t1 set\_interrupted~.~thread~!~True \then \\
+\t1 \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 IsInterrupted \circdef \\
-\quad isInterruptedCall~.~thread \then \\
-\quad get\_interrupted~.~thread~?~interrupted \then \\
-\quad isInterruptedRet~.~thread~!~interrupted \then \\
-\quad \Skip
+\t1 isInterruptedCall~.~thread \then 
+\t1 get\_interrupted~.~thread~?~interrupted \then \\
+\t1 isInterruptedRet~.~thread~!~interrupted \then \\
+\t1 \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 Interrupted \circdef \\
-\quad interruptedCall~.~thread \then \\
-\quad get\_interrupted~.~thread~?~interrupted \then \\
-\quad interruptedRet~.~thread~!~interrupted \then \\
-\quad set\_interrupted~.~thread~!~False \then \\
-\quad \Skip
+\t1 interruptedCall~.~thread \then \\
+\t1 get\_interrupted~.~thread~?~interrupted \then \\
+\t1 interruptedRet~.~thread~!~interrupted \then \\
+\t1 set\_interrupted~.~thread~!~False \then \\
+\t1 \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 InterruptedController \circdef \\
-\quad  \circblockopen
+\t1 (
 		get\_interrupted~.~thread~!~interrupted \then \\
 		InterruptedController
-	 \circblockclose \\
-\quad \extchoice \\
-\quad  \circblockopen
+	)
+\t1 \extchoice \\
+\t1 (
 		set\_interrupted~.~thread~?~newInterrupted \then \\
 		interrupted := newInterrupted \circseq \\
 		InterruptedController
-	 \circblockclose
+	)
 \end{circusaction}
 %
 \begin{circusaction}
-GetPriorityLevel \circdef \\
-\quad 	get\_priorityLevel~.~thread~?~object~!~activePriority \then \\
-\quad 	GetPriorityLevel
+GetPriorityLevel \circdef
+\t1 	get\_priorityLevel~.~thread~?~object~!~activePriority \then \\
+\t1 	GetPriorityLevel
 \end{circusaction}
 %
 \begin{circusaction}
-\circspot  \circblockopen \lschexpract Init \rschexpract \circseq Execute \circblockclose \circinterrupt  \circblockopen done\_toplevel\_sequencer \then \Skip \circblockclose
+\circspot ( \lschexpract Init \rschexpract \circseq Execute)%\circinterrupt (done\_toplevel\_sequencer \then \Skip)
 \end{circusaction}
 %
 \begin{circus}

@@ -1,6 +1,6 @@
 \begin{zsection}
-  \SECTION ~ ManagedThread ~ \parents ~ ManagedThreadChan, SchedulableId, MissionId, MissionIds, \\
-  \quad TopLevelMissionSequencerChan, SchedulableChan, SafeletMethChan, FrameworkChan
+  \SECTION ~ ManagedThread ~ \parents ~ ManagedThreadChan, SchedulableId, MissionId, MissionIds, TopLevelMissionSequencerChan,\\
+  SchedulableChan, SafeletMethChan, FrameworkChan
 \end{zsection}
 
 %
@@ -28,84 +28,77 @@
 %
 \begin{circusaction}
 Start \circdef\\
-\quad \circblockopen
+\t1 \circblockopen
    Register \circseq \\
    Activate\\
   \circblockclose   \\
-\quad  \extchoice\\
-\quad  \circblockopen
+\t1  \extchoice\\
+\t1  \circblockopen
   	activate\_schedulables?someMissionID \then \\
   	Start
   \circblockclose  \\
-\quad  \extchoice \\
-\quad  \circblockopen
+\t1  \extchoice \\
+\t1  \circblockopen
 	done\_toplevel\_sequencer \then \\
 	applicationTerminating := \true \\
-      \circblockclose
+      \circblockclose 
 \end{circusaction}
 %
 
 \begin{circusaction}
 Register \circdef\\
-\quad  register~.~schedulable~?~mID \then\\
-\quad  controllingMission := mID
+  register~.~schedulable~?~mID \then\\
+  controllingMission := mID  
 \end{circusaction}
 %
 \begin{circusaction}
 Activate \circdef\\
-\quad    activate\_schedulables~.~controllingMission \then\\
-\quad    \Skip
+  activate\_schedulables~.~controllingMission \then\\  
+  \Skip
 \end{circusaction}
-%
+% 
 \begin{circusaction}
-Execute ~ \circdef\\
-\quad    Run  \lpar \emptyset | \lchanset runRet \rchanset | \emptyset \rpar Methods
+   Execute ~ \circdef ~ Run  \lpar \emptyset | \lchanset runRet \rchanset | \emptyset \rpar Methods
 \end{circusaction}
 %
 \begin{circusaction}
 Run \circdef\\
-\quad    runCall~.~schedulable \then\\
-\quad    runRet~.~schedulable \then \\
-\quad    done\_schedulable~.~schedulable \then\\
-\quad    \Skip
+  runCall~.~schedulable \then\\
+  runRet~.~schedulable \then \\
+  done\_schedulable~.~schedulable \then\\
+  \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 Methods \circdef \\
-\quad  	\circblockopen
-  SignalTerminationMeth \circseq Methods
-  \circblockclose\\
-\quad  \extchoice \\
-\quad \circblockopen
-  runRet~.~schedulable \then \\
-  \Skip
-\circblockclose
+	\circblockopen SignalTerminationMeth \circseq Methods\circblockclose  \extchoice runRet~.~schedulable \then \Skip  
+
 \end{circusaction}
 %
 \begin{circusaction}
 SignalTerminationMeth \circdef \\
-  \quad signalTerminationCall~.~schedulable \then \\
-  \quad signalTerminationRet~.~schedulable \then \Skip
-\end{circusaction}
+  \t1 signalTerminationCall~.~schedulable \then \\
+  \t1 signalTerminationRet~.~schedulable \then \Skip
+\end{circusaction}  
 %
 \begin{circusaction}
 Cleanup \circdef \\
-  \quad cleanupSchedulableCall~.~schedulable \then\\
-  \quad cleanupSchedulableRet~.~schedulable \then \Skip
+  \t1 cleanupSchedulableCall~.~schedulable \then\\
+  \t1 cleanupSchedulableRet~.~schedulable \then \Skip
 \end{circusaction}
 %
 \begin{circusaction}
-  \circspot \circblockopen \circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\
+  \circspot \circblockopen \circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\ 
   		\circblockopen\circif applicationTerminating = \false \circthen \\
-  		\qquad \circblockopen Execute \circseq Cleanup \circseq X \circblockclose \\
+  		\t2 \circblockopen Execute \circseq Cleanup \circseq X \circblockclose \\ 
   		\circelse applicationTerminating = \true \circthen \\
-  		\qquad \circblockopen
+  		\t2 \circblockopen
   			end\_managedThread\_app~.~schedulable \then\\
   			\Skip
-  		\circblockclose \\
-  		\circfi \circblockclose \circblockclose
+  		\circblockclose 
+  		\circfi \circblockclose \circblockclose 
 \end{circusaction}
-%
+%  
 \begin{circus}
   \circend
 \end{circus}

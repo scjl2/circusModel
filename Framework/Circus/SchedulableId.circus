@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ SchedulableId
+  \SECTION ~ SchedulableId 
 \end{zsection}
 %
 \begin{zed}
@@ -7,7 +7,13 @@
 \end{zed}
 %
 \begin{axdef}
- TopLevelSequencerId : SchedulableID \\
- nullSequencerId: SchedulableID \\
+ TopLevelSequencerId : SchedulableID
+\end{axdef}
+%
+\begin{axdef}
+ nullSequencerId: SchedulableID
+\end{axdef}
+%
+\begin{axdef}
  nullSchedulableId: SchedulableID
 \end{axdef}

@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ PriorityQueue ~ \parents ~ scj\_prelude, GlobalTypes, Priority
+  \SECTION ~ PriorityQueue ~ \parents ~ scj\_prelude, GlobalTypes, Priority 
 \end{zsection}
 %
 \begin{axdef}
@@ -13,15 +13,15 @@ PriorityQueue == PriorityLevel \fun (\iseq ThreadID)
 IsEmpty : PriorityQueue \fun \boolean
 \where
 \forall pq : PriorityQueue | (\bigcup(pq \limg PriorityLevel \rimg )) = \emptyset @ \\
-	\quad IsEmpty(pq) = \true \\
+	\t1 IsEmpty(pq) = \true \\
 \end{axdef}
 %
 \begin{axdef}
 AddToPriorityQueue : PriorityQueue \cross ThreadID \cross PriorityLevel \fun PriorityQueue
 \where
 \forall pq : PriorityQueue ; t : ThreadID ; p : PriorityLevel | \\
-	\quad	t \neq nullThreadId \land \\
-	\quad	t \notin \ran (\bigcup(\ran(pq) )) @ \\
+	\t1	t \neq nullThreadId \land \\
+	\t1	t \notin \ran (\bigcup(\ran(pq) )) @ \\
 AddToPriorityQueue(pq, t, p) = (pq \oplus \{ p \mapsto pq(p) \cat \langle t\rangle \})
 \end{axdef}
 %
@@ -29,25 +29,25 @@ AddToPriorityQueue(pq, t, p) = (pq \oplus \{ p \mapsto pq(p) \cat \langle t\rang
 RemoveFromPriorityQueue : PriorityQueue \pfun PriorityQueue \cross ThreadID
 \where
 (\forall pq : PriorityQueue @  \\
-\quad	(\exists t: ThreadID; p : PriorityLevel | \\
-\qquad		p = max~\{pl : PriorityLevel | pq(pl) \neq \langle\rangle\} \land \\
-\qquad		t = head~pq(p) \\
-\qquad		@ RemoveFromPriorityQueue(pq) = (pq \oplus \{p \mapsto tail~pq(p)\}, t) ) )\\
+\t1	(\exists t: ThreadID; p : PriorityLevel | \\
+\t2		p = max~\{pl : PriorityLevel | pq(pl) \neq \langle\rangle\} \land \\
+\t2		t = head~pq(p) \\		
+\t2		@ RemoveFromPriorityQueue(pq) = (pq \oplus \{p \mapsto tail~pq(p)\}, t) ) )\\
 \end{axdef}
 %
 \begin{axdef}
 RemoveThreadFromPriorityQueue : PriorityQueue \cross ThreadID \cross PriorityLevel \fun PriorityQueue
 \where
 \forall pq: PriorityQueue; t : ThreadID ; p : PriorityLevel | \\
-\quad	pq(p) \filter \{t\} \neq \langle \rangle @ \\
-\quad	RemoveThreadFromPriorityQueue(pq, t, p) = pq \oplus \{ p \mapsto squash~(pq(p) \nrres \{t\})\}
+\t1	pq(p) \filter \{t\} \neq \langle \rangle @ \\
+\t1	RemoveThreadFromPriorityQueue(pq, t, p) = pq \oplus \{ p \mapsto squash~(pq(p) \nrres \{t\})\}
 \end{axdef}
 %
 \begin{axdef}
 ElementsOf : PriorityQueue \fun \power ThreadID \\
 \where
 \forall pq: PriorityQueue | pq \neq \emptyset @ \\
-\quad	(\exists elems : \power ThreadID | \\
-\qquad		elems = \bigcup (\ran \limg \ran pq \rimg) \\
-\qquad		@ ElementsOf(pq) = elems )
+\t1	(\exists elems : \power ThreadID | \\
+\t2		elems = \bigcup (\ran \limg \ran pq \rimg) \\
+\t2		@ ElementsOf(pq) = elems )
 \end{axdef}

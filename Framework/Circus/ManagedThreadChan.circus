@@ -3,5 +3,5 @@
 \end{zsection}
 %
 \begin{circus}
-	\circchannelset MtAppSync == \lchanset runCall, runRet, end\_managedThread\_app \rchanset
+	\cicrchannelset MtAppSync == \lchanset runCall, runRet, end\_managedThread\_app \rchanset
 \end{circus}

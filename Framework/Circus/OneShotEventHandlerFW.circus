@@ -1,13 +1,11 @@
 \begin{zsection}
   \SECTION ~ OneShotEventHandlerFW ~ \parents ~ MissionChan, SchedulableChan, SchedulableId,\\
-   \quad MissionId, MissionIds,TopLevelMissionSequencerChan, OneShotEventHandlerChan,\\
-   \quad SafeletMethChan, FrameworkChan, AperiodicParameters
+   \t1 MissionId, MissionIds,TopLevelMissionSequencerChan, OneShotEventHandlerChan,\\
+   \t1 SafeletMethChan, FrameworkChan, AperiodicParameters
 \end{zsection}
 %
 \begin{circus}
-  \circprocess OneShotEventHandlerFW ~ \circdef ~\\
-  \quad  schedulable : SchedulableID; startTime: JTime ; aperiodicParameters : AperiodicParameters \circspot\\
-  \quad ~\circbegin
+  \circprocess OneShotEventHandlerFW ~ \circdef ~ schedulable : SchedulableID; startTime: JTime ; aperiodicParameters : AperiodicParameters \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore State}
@@ -34,17 +32,17 @@
 %
 \begin{circusaction}
 Start \circdef\\
-\quad  \circblockopen
+\t1  \circblockopen
   	Register \circseq \\
   	Activate
      \circblockclose   \\
-\quad  \extchoice\\
-\quad  \circblockopen
+\t1  \extchoice\\
+\t1  \circblockopen
   	activate\_schedulables?someMissionID \then \\
   	Start
   \circblockclose  \\
-\quad  \extchoice \\
-\quad \circblockopen
+\t1  \extchoice \\
+\t1 \circblockopen
 	done\_toplevel\_sequencer \then \\
 	applicationTerminating := \true  \\
     \circblockclose
@@ -52,43 +50,43 @@ Start \circdef\\
 %
 \begin{circusaction}
 Register \circdef \\
-\quad    register~.~schedulable~?~mID \then \\
-\quad    controllingMission := mID
+\t1    register~.~schedulable~?~mID \then \\
+\t1    controllingMission := mID
 \end{circusaction}
 %
 \begin{circusaction}
 Activate ~ \circdef ~ \\
-\quad    activate\_schedulables~.~controllingMission \then \\
-\quad    \Skip
+\t1    activate\_schedulables~.~controllingMission \then \\
+\t1    \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 Execute \circdef  \\
-\quad \circblockopen
+\t1 \circblockopen
 		\circblockopen
 			\circblockopen
-				Run \\
-					\quad   \lpar \emptyset | MethodsSync | \emptyset \rpar\\
+				Run
+					\t1   \lpar \emptyset | MethodsSync | \emptyset \rpar\\
 				Methods\\
-			\circblockclose \\
+			\circblockclose
 			\lpar \emptyset | \lchanset end\_releases \rchanset | \emptyset \rpar\\
 		SignalTermination
 	  \circblockclose  \\
-	  	\quad   \lpar \emptyset| STCSync | \{startTime\} \rpar\\
+	  	\t1   \lpar \emptyset| STCSync | \{startTime\} \rpar\\
 		StartTimeController
 	\circblockclose
 \end{circusaction}
 %
 \begin{circusaction}
 Run \circdef \\
-\quad	\circif deadlineMissHandler = nullSchedulableId \circthen \\
-\quad 	\circblockopen
+\t1	\circif deadlineMissHandler = nullSchedulableId \circthen \\
+\t2 	\circblockopen
 					ScheduleOrWait \\
 						\lpar \emptyset | ReleaseSync | \emptyset \rpar \\
 					Release
 	\circblockclose  \\
-\quad \circelse deadlineMissHandler \neq nullSchedulableId \circthen \\
-\quad \circblockopen
+\t1 \circelse deadlineMissHandler \neq nullSchedulableId \circthen \\
+\t2 \circblockopen
 		\circblockopen
 			ScheduleOrWait \\
 				\lpar \emptyset | ReleaseSync | \emptyset \rpar \\
@@ -96,36 +94,36 @@ Run \circdef \\
 		\circblockclose
 			\lpar \emptyset | DeadlineSync | \emptyset \rpar \\
 			DeadlineClock
-	\circblockclose \\
-\quad \circfi
+	\circblockclose
+\t1 \circfi
 \end{circusaction}
 %
 \begin{circusaction}
 ScheduleOrWait \circdef\\
-\quad get\_startTime~.~schedulable~?~startTime \then \\
-\quad \circif startTime != NULL \circthen \\
-\qquad        Scheduled \\
-\quad  \circelse startTime = NULL \circthen\\
-\qquad      NotScheduled \\
-\quad \circfi
+\t1 get\_startTime~.~schedulable~?~startTime \then \\
+\t1 \circif startTime != NULL \circthen \\
+\t2        Scheduled \\
+\t1  \circelse startTime = NULL \circthen\\
+\t2      NotScheduled \\
+\t1 \circfi
 \end{circusaction}
 %
 \begin{circusaction}
 Release \circdef \\
-\quad \circblockopen
+\t1 \circblockopen
     		handleAsyncEventCall~.~schedulable \then \\
     		handleAsyncEventRet~.~schedulable \then  \\
 	    	release\_complete~.~schedulable \then \\
     		Release
-\quad  \circblockclose  \\
-\quad \extchoice\\
-\quad \circblockopen
+\t1  \circblockclose  \\
+\t1 \extchoice\\
+\t1 \circblockopen
 		reschedule\_handler~.~schedulable~?~newStartTime \then \\
 		set\_startTime~.~schedulable~!~newStartTime \then \\
 		Release
     \circblockclose \\
-\quad \extchoice\\
-\quad \circblockopen
+\t1 \extchoice\\
+\t1 \circblockopen
 		end\_releases~.~schedulable \then \\
     stop\_release~.~schedulable \then \\
 		\Skip
@@ -134,8 +132,8 @@ Release \circdef \\
 %
 \begin{circusaction}
 DeadlineClock \circdef \\
-\quad release~.~schedulable \then \\
-\quad	\circblockopen
+\t1 release~.~schedulable \then \\
+\t1	\circblockopen
 		\circblockopen
 			\circblockopen
 				\circwait valueOf(deadline) \circseq \\
@@ -153,7 +151,7 @@ DeadlineClock \circdef \\
 				DeadlineClock
 			\circblockclose
 		\circblockclose
-	\circblockclose \\
+	\circblockclose
     \circinterrupt
     \circblockopen
     		end\_releases~.~schedulable \then \\
@@ -163,8 +161,8 @@ DeadlineClock \circdef \\
 %
 \begin{circusaction}
 Scheduled \circdef \\
-\quad get\_startTime~.~schedulable~?~startTime \then \\
-\quad \circblockopen
+\t1 get\_startTime~.~schedulable~?~startTime \then \\
+\t1 \circblockopen
   \circblockopen
 		\circwait valueOf(startTime) \\
     release~.~schedulable \then \\
@@ -189,18 +187,18 @@ Scheduled \circdef \\
 %
 \begin{circusaction}
 NotScheduled \circdef\\
-\quad    \circblockopen
+\t1    \circblockopen
         	deschedule\_handler~.~schedulable \then \\
         	NotScheduled\\
        \circblockclose \\
-\quad    \extchoice\\
-\quad    \circblockopen
+\t1    \extchoice\\
+\t1    \circblockopen
        		reschedule\_handler~.~schedulable~?~newStartTime \then \\
        		set\_startTime~.~schedulable~!~newStartTime \then \\
        		Scheduled \\
         \circblockclose      \\
-\quad    \extchoice\\
-\quad    \circblockopen
+\t1    \extchoice\\
+\t1    \circblockopen
 		end\_releases~.~schedulable \then \\
 		\Skip
 	\circblockclose \\
@@ -208,37 +206,38 @@ NotScheduled \circdef\\
 %
 \begin{circusaction}
 Methods \circdef \\
-\quad \circblockopen
+\t1 \circblockopen
 	Deschedule \circseq \\
 	Methods
     \circblockclose  \\
-\quad \extchoice \\
-\quad \circblockopen
+\t1 \extchoice \\
+\t1 \circblockopen
 	GetNextReleaseTime \circseq \\
 	Methods
     \circblockclose  \\
-\quad \extchoice \\
-\quad \circblockopen
+\t1 \extchoice \\
+\t1 \circblockopen
 	ScheduleNextRelease\circseq \\
 	Methods
     \circblockclose  \\
-\quad \extchoice\\
-\quad \circblockopen
+\t1 \extchoice\\
+\t1 \circblockopen
 	end\_releases~.~schedulable \then \\
 	\Skip
      \circblockclose
 \end{circusaction}
 %
 \begin{circusaction}
-Deschedule \circdef  \circvar wasScheduled : \boolean \circspot\\
-\quad  descheduleCall~.~schedulable \then\\
-\quad  deschedule\_handler.schedulable \then\\
-\quad  get\_startTime~.~schedulable~?~startTime \then \\
-\quad \circblockopen
+Deschedule \circdef \\
+\t1  \circvar wasScheduled : \boolean \circspot\\
+\t1  descheduleCall~.~schedulable \then\\
+\t1  deschedule\_handler.schedulable \then\\
+\t1  get\_startTime~.~schedulable~?~startTime \then \\
+\t1 \circblockopen
  \circif startTime = NULL \circthen\\
-\quad 	wasScheduled := \false \\
+\t2 	wasScheduled := \false \\
  \circelse startTime \neq NULL \circthen\\
-\quad	wasScheduled := \true \\
+\t2	wasScheduled := \true \\
  \circfi \circseq\\
   set\_startTime~.~schedulable~!~NULL \then \\
   descheduleRet~.~schedulable~!~wasScheduled \then \\
@@ -248,47 +247,47 @@ Deschedule \circdef  \circvar wasScheduled : \boolean \circspot\\
 %
 \begin{circusaction}
 GetNextReleaseTime \circdef \\
-\quad getNextReleaseTimeCall~.~schedulable \then \\
-\quad get\_startTime~.~schedulable~?~startTime \then \\
-\quad getNextReleaseTimeRet~.~schedulable~!~startTime \then \\
-\quad \Skip
+\t1 getNextReleaseTimeCall~.~schedulable \then \\
+\t1 get\_startTime~.~schedulable~?~startTime \then \\
+\t1 getNextReleaseTimeRet~.~schedulable~!~startTime \then \\
+\t1 \Skip
 \end{circusaction}
 %
 %Since jInt is defiend to only allow natural numbers, a negative cannot be supplied here
 \begin{circusaction}
 ScheduleNextRelease \circdef \\
-\quad scheduleNextRelease~.~schedulable~?~newStartTime \then \\
-\quad set\_startTime~.~schedulable~!~newStartTime \then \\
-\quad \circif newStartTime = NULL \circthen \\
-\qquad 	\circblockopen
+\t1 scheduleNextRelease~.~schedulable~?~newStartTime \then \\
+\t1 set\_startTime~.~schedulable~!~newStartTime \then \\
+\t1 \circif newStartTime = NULL \circthen \\
+\t2 	\circblockopen
 		deschedule\_handler.schedulable \then \\
 		\Skip\\
-	\circblockclose \\
-\quad \circelse newStartTime \neq NULL \circthen \\
-\qquad	\circblockopen
+	\circblockclose
+\t1 \circelse newStartTime \neq NULL \circthen \\
+\t2	\circblockopen
  		reschedule\_handler~!~schedulable~!~newStartTime \then \\
  		\Skip \\
- 	\circblockclose \\
-\quad \circfi
+ 	\circblockclose
+\t1 \circfi
 \end{circusaction}
 %
 \begin{circusaction}
 SignalTermination \circdef\\
-\quad signalTerminationCall~.~schedulable \then\\
-\quad end\_releases~.~schedulable \then\\
-\quad signalTerminationRet~.~schedulable \then\\
-\quad done\_schedulable~.~schedulable \then\\
-\quad \Skip
+\t1 signalTerminationCall~.~schedulable \then\\
+\t1 end\_releases~.~schedulable \then\\
+\t1 signalTerminationRet~.~schedulable \then\\
+\t1 done\_schedulable~.~schedulable \then\\
+\t1 \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 StartTimeController \circdef \\
-\quad \circblockopen
+\t1 \circblockopen
 	get\_startTime~.~schedulable~!~startTime \then \\
 	StartTimeController
     \circblockclose \\
-\quad \extchoice \\
-\quad \circblockopen
+\t1 \extchoice \\
+\t1 \circblockopen
 	set\_startTime~.~schedulable~?~newStartTime \then \\
 	StartTimeController
     \circblockclose
@@ -296,20 +295,19 @@ StartTimeController \circdef \\
 %
 \begin{circusaction}
 Cleanup \circdef \\
-\quad	cleanupSchedulableCall~.~schedulable \then\\
-\quad	cleanupSchedulableRet~.~schedulable \then \\
-\quad \Skip
+\t1	cleanupSchedulableCall~.~schedulable \then\\
+\t1	cleanupSchedulableRet~.~schedulable \then \Skip
 \end{circusaction}
 %
 \begin{circusaction}
 \circspot \circblockopen  \circmu X \circspot \circblockopen   \lschexpract Init \rschexpract \circseq Start \circseq\\
 \circblockopen  \circif applicationTerminating = \false \circthen \\
-		\quad \circblockopen Execute \circseq Cleanup \circseq X\circblockclose \\
+		\t1 \circblockopen Execute \circseq Cleanup \circseq X\circblockclose \\
 	\circelse applicationTerminating = \true \circthen \\
-		\quad \circblockopen
+		\t1 \circblockopen
 			end\_oneShot\_app~.~schedulable \then \\
 			\Skip
-		\circblockclose \\
+		\circblockclose
 \circfi \circblockclose  \circblockclose  \circblockclose
 \end{circusaction}
 %

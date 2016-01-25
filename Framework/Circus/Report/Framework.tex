@@ -10,13 +10,7 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{comment}
-\usepackage{soul}
-\usepackage{circus}
-\usepackage{hijac}
-\usepackage{hyperref}
-
-
-%Content Toggles
+%COMMENTS
 \includecomment{comment} %show comments
 %\excludecomment{comment}  %do not show comments
 
@@ -26,154 +20,129 @@
 \includecomment{plumbing} %show comments
 %\excludecomment{plumbing}  %do not show comments
 
-\includecomment{report} %display the title
-%\excludecomment{fureportllDoc}  %do not display the title
+\usepackage{soul}
+%\usepackage{wasysym}
 
+\usepackage{circus}
+\usepackage{hijac}
 
-
-
-\title{Safety-Critical Java Level~2 Framework Model}
-
-\author{Matt Luckcuck \\\\Department of Computer Science, \\University of York, UK \\\\ml881@york.ac.uk}
-
-\date{\today}
 
 \begin{document}
-
-\begin{report}
-\maketitle
-
-\tableofcontents
-
-\newpage
-
-\section{Introduction}
-
-Safety-Critical Java (SCJ)~\cite{SCJ_Spec_0.100} is a Java-based language for applications that must be certified. To aid certification efforts, SCJ is organised into three compliance levels. Level~0 applications are simple single-processor programs executed by a cyclic executive. By contrast, Level~2 applications are highly concurrent, potentially multi-processor, and make use of suspension and a variety of release patterns.
-
-We model SCJ Level~2 applications using the state-rich process algebra \Circus{}~\cite{circus_woodcock_cavalcanti_2002}. We approach this by splitting our models into a reusable \textit{Framework} model, which captures the API behaviour of SCJ, and a specific \textit{Application} model, which captures the application's behaviour.
-
-Here we present our SCJ Level~2 Framework model, which captures the unchanging behaviour of the API. It is intended that the Framework model be combined with a Application model to produce a model of that specific application. 
-
-\end{report}
-
 \begin{plumbing}
 \section{GlobalTypes}
-\input{../GlobalTypes.circus}
+\input{GlobalTypes.circus}
 \newpage
 
 \section{Priority}
-\input{../Priority.circus}
+\input{Priority.circus}
 \newpage
 
 \section{Priority Queue}
-\input{../PriorityQueue.circus}
+\input{PriorityQueue.circus}
 \newpage
 
 \section{Ids}
 \subsection{MissionId}
-\input{../MissionId.circus}
+\input{MissionId.circus}
 
 \subsection{SchedulableId}
-\input{../SchedulableId.circus}
+\input{SchedulableId.circus}
 \newpage
 \subsection{SchedulableIds}
-\input{../SchedulableIds.circus}
+\input{SchedulableIds.circus}
 \newpage
 
 \section{Channels}
 \subsection{FrameworkChan}
-\input{../FrameworkChan.circus}
+\input{FrameworkChan.circus}
 
 \subsection{SafeletChan}
-\input{../SafeletChan.circus}
+\input{SafeletChan.circus}
 
 \subsection{SafeletFWChan}
-\input{../SafeletFWChan.circus}
+\input{SafeletFWChan.circus}
 
 \subsection{SafeletMethChan}
-\input{../SafeletMethChan.circus}
+\input{SafeletMethChan.circus}
 
 \subsection{MissionSequencerMethChan}
-\input{../MissionSequencerMethChan.circus}
+\input{MissionSequencerMethChan.circus}
 
 \subsection{TopLevelMissionSequencerChan}
-\input{../TopLevelMissionSequencerChan.circus}
+\input{TopLevelMissionSequencerChan.circus}
 
 \subsection{TopLevelMissionSequencerFWChan}
-\input{../TopLevelMissionSequencerFWChan.circus}
+\input{TopLevelMissionSequencerFWChan.circus}
 
 \subsection{MissionChan}
-\input{../MissionChan.circus}
+\input{MissionChan.circus}
 
 \subsection{MissionFWChan}
-\input{../MissionChan.circus}
+\input{MissionChan.circus}
 
 \subsection{MissionMethChan}
-\input{../MissionChan.circus}
+\input{MissionChan.circus}
 
 \subsection{SchedulableChan}
-\input{../SchedulableChan.circus}
+\input{SchedulableChan.circus}
 
 \subsection{SchedulableMissionSequencerChan}
-\input{../SchedulableMissionSequencerChan.circus}
+\input{SchedulableMissionSequencerChan.circus}
 
 \subsection{SchedulableMissionSequencerFWChan}
-\input{../SchedulableMissionSequencerFWChan.circus}
+\input{SchedulableMissionSequencerFWChan.circus}
 
 \subsection{ManagedThreadChan}
-\input{../ManagedThreadChan.circus}
+\input{ManagedThreadChan.circus}
 
 \subsection{ManagedThreadFWChan}
-\input{../ManagedThreadFWChan.circus}
+\input{ManagedThreadFWChan.circus}
 
 \subsection{ManagedThreadMethChan}
-\input{../ManagedThreadMethChan.circus}
+\input{ManagedThreadMethChan.circus}
 \newpage
 \end{plumbing}
 
-\section{ObjectFW}
-\input{../ObjectFW.circus}
+\section{Object}
+\input{ObjectFW.circus}
 \newpage
 
-\section{ThreadFW}
-\input{../ThreadFW.circus}
+\section{Thread}
+\input{ThreadFW.circus}
 \newpage
 
 \section{SafeletFW}
-\input{../SafeletFW.circus}
+\input{SafeletFW.circus}
 \newpage
 
 \section{TopLevelMissionSequencerFW}
-\input{../TopLevelMissionSequencerFW.circus}
+\input{TopLevelMissionSequencerFW.circus}
 \newpage
 
 \section{MissionFW}
-\input{../MissionFW.circus}
+\input{MissionFW.circus}
 \newpage
 
 \section{SchedulableMissionSequencerFW}
-\input{../SchedulableMissionSequencerFW.circus}
+\input{SchedulableMissionSequencerFW.circus}
 \newpage
 
 \section{Event Handlers}
 \subsection{AperiodicEventHandlerFW}
-\input{../AperiodicEventHandlerFW.circus}
+\input{AperiodicEventHandlerFW.circus}
 \newpage
 
 \subsection{PeriodicEventHandlerFW}
-\input{../PeriodicEventHandlerFW.circus}
+\input{PeriodicEventHandlerFW.circus}
 \newpage
 
 \subsection{OneShotEventHandlerFW}
-\input{../OneShotEventHandlerFW.circus}
+\input{OneShotEventHandlerFW.circus}
 \newpage
 
 \section{ManagedThreadFW}
-\input{../ManagedThreadFW.circus}
+\input{ManagedThreadFW.circus}
 \newpage
 
-\bibliographystyle{plain}
-\bibliography{FrameworkBib}
 
 \end{document}
