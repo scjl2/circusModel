@@ -17,8 +17,8 @@
 \end{circus}
 % IDs wont type check again   Start Mission and Done Mission wont parse?
 \begin{circus}
-\circchannelset ~ TierSync == \\ \t1 \lchanset start\_mission~.~FlatBufferMission, done\_mission~.~FlatBufferMission,\\
-	\t1 done\_safeletFW, done\_toplevel\_sequencer \rchanset
+	\circchannelset ~ TierSync == \lchanset \rchanset %\\ \t1 \lchanset start\_mission~.~FlatBufferMission, done\_mission~.~FlatBufferMission,\\
+	%\t1 done\_safeletFW, done\_toplevel\_sequencer \rchanset
 \end{circus}
 %
 \begin{circus}
@@ -230,7 +230,7 @@ BinderActions \circdef \\
 \end{circus}
 %
 \begin{circus}
-\circspot BinderActions \circinterrupt (done\_toplevel\_sequencer \then \Skip)
+\circspot BinderActions %\circinterrupt (done\_toplevel\_sequencer \then \Skip)
 \end{circus}
 %
 \begin{circus}

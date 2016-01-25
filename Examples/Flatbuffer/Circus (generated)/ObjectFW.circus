@@ -5,7 +5,7 @@
 \end{zsection}
 %
 \begin{circus}
-  \circprocess Object  ~ \circdef ~ object: ObjectID ~ \circspot ~\circbegin
+  \circprocess ObjectFW  ~ \circdef ~ object: ObjectID ~ \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore ~ State}
@@ -162,7 +162,7 @@ Monitor \circdef \\
 \begin{circusaction}
 MonitorUnlocked \circdef \\
 \t1 (
-	startSynchMeth~.~object~?~someThread \then \\	
+	startSyncMeth~.~object~?~someThread \then \\	
 	lock\_request~.~object~!~someThread \then\\
 	MonitorUnlocked		
 ) \\
@@ -191,14 +191,14 @@ MonitorUnlocked \circdef \\
 MonitorLocked \circdef \circval lockedBy : ThreadID \circspot \\
 
 \t1	(
-		startSynchMeth~.~object~.~lockedBy \then \\	
+		startSyncMeth~.~object~.~lockedBy \then \\	
 		increment\_locks~.~object \then \\
 		MonitorLocked(lockedBy)
 
 	)	\\
 \t1	\extchoice \\
 \t1	(
-		startSynchMeth~.~object~?~someThread\prefixcolon(someThread \neq lockedBy) \then \\	
+		startSyncMeth~.~object~?~someThread\prefixcolon(someThread \neq lockedBy) \then \\	
 		lock\_request~.~object~!~someThread \then\\
 		MonitorLocked(lockedBy)
 
