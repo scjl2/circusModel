@@ -14,7 +14,7 @@
 %
 \begin{circus}
   \circchannel ~ requestTerminationCall : MissionID \cross SchedulableID \\
-  \circchannel ~  requestTerminationRet : MissionID \cross SchedulableID \cross \boolean
+  \circchannel ~ requestTerminationRet : MissionID \cross SchedulableID \cross \boolean
 \end{circus}
 %
 \begin{circus}

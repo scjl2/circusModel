@@ -34,7 +34,7 @@ InitializeApplication \circdef \\
 GetSequencer \circdef \\
 \circblockopen
 	getSequencerCall \then \\
-	getSequencerRet~!~FlatBufferMissionSequencer  \then \\
+	getSequencerRet~!~FlatBufferMissionSequencerID  \then \\
 	\Skip 
 \circblockclose
 \end{circusaction}
@@ -57,7 +57,7 @@ Methods \circdef \\
 
 \begin{circusaction}
 \circspot ( Methods) 
- \circinterrupt (end\_safelet\_app \then \Skip) 
+ %\circinterrupt (end\_safelet\_app \then \Skip) 
 \end{circusaction}
 
 \begin{circus}
