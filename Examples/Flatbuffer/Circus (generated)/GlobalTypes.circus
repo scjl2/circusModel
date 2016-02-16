@@ -7,11 +7,12 @@
 \end{zed}
 %
 \begin{axdef}
-	SafeletThreadId:ThreadID
+
+	SafeletTID :ThreadID
 \end{axdef}
 % 
 \begin{axdef}
-	nullThreadId : ThreadID
+	nullTID : ThreadID
 \end{axdef}
 %
 \begin{zed}
