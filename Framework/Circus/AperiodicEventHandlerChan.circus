@@ -7,7 +7,7 @@
 \end{circus}
 %
 \begin{circus}
-	\circchannelset APEHSync == \lchanset handleAsyncEventCall, handleAsyncEventRet, end\_aperiodicEventHandler\_app \rchanset \\
+	\circchannelset APEHSync == \lchanset handleAsyncEventCall, handleAsyncEventRet, end\_aperiodic\_app \rchanset \\
 \end{circus}
 %
 \begin{circus}

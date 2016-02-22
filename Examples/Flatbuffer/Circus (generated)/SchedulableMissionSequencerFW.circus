@@ -4,15 +4,15 @@
 \end{zsection}
 %
 \begin{circus}
-  \circprocess ~ SchedulableMissionSequencerFW ~ \circdef ~ sequencer : SchedulableID \circspot ~ \circbegin 
+  \circprocess ~ SchedulableMissionSequencerFW ~ \circdef ~ sequencer : SchedulableID \circspot ~ \circbegin
 \end{circus}
 %
 \begin{schema}{State}
   currentMission : MissionID\\
   continueAbove : \boolean \\
-  continueBelow : \boolean \\  
+  continueBelow : \boolean \\
   controllingMission : MissionID\\
-  applicationTerminating : \boolean  
+  applicationTerminating : \boolean
 \end{schema}
 %
 \begin{parser}
@@ -32,8 +32,8 @@
 \begin{schema}{GetContinue}
 	\Xi State\\
 	continue! : \boolean
-\where	
-	continueAbove = \true \land continueBelow = \true \implies continue! = \true 
+\where
+	continueAbove = \true \land continueBelow = \true \implies continue! = \true
 \end{schema}
 %
 \begin{circusaction}
@@ -45,13 +45,13 @@ Start ~ \circdef ~ \\
 \t1 \extchoice\\
 \t1 (
 		done\_toplevel\_sequencer \then \\
-		applicationTerminating := \true \\		
+		applicationTerminating := \true \\
 	)
 \t1 \extchoice\\
 \t1 (
 		activate\_schedulables~?~someMissionID \then \\
 		Start \\
-	)	
+	)
 \end{circusaction}
 %
 \begin{circusaction}
@@ -69,7 +69,7 @@ Activate \circdef\\
 \begin{circusaction}
 Execute \circdef \\
 \t1  (
-	( 
+	(
     		(
       			RunMission \circseq\\
       			end\_methods~.~sequencer \then \\
@@ -77,7 +77,7 @@ Execute \circdef \\
    		 )\\
       	\lpar\{ currentMission \} | \lchanset end\_methods \rchanset | \emptyset \rpar\\
    	 Methods\\
-    )  
+    )
    	 \lpar \emptyset | CCSync | \{ continueAbove, continueBelow \} \rpar\\
     	 ContinueController \\
   ) \circseq done\_schedulable~.~sequencer \then \Skip
@@ -91,22 +91,22 @@ RunMission \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
-GetNextMission ~ \circdef \\ 
+GetNextMission ~ \circdef \\
 \t1    getNextMissionCall~.~sequencer \then \\
 \t1    getNextMissionRet~.~sequencer~?~next \then \\
-\t1    currentMission := next 
+\t1    currentMission := next
 \end{circusaction}
 %
 \begin{circusaction}
-StartMission ~ \circdef ~\\  
+StartMission ~ \circdef ~\\
 \t1   \circif ~ currentMission \neq nullMissionId ~ \circthen\\
 \t2   (
      	start\_mission~.~currentMission~.~sequencer \then\\
-     	initializeRet~.~currentMission \then \\     
-     	(      
+     	initializeRet~.~currentMission \then \\
+     	(
      		SignalTermination\\
      		\t1 \lpar \emptyset | \lchanset end\_terminations \rchanset | \emptyset \rpar\\
-     		(   
+     		(
 	    			done\_mission~.~currentMission~?~continueReturn \then \\
 	    			set\_continueBelow~.~sequencer~!~continueReturn \then \\
 	    			end\_terminations~.~sequencer \then \\
@@ -119,7 +119,7 @@ StartMission ~ \circdef ~\\
 	set\_continueBelow~.~sequencer~!~\false \then \\
     	\Skip \\
       )
-\t1  \circfi\\ 
+\t1  \circfi\\
 \end{circusaction}
 %
 \begin{circusaction}
@@ -137,17 +137,18 @@ Continue \circdef \\
 %
 \begin{circusaction}
 SignalTermination ~ \circdef ~\\
-( 
+(
     (
     	end\_terminations~.~sequencer \then \\
     	\Skip
     )\\
     \extchoice\\
-    ( 
+    (
       signalTerminationCall~.~sequencer \then \\
       set\_continueAbove~.~sequencer~!~\false \then \\
-      requestTermination~.~currentMission~.~sequencer \then\\  
-      signalTerminationRet~.~sequencer \then  \\    
+      requestTerminationCall~.~currentMission~.~sequencer \then\\
+      requestTerminationRet~.~currentMission~.~sequencer~?~isTerminating \then \\
+      signalTerminationRet~.~sequencer \then  \\
       \Skip\\
     ) \circseq \\
     end\_terminations~.~sequencer \then \\
@@ -163,7 +164,7 @@ Methods ~ \circdef \\
     )\\
 \t1  \extchoice \\
 \t1	(
-	   end\_methods~.~sequencer \then \\ 
+	   end\_methods~.~sequencer \then \\
 	   \Skip\\
 	)
 \end{circusaction}
@@ -173,7 +174,7 @@ SequenceTerminationPending ~ \circdef \\
 
 \t1	sequenceTerminationPendingCall~.~sequencer \then \\
 \t1	get\_continue~.~sequencer~?~continue \then
- 
+
 \t1 	 sequenceTerminationPendingRet~.~sequencer~!~continue \then\\
 \t1	  \Skip\\
 
@@ -203,7 +204,7 @@ ContinueController \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
-Cleanup ~ \circdef\\ 
+Cleanup ~ \circdef\\
 \t1	 cleanupSchedulableCall~.~sequencer \then \\
 \t1	 cleanupSchedulableRet~.~sequencer \then \\
 \t1	 Finish
@@ -216,11 +217,11 @@ Finish ~ \circdef ~\\
 \end{circusaction}
 %
 \begin{circusaction}
-  \circspot (\circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\ 
+  \circspot (\circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\
   	(\circif applicationTerminating = \false \circthen \\
-  	 \t2 (Execute \circseq Cleanup \circseq X)\\ 
+  	 \t2 (Execute \circseq Cleanup \circseq X)\\
   	 \circelse applicationTerminating = \true \circthen \\
-  	 \t2 \Skip\\ 
+  	 \t2 \Skip\\
   	 \circfi))
 \end{circusaction}
 %

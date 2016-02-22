@@ -15,10 +15,7 @@
 %
 %
 \begin{circus}
-\t1 \circchannel writeCall : MissionID   \cross SchedulableID  \cross ThreadID  \cross
-\num
-
-  \\
+\t1 \circchannel writeCall : MissionID   \cross SchedulableID  \cross ThreadID  \cross \num \\
 \t1 \circchannel writeRet : MissionID   \cross SchedulableID  \cross ThreadID \\
 \end{circus}
 %

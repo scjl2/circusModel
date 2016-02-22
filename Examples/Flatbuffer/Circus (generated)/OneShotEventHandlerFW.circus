@@ -153,7 +153,7 @@ DeadlineClock \circdef \\
 			)
 		)
 	)	
-    \circseq%\circinterrupt 
+    \circseq%%\circinterrupt 
     (
     		end\_releases~.~schedulable \then \\
     		%release\_complete~.~schedulable \then \\
@@ -170,7 +170,7 @@ Scheduled \circdef \\
 		releaseCall~.~schedulable \then \\
 	 	NotScheduled
      )\\ 
-   \\ \circseq %\circinterrupt \\
+   \\ \circseq %%\circinterrupt \\
   (  
      	( 
       		deschedule\_handler~.~schedulable \then \\
