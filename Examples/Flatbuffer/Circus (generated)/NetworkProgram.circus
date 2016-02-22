@@ -14,10 +14,10 @@ FlatBufferMissionApp,
 ReaderApp
 	,
 WriterApp
-
+	
 \\ \t1
-
-
+	
+	
 \end{zsection}
 %
 \begin{circus}
@@ -84,7 +84,7 @@ FlatBufferMissionSequencerApp\\
 			ReaderApp ( FlatBufferMissionID  ) \\
 			\interleave \\
 			WriterApp ( FlatBufferMissionID  ) \\
-
-
+			
+		
 \circblockclose
 \end{circus}
