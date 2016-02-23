@@ -6,13 +6,13 @@
   \circprocess ~ SafeletFW ~ \circdef ~ \circbegin
 \end{circus}
 %
-\begin{schema}{State}
+\begin{schema}{\circstateignore S\_State}
    globallyRegistered : \finset SchedulableID\\
    topLevelSequencer : SchedulableID
 \end{schema}
 %
-\begin{schema}{Init}
-  State~'\\
+\begin{schema}{S\_Init}
+	S\_State~'\\
   \where
   globallyRegistered' = \emptyset\\
   topLevelSequencer' = nullSequencerId
@@ -20,7 +20,7 @@
 %
 \begin{parser}
 \begin{circusaction}
-\circstate State
+	\circstate S\_State
 \end{circusaction}
 \end{parser}
 %
@@ -35,10 +35,10 @@ InitializeApplication \circdef \\
 Execute \circdef \\
 \t1     GetSequencerMeth \circseq \\
 \t1     \circif topLevelSequencer \neq nullSequencerId \circthen\\
-\t1     (
+\t1     \circblockopen 
      		 start\_toplevel\_sequencer~.~topLevelSequencer \then\\ 
      		 Methods \\
-        )  \\
+        \circblockclose   \\
 \t1    \circelse topLevelSequencer = nullSequencerId \circthen\\
 \t2       \Skip\\
 \t1    \circfi	
@@ -53,41 +53,41 @@ GetSequencerMeth \circdef \\
 %
 \begin{circusaction}     
 Methods \circdef \\
-\t1   (
-    		(
-    			Register \circseq\\
-    			Methods
-    		)\\
-    		\extchoice \\
-    		(
-    			Deregister \circseq \\
-    			Methods
-    		)\\
-    		\extchoice\\
-    		(
-    			done\_toplevel\_sequencer \then \\
-    			\Skip
-    		)\\
-  )   
+\t1\circblockopen 
+	\circblockopen 
+		Register \circseq\\
+    		Methods
+    	\circblockclose \\
+    	\extchoice \\
+    	\circblockopen 
+    		Deregister \circseq \\
+    		Methods
+    	\circblockclose \\
+    	\extchoice\\
+    	\circblockopen 
+    		done\_toplevel\_sequencer \then \\
+    		\Skip
+    	\circblockclose \\
+  \circblockclose    
 \end{circusaction}  
 %  
 \begin{circusaction}
 Register \circdef \\
 
-    (
+    \circblockopen 
     	register~?~schedulable\prefixcolon(schedulable \notin globallyRegistered)~?~mission \then \\
-    	( 
+    	\circblockopen  
     		globallyRegistered := globallyRegistered \cup \{schedulable\} \circseq \\
     		checkSchedulable~.~mission~!~\true \then \\ 
     		\Skip\\
-	) \\
-    )\\
+	\circblockclose  \\
+    \circblockclose \\
     \extchoice \\
-    (
+    \circblockopen 
       register~?~schedulable\prefixcolon(schedulable \in globallyRegistered)~?~mission \then \\		
       checkSchedulable~.~mission~!~\false \then \\ 
      \Skip\\
-    )\\
+    \circblockclose \\
 
 \end{circusaction}
 %
@@ -99,10 +99,9 @@ Deregister \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
-  \circspot ( \lschexpract Init \rschexpract \circseq InitializeApplication \circseq Execute)
+	\circspot \circblockopen  \lschexpract S\_Init \rschexpract \circseq InitializeApplication \circseq Execute\circblockclose 
 \end{circusaction}
 %
 \begin{circus}
   \circend
 \end{circus}
-

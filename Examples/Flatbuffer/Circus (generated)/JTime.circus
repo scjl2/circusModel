@@ -29,3 +29,7 @@ valueOf : JTime \pfun \num
 \where
 \exists j : JTime ; v : \num | j \neq NULL \land v = (timeMillis(j)*1000000)+timeNanos(j) @ valueOf(j) = v
 \end{axdef}
+
+\begin{zed}
+	myTime == time(5,5)
+\end{zed}

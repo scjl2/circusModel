@@ -3,12 +3,11 @@
 \end{zsection}
 %
 \begin{circus}
-    \circchannel deschedule\_handler : SchedulableID \\
     \circchannel end\_aperiodic\_app : SchedulableID
 \end{circus}
 %
 \begin{circus}
-	\circchannelset APEHSync == \lchanset handleAsyncEventCall, handleAsyncEventRet, end\_aperiodic\_app \rchanset \\
+	\circchannelset APEHAppSync == \lchanset handleAsyncEventCall, handleAsyncEventRet, handleAsyncLongEventCall, handleAsyncLongEventRet, end\_aperiodic\_app \rchanset \\
 \end{circus}
 %
 \begin{circus}

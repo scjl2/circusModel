@@ -4,7 +4,7 @@
 \end{zsection}
 %
 \begin{circus}
-  \circprocess Thread  ~ \circdef ~ thread : ThreadID ; basePriority : PriorityLevel ~ \circspot ~\circbegin
+  \circprocess ThreadFW  ~ \circdef ~ thread : ThreadID ; basePriority : PriorityLevel ~ \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore ~ State}
@@ -41,7 +41,7 @@ Execute \circdef \\
 			GetPriorityLevel \\
 		)
 	)
-	\circseq %%\circinterrupt \\
+	\circseq %\circinterrupt \\
 		(
 			done\_toplevel\_sequencer \then \\
 			\Skip 
@@ -137,7 +137,7 @@ GetPriorityLevel \circdef
 \end{circusaction}
 %
 \begin{circusaction}
-\circspot ( \lschexpract Init \rschexpract \circseq Execute)%%\circinterrupt (done\_toplevel\_sequencer \then \Skip)
+\circspot ( \lschexpract Init \rschexpract \circseq Execute)%\circinterrupt (done\_toplevel\_sequencer \then \Skip)
 \end{circusaction}
 %
 \begin{circus}
