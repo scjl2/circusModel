@@ -1,0 +1,142 @@
+
+--include "Framework.csp"
+
+include "FrameworkProcess.csp"
+
+
+channel manual_release : {WriterId, ReaderId} 
+
+channel write : {FlatBufferMissionId}.Bit 
+channel readCall : {FlatBufferMissionId}  
+channel readRet : {FlatBufferMissionId}.Bit 
+channel bufferEmptyCall : {FlatBufferMissionId} 
+channel bufferEmptyRet : {FlatBufferMissionId}.Bool 
+
+channel get_bufferEmpty:{FlatBufferMissionId}.Bool
+channel set_bufferContents:{FlatBufferMissionId}.Bit
+channel get_bufferConetents:{FlatBufferMissionId}.Bit
+
+-- Writer
+
+WriterApp = 
+(
+	Methods_w
+)
+/\ (end_managedThread_app.WriterId -> SKIP)
+
+Methods_w =
+	Run_w
+
+Run_w =
+	runCall.WriterId -> 
+		Write ;
+	runRet.WriterId ->
+	SKIP
+
+Write = 
+--	terminationPendingCall.FlatBufferMissionId ->
+--	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+--	if missionIsTerminating == false then
+--		bufferEmptyCall.FlatBufferMissionId ->
+		manual_release.WriterId ->
+		bufferEmptyRet.FlatBufferMissionId?empty ->
+		if empty == true then
+	    	write.FlatBufferMissionId!1 ->
+			notify.ReaderObjectId.WriterThreadID ->
+    		Write
+		else
+			waitCall.WriterObjectId.WriterThreadID -> 
+			waitRet.WriterObjectId.WriterThreadID -> 
+			notify.WriterObjectId.WriterThreadID ->
+			Write 
+--	else 
+-- 		SKIP
+
+
+
+
+-- Reader
+
+ReaderApp = 
+(
+	Methods_r
+)
+/\ (end_managedThread_app.ReaderId -> SKIP)
+
+Methods_r =
+	Run_r
+
+Run_r =
+	runCall.ReaderId -> 
+
+	Read ;
+
+	runRet.ReaderId ->
+	SKIP
+
+Read =
+--	terminationPendingCall.FlatBufferMissionId ->
+--  	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+--	if missionIsTerminating == false then
+--		bufferEmptyCall.FlatBufferMissionId ->
+		manual_release.ReaderId ->
+		bufferEmptyRet.FlatBufferMissionId?empty ->
+		if empty == false then
+	    	readCall.FlatBufferMissionId -> 
+    		readRet.FlatBufferMissionId?value ->
+			notify.WriterObjectId.ReaderThreadID ->
+    		Read
+		else
+			waitCall.ReaderObjectId.ReaderThreadID ->
+			waitRet.ReaderObjectId.ReaderThreadID ->
+			notify.ReaderObjectId.ReaderThreadID ->
+			Read
+  -- 	else 
+	--	SKIP 	
+
+
+
+nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
+
+
+nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
+
+
+
+TestLockingModel= 
+(
+(
+	(
+		manual_release.ReaderId ->
+		bufferEmptyRet.FlatBufferMissionId!true ->
+	
+		manual_release.WriterId ->
+		bufferEmptyRet.FlatBufferMissionId!true ->
+	
+		manual_release.ReaderId ->
+		bufferEmptyRet.FlatBufferMissionId!false ->
+	
+		end_managedThread_app.ReaderId ->
+		end_managedThread_app.WriterId -> 
+		SKIP
+	)
+	[|{| manual_release, bufferEmptyRet, end_managedThread_app |}|]
+	(
+		ReaderApp 
+			[|{| waitCall, waitRet, notify |}|]
+		WriterApp 
+	)
+)
+	[| LockingModelSync |]	
+	LockingModel( ({(ReaderThreadID, 1),(WriterThreadID, 1)},{ReaderObjectId,WriterObjectId})   )
+		
+)
+
+
+TestLockingModelCompress = 
+	sbisim(diamond(TestLockingModel))
+
+
+assert sbisim(diamond(TestLockingModel)) ; Loop :[ deadlock free [FD] ]
+--assert sbisim(diamond(TestLockingModel)) :[ divergence free ]
+--assert sbisim(diamond(TestLockingModel)) :[ deterministic  [FD] ]

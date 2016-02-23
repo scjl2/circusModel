@@ -1,0 +1,42 @@
+--GLOBALS
+
+include "Types.csp"
+
+
+channel a
+Loop = a-> Loop
+
+channel circwait : num
+channel  throw : ExceptionType 
+
+
+nametype aperiodicParams = (SchedulableID, AperiodicType, Int, SchedulableID)
+nametype periodicParams = (SchedulableID, Int, Int, Int, SchedulableID)
+nametype oneShotParams = (SchedulableID, Int, Int, SchedulableID)
+nametype schedulableParams = ({SchedulableID},{aperiodicParams}, {oneShotParams}, {periodicParams}, {SchedulableID} )
+nametype cluster = (MissionID, schedulableParams )
+nametype tier = Set(cluster)
+
+include "SafeletFW.csp"
+
+include "GlobalSchedulables.csp"
+
+include "MissionSequencerSharedChan.csp"
+
+include "TopLevelMissionSequencerFW.csp"
+
+include "MissionFW_NoChaos2.csp"
+
+include "ManagedSchedulableSharedChan.csp"
+
+include "SchedulableMissionSequencerFW.csp"
+
+include "AperiodicEventHandlerFW.csp"
+
+include "OneShotandPeriodicSharedChan.csp"
+
+include "OneShotEventHandlerFW.csp"
+
+include "PeriodicEventHandlerFW.csp"
+
+include "ManagedThreadFW.csp" 

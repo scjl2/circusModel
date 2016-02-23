@@ -1,0 +1,14 @@
+--JTime
+
+maxNanos = 999999
+
+nametype JTime = Bit.Bit
+
+valueOf(mils.nanos) =
+  (mils*1000000)+nanos
+
+timeMillis( mils.nanos ) =
+	mils
+	
+timeNanos( mils.nanos ) =
+	nanos

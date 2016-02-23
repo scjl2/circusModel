@@ -1,0 +1,66 @@
+--Priority Queue
+
+nametype SThread = Seq(ThreadID)
+
+MaxPriority = 2
+MinPriority = 0
+
+nametype PriorityLevel = {MinPriority..MaxPriority}
+
+PriorityQueue = 
+	Map(PriorityLevel, SThread)
+
+
+EmptyPriorityQueue = 
+	mapFromList(< (0, <>), (1, <>), (2,<>)  >)
+
+--TestPQ = 
+--	mapFromList(< (0, <threadA>), (1, <>), (2,<>)  >)	
+
+--TestPQ2 =
+--	mapFromList(< (0, <threadA>), (1, <threadB>), (2,<>)  >)	
+
+ElementsOf(pq) = 
+	Union({
+			set(mapLookup(pq,0)),
+			set(mapLookup(pq,1)),
+			set(mapLookup(pq,2))
+		})
+
+
+IsEmpty(pq) =
+	empty(ElementsOf(pq))
+
+
+AddToPriorityQueue(pq, t, p)	=
+if  member(t,ElementsOf(pq)) == true then
+	--	error("Specified Thread is Already In the Priority 	Queue")
+	pq
+else
+	mapUpdate(pq, p, mapLookup(pq, p)^<t>)
+
+
+HighestPopulatedPriority(pq) =
+	GetHPP(pq, MaxPriority)
+
+GetHPP(pq, p) =
+	if mapLookup(pq, p) == <> then
+		GetHPP(pq, p-1)
+	else
+		p
+
+
+
+
+RemoveFromPriorityQueue(pq)	=
+	if IsEmpty(pq) == true then 
+		(pq)--, <>)
+	else
+		( mapUpdate(pq, HighestPopulatedPriority(pq), tail(mapLookup(pq, HighestPopulatedPriority(pq)))) )--,  head(mapLookup(pq, HighestPopulatedPriority(pq)))   )
+
+
+RemoveThreadFromPriorityQueue(pq, t, p) =
+if  not member(t,set(mapLookup(pq, p))) then
+	pq
+else 
+	mapUpdate(pq, p,  seq( diff( set( mapLookup(pq, p) ), {t})  ) )

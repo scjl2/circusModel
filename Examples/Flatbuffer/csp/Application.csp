@@ -1,0 +1,468 @@
+
+--include "Framework.csp"
+
+include "FrameworkProcess.csp"
+
+
+--**********************************************
+--******************APLICATION******************
+--**********************************************
+
+-- SAFELET: MY APP
+
+nametype SafeltAppSync = 
+    {| getSequencerCall, getSequencerRet,
+    	initializeApplicationCall, initializeApplicationRet, 
+    	end_safelet_app |}
+
+
+FlatBufferApp  = 
+(
+ 	Methods_s 
+)		
+ /\	(end_safelet_app -> SKIP)
+
+InitializeApplication_s =  
+     initializeApplicationCall -> 
+     initializeApplicationRet ->
+     SKIP
+
+GetSequencer_s = 
+	getSequencerCall -> 
+	getSequencerRet!FlatBufferSequencerId ->
+	SKIP
+
+Methods_s = 
+ ( 
+	GetSequencer_s
+	[] 
+	InitializeApplication_s 
+ ); Methods_s
+
+
+--TOP LEVEL SEQUENCER: MY SEQUENCER
+
+channel get_sequencer_done : {FlatBufferSequencerId}.Bool
+channel set_sequencer_done : {FlatBufferSequencerId}.Bool
+
+nametype MissionSequencerAppStateSync = {| get_sequencer_done, set_sequencer_done |}
+
+nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
+
+
+
+FlatBufferSequencerApp = 
+
+
+	(
+		(
+		  Methods_fbms
+		    [|MissionSequencerAppStateSync|] 
+		  DoneController_fbms(False) 
+		)\ MissionSequencerAppStateSync
+		/\ (end_sequencer_app.FlatBufferSequencerId -> SKIP)
+	)
+
+   
+
+DoneController_fbms(doneVar) =
+(
+	get_sequencer_done.FlatBufferSequencerId!doneVar ->
+	DoneController_fbms(doneVar)
+)
+[]
+(
+	set_sequencer_done.FlatBufferSequencerId?newDone ->
+	DoneController_fbms(newDone)
+)
+
+
+GetNextMission_fbms = 
+    getNextMissionCall.FlatBufferSequencerId -> 
+	get_sequencer_done.FlatBufferSequencerId?doneVar ->
+	(
+	  if doneVar == False then
+	  (
+		set_sequencer_done.FlatBufferSequencerId!True ->
+		getNextMissionRet.FlatBufferSequencerId!FlatBufferMissionId  ->
+		SKIP
+      )
+	  else 
+	  (
+		getNextMissionRet.FlatBufferSequencerId!nullMissionId ->
+		SKIP
+	  )
+    )
+
+Methods_fbms = 
+ (
+	GetNextMission_fbms 
+ ) ; Methods_fbms 
+
+
+
+--FlatBUfferMission
+channel write : {FlatBufferMissionId}.Bit.ThreadID 
+channel readCall : {FlatBufferMissionId}.ThreadID 
+channel readRet : {FlatBufferMissionId}.Bit.ThreadID 
+channel bufferEmptyCall : {FlatBufferMissionId} 
+channel bufferEmptyRet : {FlatBufferMissionId}.Bool 
+
+channel waitOnMissionCall : {FlatBufferMissionId}.ThreadID
+channel waitOnMissionRet : {FlatBufferMissionId}.ThreadID
+channel notifyOnMission : {FlatBufferMissionId}.ThreadID
+
+channel get_bufferEmpty:{FlatBufferMissionId}.Bool
+channel set_bufferContents:{FlatBufferMissionId}.Bit
+channel get_bufferConetents:{FlatBufferMissionId}.Bit
+
+
+nametype MissionAppSync = {|cleanupMissionRet, end_mission_app, setCeilingPriority     |}
+nametype FlatBufferMissionStateSync = {|get_bufferEmpty,set_bufferContents, get_bufferConetents |}
+
+FlatBufferMissionApp = 
+
+( 
+	(
+		FlatBufferMissionState(0)
+			[| FlatBufferMissionStateSync |]  
+		Methods_fbm 
+	)
+	/\ 
+	(end_mission_app.FlatBufferMissionId -> SKIP )
+)\FlatBufferMissionStateSync
+
+
+FlatBufferMissionState(bufferContents) =
+(
+	if bufferContents == 0 then
+		get_bufferEmpty.FlatBufferMissionId!true -> 
+		FlatBufferMissionState(bufferContents)
+	else
+		get_bufferEmpty.FlatBufferMissionId!false ->	
+		FlatBufferMissionState(bufferContents)
+)
+[]
+(
+	set_bufferContents.FlatBufferMissionId?newBufferContents -> 
+	FlatBufferMissionState(newBufferContents)
+)
+[]
+(
+	get_bufferConetents.FlatBufferMissionId!bufferContents ->
+	FlatBufferMissionState(bufferContents) 
+)
+
+APPInitializePhase(mission) =
+	initializeCall.FlatBufferMissionId   -> 
+
+	register!ReaderId!FlatBufferMissionId  -> 
+
+	register!WriterId!FlatBufferMissionId  -> 
+  	  
+	initializeRet.FlatBufferMissionId  -> 
+  MissionPhase(mission, {ReaderId, WriterId})
+
+InitializePhase_fbm = 
+	initializeCall.FlatBufferMissionId   -> 
+
+	register!ReaderId!FlatBufferMissionId  -> 
+  	register!WriterId!FlatBufferMissionId  -> 
+  	
+  
+	initializeRet.FlatBufferMissionId  -> 
+	SKIP
+
+APPCleanupMission(mission) =
+
+--CleanupPhase_fbm = 
+ cleanupMissionCall.FlatBufferMissionId  ->
+ cleanupMissionRet.FlatBufferMissionId?false ->
+ SKIP
+
+Methods_fbm = 
+( 
+	--InitializePhase_fbm
+	--[] 
+	--CleanupPhase_fbm
+	--[]
+	BufferEmpty_fbm
+	[]
+	Write_fbm
+	[]
+	Read_fbm
+	[]
+	waitOnMissionMeth
+	[]
+	notifyOnMissionMeth
+) ; Methods_fbm
+
+BufferEmpty_fbm =
+	bufferEmptyCall.FlatBufferMissionId ->
+	get_bufferEmpty.FlatBufferMissionId?bufferEmpty ->
+	bufferEmptyRet.FlatBufferMissionId!bufferEmpty ->
+	SKIP
+
+Write_fbm =
+	write.FlatBufferMissionId?value?thread ->
+	startSyncMeth.MissionObjectId.thread -> 
+	lockAcquired.MissionObjectId.thread ->
+	set_bufferContents.FlatBufferMissionId!value ->
+
+	notify.MissionObjectId.thread ->
+
+	endSyncMeth.MissionObjectId.thread -> 
+	SKIP
+
+Read_fbm =
+	readCall.FlatBufferMissionId?thread -> 
+
+	startSyncMeth.MissionObjectId.thread -> 
+	lockAcquired.MissionObjectId.thread ->
+
+	get_bufferConetents.FlatBufferMissionId?bufferConetents ->
+    
+	notify.MissionObjectId.thread ->
+
+   	endSyncMeth.MissionObjectId.thread -> 
+	readRet.FlatBufferMissionId!bufferConetents.thread ->
+    SKIP
+
+waitOnMissionMeth=
+	waitOnMissionCall.FlatBufferMissionId?thread ->
+	startSyncMeth.MissionObjectId.thread -> 
+	lockAcquired.MissionObjectId.thread ->
+--	waitCall.MissionObjectId.thread -> 
+--	waitRet.MissionObjectId.thread -> 
+
+	endSyncMeth.MissionObjectId.thread -> 
+waitOnMissionRet.FlatBufferMissionId?thread ->	
+	SKIP
+	
+notifyOnMissionMeth =
+	notifyOnMission.FlatBufferMissionId?thread ->
+	startSyncMeth.MissionObjectId?thread -> 
+	lockAcquired.MissionObjectId.thread ->
+	
+--	notify.MissionObjectId.thread ->
+
+	endSyncMeth.MissionObjectId.thread -> 
+	
+	SKIP
+
+
+
+
+-- Writer
+
+WriterApp = 
+(
+	Methods_w
+)
+/\ (end_managedThread_app.WriterId -> SKIP)
+
+Methods_w =
+	Run_w
+
+Run_w =
+	runCall.WriterId -> 
+	RunOuter_w ;
+	runRet.WriterId ->	
+	SKIP
+
+RunOuter_w =
+	terminationPendingCall.FlatBufferMissionId ->
+	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+	WhileOuter_w(missionIsTerminating)
+
+
+WhileOuter_w(missionIsTerminating) =
+	if missionIsTerminating == false then
+		bufferEmptyCall.FlatBufferMissionId ->
+		bufferEmptyRet.FlatBufferMissionId?empty ->
+		WhileInner_w(empty)
+	else 
+ 		RunOuter_w
+
+WhileInner_w(empty) =
+	if empty == false then
+		(
+			waitOnMissionCall.FlatBufferMissionId.WriterThreadId -> 
+			waitOnMissionRet.FlatBufferMissionId.WriterThreadId -> 
+
+			WhileOuter_w(false)
+		)
+		
+	else
+		write.FlatBufferMissionId!1!WriterThreadId ->	
+		
+    	RunOuter_w
+
+
+
+
+
+
+-- Reader
+
+ReaderApp = 
+(
+	Methods_r
+)
+/\ (end_managedThread_app.ReaderId -> SKIP)
+
+Methods_r =
+	Run_r
+
+Run_r =
+	runCall.ReaderId -> 
+	RunOuter_r ;
+	runRet.ReaderId ->
+	
+	SKIP
+
+RunOuter_r =
+	terminationPendingCall.FlatBufferMissionId ->
+	terminationPendingRet.FlatBufferMissionId?missionIsTerminating ->
+	WhileOuter_r(missionIsTerminating)
+
+
+WhileOuter_r(missionIsTerminating) =
+	if missionIsTerminating == false then
+		bufferEmptyCall.FlatBufferMissionId ->
+		bufferEmptyRet.FlatBufferMissionId?empty ->
+		WhileInner_r(empty)
+	else 
+ 		RunOuter_r
+
+
+WhileInner_r(empty) =
+	if empty == true then
+		(
+			waitOnMissionCall.FlatBufferMissionId.ReaderThreadId -> 
+			waitOnMissionRet.FlatBufferMissionId.ReaderThreadId ->
+		
+			WhileOuter_r(false)
+		)
+		
+	else
+		readCall.FlatBufferMissionId.ReaderThreadId -> 
+    		readRet.FlatBufferMissionId?value!ReaderThreadId ->
+	
+    	RunOuter_r
+
+
+
+nametype MTAppSync = {| isAlive, runCall, runRet,  end_managedThread_app |}
+
+
+nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
+
+FlatBuffer =
+(  
+	FlatBufferApp
+	|||
+	FlatBufferSequencerApp
+	|||
+	sbdia(sbdia(FlatBufferMissionApp [| {| startSyncMeth, endSyncMeth, lockAcquired,  waitCall, waitRet, notify |} |] ThreadObjectSystem(MissionObjectId))
+	[|{|  waitCall, waitRet, notify, bufferEmptyCall, bufferEmptyRet,
+	 	readCall, readRet, write, interrupt, isInterrupted, notifyAll, interrupted |}|]
+
+--	(
+--		sbdia(ReaderApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(ReaderObjectId)   )
+--			[|{|  notify, notifyAll, waitCall, timedWaitCall, waitForObjectCall |}|]
+--		sbdia(WriterApp  [| union(LockingModelSync, {|startSyncMeth, endSyncMeth |}) |]	ThreadObjectSystem(WriterObjectId) )
+--	)	
+--)
+
+ 	(	
+		(
+			(ReaderApp    )
+				|||
+			(WriterApp  )
+		)
+		
+	)
+	)
+)
+
+
+-- union(AlphaThreadObjectSystem(ReaderObjectId), AlphaThreadObjectSystem(WriterObjectId) )
+
+--[|  AlphaThreadObjectSystem(ReaderObjectId)  |]	ThreadObjectSystem(ReaderObjectId) 
+--  [|  AlphaThreadObjectSystem(WriterObjectId)  |]	ThreadObjectSystem(WriterObjectId)
+
+
+Program(topLevelSequencerIDs, tier0) = 
+(
+
+(	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, --OSEHSync , --APEHSync, 
+		 {| getSequencer, end_mission_app, end_managedThread_app, setCeilingPriority, requestTerminationCall,requestTerminationRet, terminationPendingCall, terminationPendingRet, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+	FlatBuffer	
+)--\{|end_mission_app, end_managedThread_app, done_safeletFW, done_mission, done_toplevel_sequencer |}
+
+)
+
+
+---USE THIS ONE!
+Program2 =
+(	
+
+( 
+ (
+ 	sbdia(SafeletFW [| SafeltAppSync |] FlatBufferApp)
+  	[|SafeletTierSync|]
+   sbdia(TopLevelMissionSequencers({FlatBufferSequencerId}) [|MissionSequencerAppSync|] FlatBufferSequencerApp)
+ )
+    [|TierSync|]
+  
+(   ( ( (MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp) [| {|  lockAcquired, startSyncMeth, endSyncMeth, waitCall, waitRet, notify |} |] ThreadObjectSystem(MissionObjectId)  
+	) )
+     [| union(MissionSync, {| waitOnMissionCall, waitOnMissionRet, notifyOnMission, bufferEmptyCall, bufferEmptyRet, readCall, readRet, write, interrupt, isInterrupted, notifyAll, interrupted|}) |]
+  (
+
+      sbdia( ManagedThreadFW(WriterId) [| MTAppSync |] WriterApp )
+      [|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+      sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp )
+  )
+  
+)
+)
+    [| GSRSync |]
+GlobalSchedulableRegulator
+)
+
+
+
+TestProgram = 
+	Program(
+				{FlatBufferSequencerId},
+				{ (FlatBufferMissionId , ({}, {}, {},  {}, {WriterId, ReaderId})  )   }	                 
+            )
+
+
+MissionAndThreads=
+( 
+	( 
+		(MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp) [| {|  lockAcquired, startSyncMeth, endSyncMeth, waitCall, waitRet, notify |} |] ThreadObjectSystem(MissionObjectId)  
+	) 
+)
+     [| union(MissionSync, {| waitOnMissionCall, waitOnMissionRet, notifyOnMission, bufferEmptyCall, bufferEmptyRet, readCall, readRet, write, interrupt, isInterrupted, notifyAll, interrupted|}) |]
+(
+
+    sbdia( ManagedThreadFW(WriterId) [| MTAppSync |] WriterApp )
+	    [|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+    sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp )
+)  
+
+
+assert Program2  :[ deadlock free [FD] ]
+assert Program2 :[ divergence free ]
+assert Program2 :[ deterministic  [FD] ]
+
+assert MissionAndThreads  :[ deadlock free [FD] ]
+assert MissionAndThreads :[ divergence free ]
+assert MissionAndThreads :[ deterministic  [FD] ]
+
+--assert STOP [T= (Program2 \ diff(Events, {|throw|}))
