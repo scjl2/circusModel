@@ -54,7 +54,7 @@ Methods \circdef  \\
 \begin{circusaction}
 \circspot ( \lschexpract Init \rschexpract \circseq Methods) 
   %\circhide MissionSequencerAppStateSync
-\circinterrupt (end\_sequencer\_app~.~FlatBufferMissionSequencerSID \then \Skip)
+%\circinterrupt (end\_sequencer\_app~.~FlatBufferMissionSequencerSID \then \Skip)
 \end{circusaction}
 
 \begin{circus}

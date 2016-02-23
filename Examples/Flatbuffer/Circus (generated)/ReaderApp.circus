@@ -62,7 +62,7 @@ Methods \circdef \\
 
 \begin{circusaction}
 \circspot ( Methods) 
-  \circinterrupt (end\_managedThread\_app~.~ReaderSID \then \Skip)
+%  \circinterrupt (end\_managedThread\_app~.~ReaderSID \then \Skip)
 \end{circusaction}
 
 \begin{circus}

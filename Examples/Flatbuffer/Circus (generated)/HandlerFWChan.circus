@@ -4,8 +4,5 @@
 %
 \begin{circus}
   \circchannel end\_releases : SchedulableID \\
-\end{circus}
-
-\begin{circus}
   \circchannel release\_complete : SchedulableID \\
 \end{circus}

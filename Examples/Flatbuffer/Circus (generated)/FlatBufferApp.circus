@@ -53,7 +53,7 @@ Methods \circdef \\
 
 \begin{circusaction}
 \circspot ( Methods) 
- \circinterrupt (end\_safelet\_app \then \Skip)
+ %\circinterrupt (end\_safelet\_app \then \Skip)
 \end{circusaction}
 
 \begin{circus}

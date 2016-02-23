@@ -3,11 +3,9 @@
 \end{zsection}
 %
 \begin{circus}
-  \circchannel releaseCall : SchedulableID  \\
-  \circchannel releaseRet : SchedulableID  \\
-  \circchannel fire : SchedulableID \\
-  \circchannel descheduleCall : SchedulableID\\
-  \circchannel descheduleRet : SchedulableID \cross \boolean \\
-  \circchannel handleAsyncEventCall : SchedulableID \\
-  \circchannel handleAsyncEventRet : SchedulableID \\
+  \circchannel handleAsyncEventCall : SchedulableID  \\
+  \circchannel handleAsyncEventRet : SchedulableID  \\	
+  \circchannel handleAsyncLongEventCall : SchedulableID  \\
+  \circchannel handleAsyncLongEventRet : SchedulableID  \\
+  \circchannel release : SchedulableID
 \end{circus}

@@ -20,4 +20,6 @@
   \circchannel set\_startTime : SchedulableID \cross JTime
 \end{circus}
 %
-
+\begin{circus}
+  \circchannel end\_oneShot\_app : SchedulableID
+\end{circus}
