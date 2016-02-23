@@ -1,3 +1,0 @@
-\begin{zsection}
-  \SECTION ~ SchedulableMissionSequencerChan ~ \parents ~ SchedulableMissionSequencerFWChan, MissionSequencerMethChan, MissionSequencerFWChan
-\end{zsection}

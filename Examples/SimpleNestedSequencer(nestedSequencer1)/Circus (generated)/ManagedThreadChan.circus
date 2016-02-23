@@ -1,3 +1,0 @@
-\begin{zsection}
-  \SECTION ~ ManagedThreadChan ~ \parents ~ ManagedThreadFWChan, ManagedThreadMethChan, SchedulableChan
-\end{zsection}

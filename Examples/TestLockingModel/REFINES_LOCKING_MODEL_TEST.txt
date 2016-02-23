@@ -1,2 +1,0 @@
-sbisim(diamond(TestLockingModel)) ; Loop :[deadlock free [FD]]:
-    Log:

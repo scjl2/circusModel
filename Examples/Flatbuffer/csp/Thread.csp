@@ -1,7 +1,0 @@
---Thread Types
-
-ThreadMap = 
-	Map(ThreadID, num)
-
-EmptyThreadMap 	=	
-	mapFromList(<(WriterThreadId, 0), (ReaderThreadId, 0) >)

@@ -7,7 +7,7 @@
   \circprocess ~ SchedulableMissionSequencerFW ~ \circdef ~ sequencer : SchedulableID \circspot ~ \circbegin
 \end{circus}
 %
-\begin{schema}{State}
+\begin{schema}{\circstateignore SMS\_State}
   currentMission : MissionID\\
   continueAbove : \boolean \\
   continueBelow : \boolean \\
@@ -17,12 +17,12 @@
 %
 \begin{parser}
 \begin{circusaction}
-\circstate State
+	\circstate SMS\_State
 \end{circusaction}
 \end{parser}
 %
-\begin{schema}{Init}
-  State~'
+\begin{schema}{SMS\_Init}
+	SMS\_State~'
 \where
   continueAbove' = \true \\
   continueBelow' = \true \\
@@ -32,7 +32,7 @@
 \end{schema}
 %
 \begin{schema}{GetContinue}
-	\Xi State\\
+	\Xi SMS\_State\\
 	continue! : \boolean
 \where
 	continueAbove = \true \land continueBelow = \true \implies continue! = \true
@@ -221,7 +221,7 @@ Finish ~ \circdef ~\\
 \end{circusaction}
 %
 \begin{circusaction}
-  \circspot \circblockopen\circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\
+	\circspot \circblockopen\circmu X \circspot \lschexpract SMS\_Init \rschexpract \circseq Start \circseq\\
   	\circblockopen \circif applicationTerminating = \false \circthen \\
   	 \t2 \circblockopen Execute \circseq Cleanup \circseq X\circblockclose \\
   	 \circelse applicationTerminating = \true \circthen \\
