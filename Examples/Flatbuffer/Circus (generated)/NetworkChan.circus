@@ -25,7 +25,11 @@
 	\t1 done\_safeletFW, done\_toplevel\_sequencer \rchanset
 \end{circus}
 %
-
+\begin{circus}
+\circchannelset ~ MissionSync == \\ \t1 \lchanset done\_safeletFW, done\_toplevel\_sequencer, register, \\
+                 signalTerminationCall, signalTerminationRet, activate\_schedulables, done\_schedulable, \\
+                 cleanupSchedulableCall, cleanupSchedulableRet  \rchanset
+\end{circus}
 %
 \begin{circus}
 \circchannelset ~ SchedulablesSync == \\ \t1 \lchanset activate\_schedulables, done\_safeletFW, done\_toplevel\_sequencer \rchanset
@@ -44,9 +48,7 @@
 	\t1 handleAsyncLongEventCall, handleAsyncLongEventRet,end\_aperiodic\_app, \\
 	\t1 descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet, end\_oneShot\_app, \\
 	\t1 runCall, runRet, end\_managedThread\_app, \\
-	\t1 setCeilingPriority, requestTerminationCall, requestTerminationRet, terminationPendingCall, terminationPendingRet, done\_safeletFW, done\_toplevel\_sequencer,  \\
-	\t1        signalTerminationCall, signalTerminationRet, activate\_schedulables, done\_schedulable, \\
-	\t1        cleanupSchedulableCall, cleanupSchedulableRet \rchanset
+	\t1 setCeilingPriority, requestTerminationCall, requestTerminationRet, terminationPendingCall, terminationPendingRet \rchanset
 \end{circus}
 %
 \begin{circus}

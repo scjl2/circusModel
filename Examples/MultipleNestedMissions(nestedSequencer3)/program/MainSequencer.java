@@ -25,7 +25,7 @@ class MainSequencer extends MissionSequencer<Mission>
 	protected Mission getNextMission()
 	{		
 		
-		Console.println(getName()+  " getNextMission");
+//		Console.println(getName()+  " getNextMission");
 		if (notReleased)
 		{
 			Mission mission = new MainMission();

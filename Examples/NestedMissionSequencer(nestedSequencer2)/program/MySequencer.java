@@ -20,7 +20,7 @@ public class MySequencer extends MissionSequencer<Mission>
     @Override
     protected Mission getNextMission() 
     {
-    	devices.Console.println(getName() + ":getNextMission");
+//    	devices.Console.println(getName() + ":getNextMission");
 	    if (done == false) 
 		{
 	   		done = true;

@@ -19,7 +19,7 @@ public class MyPEH3 extends PeriodicEventHandler
 
 	public void handleAsyncEvent() 
 	{
-		devices.Console.println(getName() + ":handleAsyncEvent");
+//		devices.Console.println(getName() + ":handleAsyncEvent");
 		count++;
 
 		if (count == 10) 

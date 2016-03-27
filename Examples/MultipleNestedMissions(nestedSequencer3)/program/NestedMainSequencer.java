@@ -23,7 +23,7 @@ class NestedMissionSequencer extends MissionSequencer<Mission>
 	@SCJAllowed(Level.SUPPORT)
 	protected Mission getNextMission()
 	{
-		Console.println(getName() + " getNextMission");
+//		Console.println(getName() + " getNextMission");
 		
 		if(releases == 0 )
 		{
