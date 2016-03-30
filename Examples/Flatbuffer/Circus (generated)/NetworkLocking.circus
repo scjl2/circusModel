@@ -1,6 +1,10 @@
 \begin{zsection}
   \SECTION ~ NetworkLocking ~ \parents ~ scj\_prelude, GlobalTypes, FrameworkChan, MissionId, MissionIds, \\
+<<<<<<< HEAD
   \t1 ThreadIds, NetworkChannels, ObjectFW, ThreadFW
+=======
+  \t1 ThreadIds, ThreadFW, ObjectIds, ObjectFW
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
 \end{zsection}
 
 

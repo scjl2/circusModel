@@ -1,21 +1,24 @@
 \begin{zsection}
+<<<<<<< HEAD
   \SECTION ~ OneShotEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, OneShotEventHandlerFWChan%, OneShotEventHandlerMethChan
+=======
+  \SECTION ~ OneShotEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, OneShotEventHandlerFWChan, OneShotEventHandlerMethChan
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
 \end{zsection}
-%
-\begin{circus}
-\circchannel ~ getNextReleaseTimeCall : SchedulableID \\
-\circchannel ~ getNextReleaseTimeRet : SchedulableID \cross JTime \\
-\circchannel ~ scheduleNextRelease : SchedulableID \cross JTime \\
-\end{circus}
-
 %
 \begin{circus}
 \circchannelset STCSync == \lchanset get\_startTime, set\_startTime \rchanset \\
 \circchannelset MethodsSync == \lchanset end\_releases, reschedule\_handler, deschedule\_handler \rchanset \\
+<<<<<<< HEAD
 \circchannelset ReleaseSync == \lchanset releaseCall, reschedule\_handler, end\_schedule \rchanset \\
 \circchannelset DeadlineSync == \lchanset releaseCall, end\_releases, deschedule\_handler, release\_complete \rchanset \\
 \end{circus}
 %
 \begin{circus}
 \circchannelset OSEHSync == \lchanset deschedulCall, deschedulRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet, end\_oneShot\_app\rchanset \\
+=======
+\circchannelset ReleaseSync == \lchanset handleAsyncEventCall, reschedule\_handler, end\_releases, stop\_release, release \rchanset\\
+\circchannelset DeadlineSync == \lchanset handleAsyncEventCall, end\_releases, deschedule\_handler, release\_complete \rchanset \\
+\circchannelset OSEHAppSync == \lchanset descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet, end\_oneShot\_app \rchanset \\
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
 \end{circus}

@@ -21,7 +21,7 @@ public class MyPEH2 extends PeriodicEventHandler
 		@Override
 		public void handleAsyncEvent() 
 		{
-			devices.Console.println(getName() + ":handleAsyncEvent");
+//			devices.Console.println(getName() + ":handleAsyncEvent");
 			count++;
 
 			if (count == 10) 

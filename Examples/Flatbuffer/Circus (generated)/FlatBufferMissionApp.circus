@@ -1,8 +1,15 @@
 \begin{zsection}
   \SECTION ~ FlatBufferMissionApp ~ \parents ~ scj\_prelude, MissionId, MissionIds, \\
   \t1 SchedulableId, SchedulableIds, MissionChan, SchedulableMethChan, FlatBufferMissionMethChan \\
+<<<<<<< HEAD
  , FlatBufferMissionClass, MethodCallBindingChannels 
  
+=======
+ %%%%PARSING%%%, FlatBufferMissionClass
+ , MethodCallBindingChannels 
+ , ObjectFWChan, ObjectIds
+
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
 \end{zsection}
 
 
@@ -20,7 +27,7 @@
 \end{circus}
 
 \begin{schema}{State}
-  this : \circreftype FlatBufferMissionClass\\ 
+	this : \num %%%%PARSING%%%\circreftype FlatBufferMissionClass\\ 
 \end{schema}
 % 
 \begin{circusaction}
@@ -30,7 +37,7 @@
 \begin{schema}{Init}
   State~' \\
 \where
-  this' = \circnew FlatBufferMissionClass()\\ 
+  this' = 0%%%%PARSING%%%\circnew FlatBufferMissionClass()\\ 
 \end{schema}
 
 \begin{circusaction}
@@ -64,7 +71,7 @@ bufferEmptyMeth \circdef
 \circblockopen
 bufferEmptyCall~.~FlatBufferMissionMID
 \then \\
-ret := this~.~bufferEmpty()  \circseq  \\
+%%%%PARSING%%%ret := this~.~bufferEmpty()  \circseq  \\
 
 bufferEmptyRet~.~FlatBufferMissionMID~!~ret \then \\
 \Skip
@@ -77,7 +84,7 @@ cleanUpMeth \circdef
 \circblockopen
 cleanUpCall~.~FlatBufferMissionMID
 \then \\
-ret := this~.~cleanUp()  \circseq  \\
+%%%%PARSING%%%ret := this~.~cleanUp()  \circseq  \\
 
 cleanUpRet~.~FlatBufferMissionMID~!~ret \then \\
 \Skip
@@ -96,7 +103,12 @@ startSyncMeth~.~FlatBufferMissionOID~.~thread \then \\
 lockAcquired~.~FlatBufferMissionOID~.~thread \then \\
 
       \circblockopen
+<<<<<<< HEAD
             \circmu X \circspot \\ \circblockopen \circvar loopVar : \boolean \circspot loopVar :=~(\lnot bufferEmpty() )\circseq \\ \circif ~ (loopVar = \true) ~ \circthen \\ \t1 \Skip \circseq X \\ \circelse ~ (loopVar = \false) \circthen \Skip \\ \circfi \circblockclose \\
+=======
+      \circmu X \circspot \\ \circblockopen \circvar loopVar : \boolean \circspot loopVar :=~(\lnot \false %%%%PARSING%%%bufferEmpty() 
+            	    )\circseq \\ \circif ~ (loopVar = \true) ~ \circthen \\ \t1 \Skip \circseq X \\ \circelse ~ (loopVar = \false) \circthen \Skip \\ \circfi \circblockclose \\
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
             
 
 
@@ -124,12 +136,21 @@ startSyncMeth~.~FlatBufferMissionOID~.~thread \then \\
 lockAcquired~.~FlatBufferMissionOID~.~thread \then \\
 
       \circblockopen
+<<<<<<< HEAD
             \circmu X \circspot \\ \circblockopen \circvar loopVar : \boolean \circspot loopVar :=~bufferEmpty()\circseq \\ \circif ~ (loopVar = \true) ~ \circthen \\ \t1 \Skip \circseq X \\ \circelse ~ (loopVar = \false) \circthen \Skip \\ \circfi \circblockclose \\
+=======
+      \circmu X \circspot \\ \circblockopen \circvar loopVar : \boolean \circspot loopVar := \false %%%%PARSING%%%~bufferEmpty()
+            \circseq \\ \circif ~ (loopVar = \true) ~ \circthen \\ \t1 \Skip \circseq X \\ \circelse ~ (loopVar = \false) \circthen \Skip \\ \circfi \circblockclose \\
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
              \circseq \\ 
 
 
 
+<<<<<<< HEAD
             \circvar out : \num \circspot out := this~.~buffer
+=======
+            \circvar out : \num \circspot out := 0%%%%PARSING%%%this~.~buffer
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
              \circseq \\ 
 
 
@@ -176,7 +197,7 @@ Methods \circdef
 
 \begin{circusaction}
 \circspot ( \lschexpract Init \rschexpract \circseq Methods) 
- \circinterrupt (end\_mission\_app~.~FlatBufferMissionMID \then \Skip)
+ %%%%PARSING%%%\circinterrupt (end\_mission\_app~.~FlatBufferMissionMID \then \Skip)
 \end{circusaction}
 
 \begin{circus}

@@ -4,4 +4,8 @@
 %
 \begin{circus}
 	\circchannelset MTAppSync == \lchanset runCall, runRet, end\_managedThread\_app \rchanset
+<<<<<<< HEAD
 \end{circus}
+=======
+\end{circus}
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53

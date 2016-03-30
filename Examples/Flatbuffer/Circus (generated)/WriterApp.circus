@@ -1,7 +1,7 @@
 \begin{zsection}
   \SECTION ~ WriterApp ~ \parents ~ ManagedThreadChan, SchedulableId, SchedulableIds  , MethodCallBindingChannels 
  \\
-  \t1 , 
+  \t1 ,
 MissionMethChan
 , 
 
@@ -12,6 +12,7 @@ ObjectIds
 , 
 
 ThreadIds
+
 
 
 
@@ -67,7 +68,11 @@ Methods \circdef \\
 
 \begin{circusaction}
 \circspot ( Methods) 
+<<<<<<< HEAD
   \circinterrupt (end\_managedThread\_app~.~WriterSID \then \Skip)
+=======
+%%%%PARSING%%% \circinterrupt (end\_managedThread\_app~.~WriterSID \then \Skip)
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
 \end{circusaction}
 
 \begin{circus}

@@ -44,7 +44,11 @@ BinderActions \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
+<<<<<<< HEAD
 \circspot BinderActions \circinterrupt (done\_toplevel\_sequencer \then \Skip)
+=======
+\circspot BinderActions %%%%PARSING%%%\circinterrupt (done\_toplevel\_sequencer \then \Skip)
+>>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
 \end{circusaction}
 %
 \begin{circus}

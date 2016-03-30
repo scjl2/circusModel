@@ -4,7 +4,7 @@
 \end{zsection}
 %
 \begin{circus}
-  \circprocess Thread  ~ \circdef ~ thread : ThreadID ; basePriority : PriorityLevel ~ \circspot ~\circbegin
+  \circprocess ThreadFW  ~ \circdef ~ thread : ThreadID ; basePriority : PriorityLevel ~ \circspot ~\circbegin
 \end{circus}
 %
 \begin{schema}{\circstateignore ~ State}

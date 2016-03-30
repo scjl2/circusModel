@@ -19,14 +19,13 @@ periodOf : PeriodicParameters \fun JTime
 \end{axdef}
 %
 \begin{axdef}
-deadlineOfP : PeriodicParameters \fun JTime 
+deadlineOfPeriodic : PeriodicParameters \fun JTime 
 \where
-\forall pp: PeriodicParameters @ deadlineOfP(pp) = pp.3
+\forall pp: PeriodicParameters @ deadlineOfPeriodic(pp) = pp.3
 \end{axdef}
 %
 \begin{axdef}
-missHandlerOfP : PeriodicParameters \fun SchedulableID 
+missHandlerOfPeriodic : PeriodicParameters \fun SchedulableID 
 \where
-\forall pp: PeriodicParameters @ missHandlerOfP(pp) = pp.4
-
+\forall pp: PeriodicParameters @ missHandlerOfPeriodic(pp) = pp.4
 \end{axdef}
