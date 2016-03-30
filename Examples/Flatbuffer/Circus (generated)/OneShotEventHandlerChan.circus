@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ OneShotEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, OneShotEventHandlerFWChan%, OneShotEventHandlerMethChan 
+  \SECTION ~ OneShotEventHandlerChan ~ \parents ~  HandlerChan, HandlerMethChan, OneShotEventHandlerFWChan%, OneShotEventHandlerMethChan
 \end{zsection}
 %
 \begin{circus}
@@ -14,4 +14,8 @@
 \circchannelset MethodsSync == \lchanset end\_releases, reschedule\_handler, deschedule\_handler \rchanset \\
 \circchannelset ReleaseSync == \lchanset releaseCall, reschedule\_handler, end\_schedule \rchanset \\
 \circchannelset DeadlineSync == \lchanset releaseCall, end\_releases, deschedule\_handler, release\_complete \rchanset \\
+\end{circus}
+%
+\begin{circus}
+\circchannelset OSEHSync == \lchanset deschedulCall, deschedulRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet, end\_oneShot\_app\rchanset \\
 \end{circus}

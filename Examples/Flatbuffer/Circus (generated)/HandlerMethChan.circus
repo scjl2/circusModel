@@ -1,5 +1,5 @@
 \begin{zsection}
-  \SECTION ~ HandlerMethChan ~ \parents ~ scj\_prelude, SchedulableId, GlobalTypes 
+  \SECTION ~ HandlerMethChan ~ \parents ~ scj\_prelude, SchedulableId, GlobalTypes
 \end{zsection}
 %
 \begin{circus}
@@ -8,4 +8,6 @@
   \circchannel fire : SchedulableID \\
   \circchannel descheduleCall : SchedulableID\\
   \circchannel descheduleRet : SchedulableID \cross \boolean \\
+  \circchannel handleAsyncEventCall : SchedulableID \\
+  \circchannel handleAsyncEventRet : SchedulableID \\
 \end{circus}
