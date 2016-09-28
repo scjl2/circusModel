@@ -1,6 +1,6 @@
 \begin{zsection}
   \SECTION ~ MissionFW ~ \parents ~ scj\_prelude, SafeletMethChan, MissionId, \\
-   SchedulableId, MissionChan, SchedulableChan, FrameworkChan, ServicesChan 
+   SchedulableId, MissionChan, SchedulableChan, FrameworkChan, ServicesChan
 \end{zsection}
 %
 \begin{circus}
@@ -170,7 +170,8 @@ SignalTermination \circdef \\
   schedulables\_stopped~.~mission \then \\
   \Skip\\
 \circblockclose
-%%%%PARSING%%%% \t1 \circinterrupt (schedulables\_stopped~.~mission \then \Skip)
+%%%%PARSING%%%%
+\t1 \circinterrupt (schedulables\_stopped~.~mission \then \Skip)
 \end{circusaction}
 %
 \begin{circusaction}
@@ -236,13 +237,13 @@ RequestTerminationMeth ~ \circdef\\
 	\circblockclose\\
 \t1	\extchoice\\
 \t1	\circblockopen
-	  
+
 	   	\Extchoice schedulable: registeredSchedulables \circspot
 	   	requestTerminationCall~.~mission~.~schedulable \then \\
 	   	\circblockopen
 		  	\circblockopen
 		  		get\_missionTerminating~.~mission?missionTerminating\prefixcolon(missionTerminating = \false) \then \\
-		  		set\_missionTerminating~.~mission~!~\true \then \\			
+		  		set\_missionTerminating~.~mission~!~\true \then \\
 		  		stop\_schedulables~.~mission \then \\
 				requestTerminationRet ~.~mission~.~schedulable~.~\false \then \\
 		  		RequestTerminationMeth\\

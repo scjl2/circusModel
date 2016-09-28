@@ -78,7 +78,8 @@ Execute \circdef  \\
 \t1\circblockopen
   	\circblockopen
 		\circblockopen
-		%%%%%PARSING%%%%%% \circwait valueOf(startTime) \circseq \\
+		%%%%%PARSING%%%%%%
+    \circwait valueOf(startTime) \circseq \\
 			\circif deadlineMissHandler \neq nullSchedulableId \circthen \\
   			\t1	RunningWithDeadlineDetection \\
   			\circelse deadlineMissHandler = nullSchedulableId \circthen \\
@@ -122,7 +123,8 @@ PeriodicClock \circdef \\
 \t1 \circmu X \circspot
   \circblockopen
 	\circblockopen
-	%%%%%PARSING%%%%%%	\circwait valueOf(period) \circseq \\
+	%%%%%PARSING%%%%%%
+  \circwait valueOf(period) \circseq \\
 		release~.~schedulable \then \\
 		X
 	\circblockclose \\
@@ -213,7 +215,7 @@ DeadlineClock \circdef \circval index : \nat \circspot \\
 
 
     \circblockclose  \\
-    \circseq %%%%%PARSING%%%%%% 
+     %%%%%PARSING%%%%%% \circseq
     \circinterrupt
     \circblockopen
     		end\_releases~.~schedulable \then \\

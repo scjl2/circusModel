@@ -77,7 +77,7 @@ Execute \circdef  \\
    \lpar \{pending, data\}  |\lchanset end\_releases \rchanset| \emptyset \rpar \\
 SignalTermination\\
 \circblockclose
-%%%%PARSING%%%%  
+%%%%PARSING%%%%
 \lpar \{pending, data\} | DeadlineClockSync \cup \lchanset  release.schedulable, releaseLong.schedulable \rchanset | \emptyset \rpar \\
 %%%%PARSING%%%%  \lpar \{pending, data\} | DeadlineClockSync  | \emptyset \rpar \\
 \circblockopen
@@ -88,8 +88,8 @@ SignalTermination\\
       releaseLong~.~schedulable?data \then \Skip
     \circblockclose \circseq DeadlineClock
 \circblockclose
-\circseq%%%%%%%PARSING%%%%%
-\circinterupt
+%%%%%%%PARSING%%%%%\circseq
+\circinterrupt
 \circblockopen
     end\_releases.schedulable \then
     \Skip
