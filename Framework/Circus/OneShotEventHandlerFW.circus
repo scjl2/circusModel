@@ -136,7 +136,8 @@ DeadlineClock \circdef \\
 \t1	\circblockopen
 		\circblockopen
 			\circblockopen
-			%%%%PARSING%%%%\circwait valueOf(deadline) \circseq \\
+			%%%%PARSING%%%%
+			\circwait valueOf(deadline) \circseq \\
 				release~.~deadlineMissHandler \then \\
 				DeadlineClock
 			\circblockclose  \\
@@ -152,7 +153,8 @@ DeadlineClock \circdef \\
 			\circblockclose
 		\circblockclose
 	\circblockclose
-	\circseq %%%%PARSING%%%%  \circinterrupt
+	\circseq %%%%PARSING%%%%  
+	\circinterrupt
     \circblockopen
     		end\_releases~.~schedulable \then \\
 	    	\Skip
@@ -164,7 +166,8 @@ Scheduled \circdef \\
 \t1 get\_startTime~.~schedulable~?~startTime \then \\
 \t1 \circblockopen
   \circblockopen
-  %%%%%PARSING%%%%%\circwait valueOf(startTime) \\
+  %%%%%PARSING%%%%%
+  \circwait valueOf(startTime) \\
     release~.~schedulable \then \\
 		handleAsyncEventCall~.~schedulable \then \\
 	 	NotScheduled

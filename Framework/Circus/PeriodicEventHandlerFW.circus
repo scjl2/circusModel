@@ -190,7 +190,8 @@ DeadlineClock \circdef \circval index : \nat \circspot \\
 \t1 \circblockopen
 		\circblockopen
 			\circblockopen
-				%%%%%PARSING%%%%%%\circwait valueOf(deadline) \circseq \\
+				%%%%%PARSING%%%%%%
+				\circwait valueOf(deadline) \circseq \\
 				release~.~deadlineMissHandler \then \\
 				periodic\_release\_complete~.~schedulable~.~index \then \\
 				\Skip
@@ -204,14 +205,16 @@ DeadlineClock \circdef \circval index : \nat \circspot \\
 		\interleave
 		\circblockopen
 			\circblockopen
-				%%%%%PARSING%%%%%%\circwait valueOf(period) \circseq \\
+				%%%%%PARSING%%%%%%
+				\circwait valueOf(period) \circseq \\
 				DeadlineClock(index + 1)
 			\circblockclose  \\
 		\circblockclose
 
 
     \circblockclose  \\
-    \circseq %%%%%PARSING%%%%%% \circinterrupt
+    \circseq %%%%%PARSING%%%%%% 
+    \circinterrupt
     \circblockopen
     		end\_releases~.~schedulable \then \\
     		periodic\_release\_complete~.~schedulable~?~index \then \\

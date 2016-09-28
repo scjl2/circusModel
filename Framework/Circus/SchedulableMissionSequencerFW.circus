@@ -221,11 +221,7 @@ Finish ~ \circdef ~\\
 \end{circusaction}
 %
 \begin{circusaction}
-<<<<<<< HEAD
-  \circspot \circblockopen\circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\
-=======
 	\circspot \circblockopen\circmu X \circspot \lschexpract SMS\_Init \rschexpract \circseq Start \circseq\\
->>>>>>> c6b8ab0598fdb7731c2f2dd18a7774c139201c53
   	\circblockopen \circif applicationTerminating = \false \circthen \\
   	 \t2 \circblockopen Execute \circseq Cleanup \circseq X\circblockclose \\
   	 \circelse applicationTerminating = \true \circthen \\
