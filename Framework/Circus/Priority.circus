@@ -13,3 +13,7 @@ MaxPriority - MinPriority \geq 28 \\
 PriorityLevel == MinPriority \upto MaxPriority
 \end{zed}
 %
+\begin{axdef}
+NormPriority : PriorityLevel
+\end{axdef}
+
