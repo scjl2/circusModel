@@ -3,37 +3,36 @@
 
 include "FrameworkProcess.csp"
 
+include "AppChan.csp"
+
 --****************************************************************************************************************************************************************************************************
 --*******************************************************************************************APLICATION***********************************************************************************************
 --****************************************************************************************************************************************************************************************************
 
 -- SAFELET: MY APP
 
-nametype SafeltAppSync = 
-    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
 
-
-MyApp  = 
+MyApp  =
 	(
-	 	Methods_s 
-	)		
+	 	Methods_s
+	)
  /\	(end_safelet_app -> SKIP)
 
-InitializeApplication_s =  
-     initializeApplicationCall -> 
+InitializeApplication_s =
+     initializeApplicationCall ->
      initializeApplicationRet ->
      SKIP
 
-GetSequencer_s = 
-	getSequencerCall -> 
+GetSequencer_s =
+	getSequencerCall ->
 	getSequencerRet!TopLevelSequencerId ->
 	SKIP
 
-Methods_s = 
- ( 
+Methods_s =
+ (
 	GetSequencer_s
-	[] 
-	InitializeApplication_s 
+	[]
+	InitializeApplication_s
  ); Methods_s
 
 
@@ -44,23 +43,19 @@ channel set_sequencer_done : SchedulableID.Bool
 
 nametype MissionSequencerAppStateSync = {| get_sequencer_done, set_sequencer_done |}
 
-nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
-
-
-
-MainSequencerApp = 
+MainSequencerApp =
 (
-  Methods_tlms 
-    [|MissionSequencerAppStateSync|] 
-  DoneController_tlms(False) 
+  Methods_tlms
+    [|MissionSequencerAppStateSync|]
+  DoneController_tlms(False)
 )\ MissionSequencerAppStateSync
 /\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
-   
 
-DoneController_tlms(done) =
+
+DoneController_tlms(doneVar) =
 (
-	get_sequencer_done.TopLevelSequencerId!done ->
-	DoneController_tlms(done)
+	get_sequencer_done.TopLevelSequencerId!doneVar ->
+	DoneController_tlms(doneVar)
 )
 []
 (
@@ -69,66 +64,64 @@ DoneController_tlms(done) =
 )
 
 
-GetNextMission_tlms = 
-    getNextMissionCall.TopLevelSequencerId -> 
-	get_sequencer_done.TopLevelSequencerId?done ->
+GetNextMission_tlms =
+    getNextMissionCall.TopLevelSequencerId ->
+	get_sequencer_done.TopLevelSequencerId?doneVar ->
 	(
-	  if done == False then
+	  if doneVar == False then
 	  (
 		set_sequencer_done.TopLevelSequencerId!True ->
 		getNextMissionRet.TopLevelSequencerId!MissionId  ->
 		SKIP
       )
-	  else 
+	  else
 	  (
 			getNextMissionRet.TopLevelSequencerId!nullMissionId ->
 		    SKIP
 	  )
     )
 
-Methods_tlms = 
+Methods_tlms =
  (
-	GetNextMission_tlms 
- ) ; Methods_tlms  
-
-
-
+	GetNextMission_tlms
+ ) ; Methods_tlms
 
 
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
-nametype MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet   |}
-
-MainMissionApp = 
-( 
+MainMissionApp =
+(
 	(
-		(Methods_tlm1 )
-		/\ 
+		--(Methods_tlm1(MissionId) )
+		--/\
 		(end_mission_app.MissionId -> SKIP )
-	) 
+	)
 )
 
-InitializePhase_tlm1 = 
-  initializeCall.MissionId   -> 
-  register!OneShotEventHandler1Id!MissionId  -> 
-  register!OneShotEventHandler2Id!MissionId  -> 
-   register!OneShotEventHandler3Id!MissionId  -> 
-  initializeRet.MissionId  -> 
- SKIP
+APPInitializePhase(mission) =
+--InitializePhase_tlm1 =
+  initializeCall.MissionId   ->
+  register!OneShotEventHandler1Id!MissionId  ->
+  register!OneShotEventHandler2Id!MissionId  ->
+   register!OneShotEventHandler3Id!MissionId  ->
+  initializeRet.MissionId  ->
+ --SKIP
+ MissionPhase(mission, {OneShotEventHandler1Id, OneShotEventHandler2Id, OneShotEventHandler3Id})
 
-CleanupPhase_tlm1 = 
+APPCleanupMission(mission) =
+--CleanupPhase_tlm1 =
  cleanupMissionCall.MissionId  ->
  cleanupMissionRet.MissionId?false ->
  SKIP
 
-Methods_tlm1 = 
-( 
-	InitializePhase_tlm1 
-	[] 
-	CleanupPhase_tlm1
-) ; Methods_tlm1
-  
+--Methods_tlm1(mission) =
+--(
+--	APPInitializePhase(mission)
+--	[]
+--	APPCleanupMission(mission)
+--) ; Methods_tlm1(mission)
+
 
 --OneShotEventHandler1App
 OneShotEventHandler1App =
@@ -141,10 +134,10 @@ Methods_oseh1 =
 	handlerAsyncEvent_oseh1 ; Methods_oseh1
 
 handlerAsyncEvent_oseh1 =
-	handleAsyncEventCall.OneShotEventHandler1Id -> 
+	handleAsyncEventCall.OneShotEventHandler1Id ->
 
     handleAsyncEventRet.OneShotEventHandler1Id ->
-    SKIP  
+    SKIP
 
 --OneShotEventHandler2App
 OneShotEventHandler2App =
@@ -157,10 +150,10 @@ Methods_oseh2 =
 	handlerAsyncEvent_oseh2 ; Methods_oseh2
 
 handlerAsyncEvent_oseh2 =
-	handleAsyncEventCall.OneShotEventHandler2Id -> 
+	handleAsyncEventCall.OneShotEventHandler2Id ->
 
     handleAsyncEventRet.OneShotEventHandler2Id ->
-    SKIP  
+    SKIP
 
 
 --OneShotEventHandler3App
@@ -174,21 +167,17 @@ Methods_oseh3 =
 	handlerAsyncEvent_oseh3 ; Methods_oseh3
 
 handlerAsyncEvent_oseh3 =
-	handleAsyncEventCall.OneShotEventHandler3Id -> 
-	requestTermination.MissionId.OneShotEventHandler3Id  -> 
-    handleAsyncEventRet.OneShotEventHandler3Id ->
-    SKIP  
-
-
-
-
-nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
+	handleAsyncEventCall.OneShotEventHandler3Id ->
+	requestTerminationCall.MissionId.OneShotEventHandler3Id ->
+  requestTerminationRet.MissionId.OneShotEventHandler3Id?b ->
+  handleAsyncEventRet.OneShotEventHandler3Id ->
+  SKIP
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
 ThreeThreads =
-(  
+(
 	MyApp
 	|||
 	MainSequencerApp
@@ -200,32 +189,56 @@ ThreeThreads =
 	OneShotEventHandler2App
 	|||
 	OneShotEventHandler3App
-)	
-
-
---nametype APEHSync = {| release.Tier0APEHId |}
-nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
-
-Program(topLevelSequencerIDs, tier0) = 
-(  
-	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , --APEHSync, 
-		 {|end_mission_app, setCeilingPriority, requestTermination, end_oneshotEventHandler_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
-	ThreeThreads	
 )
 
-TestProgram = 
+
+Program(topLevelSequencerIDs, tier0) =
+(
+	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHAppSync , --APEHSync,
+		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+	ThreeThreads
+)
+
+TestProgram =
 	Program(
 				{TopLevelSequencerId},
 
 				{ (MissionId , ({}, {}, {(OneShotEventHandler1Id, 1, 0, nullSchedulableId),
 											(OneShotEventHandler2Id, 2, 0, nullSchedulableId),
-												(OneShotEventHandler3Id, 3, 0, nullSchedulableId)},  {}, {})  )   }	                 
-            )
+												(OneShotEventHandler3Id, 3, 0, nullSchedulableId)},  {}, {})  )   }
+)
+
+Program2 =
+(
+  (
+    (
+      sbdia(SafeletFW [| SafeltAppSync |] MyApp)
+        [|SafeletTierSync|]
+      sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
+    )
+      [|TierSync|]
+    (
+      sbdia( MissionFW(MissionId) [| MissionAppSync |] MainMissionApp)
+        [|MissionSync|]
+      (
+        (
+          sbdia(OneShotEventHandlerFW(OneShotEventHandler1Id, 1, 0, nullSchedulableId) [| OSEHAppSync |] OneShotEventHandler1App )
+            [|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+          sbdia(OneShotEventHandlerFW(OneShotEventHandler2Id, 2, 0, nullSchedulableId) [| OSEHAppSync |] OneShotEventHandler2App )
+        )
+          [|{|  activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+        sbdia(OneShotEventHandlerFW(OneShotEventHandler3Id, 3, 0, nullSchedulableId) [| OSEHAppSync |] OneShotEventHandler3App )
+      )
+    )
+  )
+    [| GSRSync |]
+  GlobalSchedulableRegulator
+)
 
 
+--assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
+--assert sbisim(diamond(TestProgram)) :[ divergence free ]
+--assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
 
-
-assert sbisim(diamond(TestProgram)) ; Loop :[ deadlock free [FD] ]
-assert sbisim(diamond(TestProgram)) :[ divergence free ]
-assert sbisim(diamond(TestProgram)) :[ deterministic  [FD] ]
+assert Program2 ; Loop :[ deadlock free [FD] ]

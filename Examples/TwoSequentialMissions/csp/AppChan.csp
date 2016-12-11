@@ -1,0 +1,19 @@
+-- AppChan
+
+nametype SafeltAppSync =
+    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
+
+nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
+
+
+nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet
+							getSequencer, terminationPendingCall, terminationPendingRet, setCeilingPriority, end_mission_app |}
+
+nametype APEHAppSync = {| handleAsyncEventCall, handleAsyncEventRet,  end_aperiodicEventHandler_app|}
+
+nametype OSEHAppSync = {|  handleAsyncEventCall, handleAsyncEventRet, descheduleCall, descheduleRet,
+                           scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet, end_oneshotEventHandler_app |}
+
+nametype PEHAppSync = {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |}
+
+nametype MTAppSync = {| runCall, runRet,  end_managedThread_app, isAlive  |}

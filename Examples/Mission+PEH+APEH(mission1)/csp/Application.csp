@@ -3,15 +3,13 @@
 
 include "FrameworkProcess.csp"
 
+include "AppChan.csp"
+
 --********************************************************
 --************************APLICATION**********************
 --********************************************************
 
 -- SAFELET: MY APP
-
-nametype SafeltAppSync =
-    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
-
 
 MyApp  =
 	(
@@ -43,9 +41,6 @@ channel get_sequencer_done : SchedulableID.Bool
 channel set_sequencer_done : SchedulableID.Bool
 
 nametype MissionSequencerAppStateSync = {| get_sequencer_done, set_sequencer_done |}
-
-nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
-
 
 
 MainSequencerApp =
@@ -97,9 +92,6 @@ Methods_tlms =
 
 
 --TOP LEVEL MISSION: TOP MISSION 1
-
-nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet
-							getSequencer, terminationPendingCall, terminationPendingRet, end_mission_app |}
 
 
 MainMissionApp =
@@ -224,14 +216,11 @@ Mission_PEH_APEH =
 )
 
 
-nametype APEHSync = {| handleAsyncEventCall, handleAsyncEventRet,  end_aperiodicEventHandler_app|}
---nametype OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
-
 Program(topLevelSequencerIDs, tier0) =
 
 (
 	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  APEHSync,
+		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  APEHAppSync,
 		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app,
 		 	end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
 	Mission_PEH_APEH
@@ -251,24 +240,15 @@ Program2 =
         [|MissionSync|]
    -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
       (
-        sbdia(AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHSync |] Tier0APEHApp)
+        sbdia(AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] Tier0APEHApp)
           [|{| release.Tier0APEHId , activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
-        sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |} |] Tier0OPEHApp)
+        sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| PEHAppSync |] Tier0OPEHApp)
       )
     )
   )
     [| GSRSync |]
 GlobalSchedulableRegulator
 )
-
-
-TestProgram =
-	Program(
-				{TopLevelSequencerId},
-
-				{ (Tier0MissionId , ({}, {(Tier0APEHId, aperiodic, 0, nullSchedulableId)}, {},  {(Tier0PEHId, 1,0,0,nullSchedulableId)}, {})  )   }
-            )
-
 
 
 

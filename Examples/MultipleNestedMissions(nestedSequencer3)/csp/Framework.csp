@@ -6,15 +6,17 @@ channel a
 Loop = a-> Loop
 
 channel circwait : num
-channel  throw : ExceptionType 
+channel  throw : ExceptionType
 
 include "SafeletFW.csp"
+
+include "GlobalSchedulables.csp"
 
 include "MissionSequencerSharedChan.csp"
 
 include "TopLevelMissionSequencerFW.csp"
 
-include "MissionFW.csp"
+include "MissionFW_NoChaos2.csp"
 
 include "ManagedSchedulableSharedChan.csp"
 
@@ -28,4 +30,4 @@ include "OneShotEventHandlerFW.csp"
 
 include "PeriodicEventHandlerFW.csp"
 
-include "ManagedThreadFW.csp" 
+include "ManagedThreadFW.csp"

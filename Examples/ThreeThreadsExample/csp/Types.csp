@@ -1,20 +1,31 @@
 --GLOBALS
 transparent sbisim, diamond
 
-datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId 
+sbdia(P) = sbisim(diamond(P))
+
+datatype SchedulableID = nullSequencerId|nullSchedulableId| TopLevelSequencerId
                           | ManagedThread1Id |   ManagedThread2Id     | ManagedThread3Id
+                        
+
+
+TopLevelSequencerIDs = {TopLevelSequencerId}
+MissionSequencerIDs = {TopLevelSequencerId }
+MissionSequencerIDs_null = union(MissionSequencerIDs, {nullSequencerId})
+SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencerIDs))
+
+MissionIDs = diff(MissionID, {nullMissionId})
+
 
 datatype MissionID = nullMissionId
-                    | MissionId                  
+                    | MissionId
 
-datatype ExceptionType = interruptedException | 
-                          illegalMonitorStateException | 
-                          illegalArgumentException | 
-                          illegalThreadStateException | 
-                          illegalStateException | 
+datatype ExceptionType = interruptedException |
+                          illegalMonitorStateException |
+                          illegalArgumentException |
+                          illegalThreadStateException |
+                          illegalStateException |
                           ceilingViolationException
 nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
 maxNum = 2
 nametype num = {0..maxNum}
-
