@@ -5,6 +5,9 @@ nametype SafeltAppSync =
 
 nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
+nametype NestedMissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app, done_schedulable|}
+
+
 
 nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet
 							getSequencer, terminationPendingCall, terminationPendingRet, setCeilingPriority, end_mission_app |}

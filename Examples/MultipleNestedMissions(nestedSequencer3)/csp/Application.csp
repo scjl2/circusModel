@@ -63,21 +63,21 @@ DoneController_tlms(doneVar) =
 
 
 GetNextMission_tlms =
-    getNextMissionCall.TopLevelSequencerId ->
+  getNextMissionCall.TopLevelSequencerId ->
 	get_sequencer_done.TopLevelSequencerId?doneVar ->
 	(
 	  if doneVar == False then
 	  (
-		set_sequencer_done.TopLevelSequencerId!True ->
-		getNextMissionRet.TopLevelSequencerId!Tier0MissionId  ->
-		SKIP
-      )
+			set_sequencer_done.TopLevelSequencerId!True ->
+			getNextMissionRet.TopLevelSequencerId!Tier0MissionId  ->
+			SKIP
+    )
 	  else
 	  (
-			getNextMissionRet.TopLevelSequencerId!nullMissionId ->
+				getNextMissionRet.TopLevelSequencerId!nullMissionId ->
 		    SKIP
 	  )
-    )
+  )
 
 Methods_tlms =
  (
@@ -183,27 +183,26 @@ ReleasesController_t0ms(releases ) =
 	ReleasesController_t0ms(newReleases )
 )
 
-
 GetNextMission_t0ms =
-    getNextMissionCall.Tier0SequencerId ->
-	  get_sequencer_releases.Tier0SequencerId?releases ->
+  getNextMissionCall.Tier0SequencerId ->
+	get_sequencer_releases.Tier0SequencerId?releases ->
 	if releases == 0 then
-    (
+  (
 		set_sequencer_releases.Tier0SequencerId!1 ->
 		getNextMissionRet.Tier0SequencerId!Tier1MissionAId ->
 		SKIP
 	)
-    else if releases == 1 then
-	  (
+  else if releases == 1 then
+	(
 			set_sequencer_releases.Tier0SequencerId!2 ->
 			getNextMissionRet.Tier0SequencerId!Tier1MissionBId ->
 			SKIP
-		)
-	  else
-		(
+	)
+	else
+	(
 			getNextMissionRet.Tier0SequencerId!nullMissionId ->
 			SKIP
-		)
+	)
 
 
 Methods_t0ms =
@@ -308,42 +307,50 @@ MultipleNestedMissions =
 )
 
 
+Tier0App =
+	(
+		sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
+			[|MissionSync|]
+		sbdia( SchedulableMissionSequencerFW(Tier0SequencerId) [| MissionSequencerAppSync |] Tier0MissionSequencerApp )
+	)
 
-
+Tier1App =
+	(
+		(
+			sbdia( MissionFW(Tier1MissionAId) [| MissionAppSync |] Tier1MissionAApp)
+				[|MissionSync|]
+			sbdia( ManagedThreadFW(Tier1ManagedThreadAId) [| MTAppSync |] Tier1ManagedThreadAApp )
+		)
+			[|{| done_safeletFW, done_toplevel_sequencer |}|]
+		(
+			sbdia( MissionFW(Tier1MissionBId) [| MissionAppSync |] Tier1MissionBApp)
+				[|MissionSync|]
+			sbdia( ManagedThreadFW(Tier1ManagedThreadBId) [| MTAppSync |] Tier1ManagedThreadBApp )
+		)
+	)
 
 Program2 =
 (
       (
-          (
             (
               sbdia(SafeletFW [| SafeltAppSync |] MyApp)
                   [|SafeletTierSync|]
                 sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
               )
                 [|TierSync|]
-              (
-                sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
-                  [|MissionSync|]
-                sbdia( SchedulableMissionSequencerFW(Tier0SequencerId) [| MissionSequencerAppSync |] Tier0MissionSequencerApp )
-              )
-            )
-              [|Tier1Sync|]
             (
-              (
-                sbdia( MissionFW(Tier1MissionAId) [| MissionAppSync |] Tier1MissionAApp)
-                  [|MissionSync|]
-                sbdia( ManagedThreadFW(Tier1ManagedThreadAId) [| MTAppSync |] Tier1ManagedThreadAApp )
-              )
-                [|{| done_safeletFW, done_toplevel_sequencer |}|]
-              (
-                sbdia( MissionFW(Tier1MissionBId) [| MissionAppSync |] Tier1MissionBApp)
-                  [|MissionSync|]
-                sbdia( ManagedThreadFW(Tier1ManagedThreadBId) [| MTAppSync |] Tier1ManagedThreadBApp )
-              )
-            )
+						 Tier0App
+              [|Tier1Sync|]
+            Tier1App
+						)
           )
           [| GSRSync |]
 GlobalSchedulableRegulator
 )
+
+
+assert Tier0App ; Loop :[ deadlock free [FD] ]
+
+assert Tier1App ; Loop :[ deadlock free [FD] ]
 
 assert Program2 ; Loop :[ deadlock free [FD] ]
