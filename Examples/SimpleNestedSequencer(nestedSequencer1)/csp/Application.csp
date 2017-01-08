@@ -1,0 +1,269 @@
+
+--include "Framework.csp"
+
+include "FrameworkProcess.csp"
+
+include "AppChan.csp"
+
+--******************************
+--********APLICATION************
+--******************************
+
+-- SAFELET: MY APP
+
+nametype MyAppChanSet =
+  {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
+
+MySafelet  =
+	(
+	 	Methods_s
+	)
+ /\	(end_safelet_app -> SKIP)
+
+GetSequencer_s =
+	getSequencerCall ->
+	getSequencerRet!TopLevelSequencerId ->
+	SKIP
+
+InitializeApplication_s =
+  initializeApplicationCall ->
+  initializeApplicationRet ->
+  SKIP
+
+Methods_s =
+ (
+	GetSequencer_s
+	[]
+	InitializeApplication_s
+ ); Methods_s
+
+
+--TOP LEVEL SEQUENCER: MY SEQUENCER
+
+channel get_sequencer_done : SchedulableID.Bool
+channel set_sequencer_done : SchedulableID.Bool
+
+nametype MissionSequencerAppStateSync = {| get_sequencer_done, set_sequencer_done |}
+
+
+nametype MySequencerAppChanSet =
+  union(MissionSequencerAppStateSync,MissionSequencerAppSync)
+
+MainMissionSequencerApp =
+(
+  Methods_tlms
+    [|MissionSequencerAppStateSync|]
+  DoneController_tlms(False)
+)\ MissionSequencerAppStateSync
+/\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
+
+
+DoneController_tlms(doneVar) =
+(
+	get_sequencer_done.TopLevelSequencerId!doneVar ->
+	DoneController_tlms(doneVar)
+)
+[]
+(
+	set_sequencer_done.TopLevelSequencerId?newDone ->
+	DoneController_tlms(newDone)
+)
+
+
+GetNextMission_tlms =
+  getNextMissionCall.TopLevelSequencerId ->
+	get_sequencer_done.TopLevelSequencerId?doneVar ->
+	(
+	  if doneVar == false then
+	  (
+		  set_sequencer_done.TopLevelSequencerId!true ->
+		  getNextMissionRet.TopLevelSequencerId!MainMissionID  ->
+		  SKIP
+    )
+	  else
+	  (
+			getNextMissionRet.TopLevelSequencerId!nullMissionId ->
+		  SKIP
+	  )
+  )
+
+Methods_tlms =
+ (
+	GetNextMission_tlms
+ ) ; Methods_tlms
+
+
+
+
+
+
+--TOP LEVEL MISSION: TOP MISSION 1
+
+MainMissionApp =
+(
+	--(Methods_tlm1 )
+--	/\
+	(end_mission_app.MainMissionID -> SKIP )
+)
+
+
+APPInitializePhase(mission) =
+if mission == MainMissionID then
+(
+  initializeCall.MainMissionID   ->
+  register!NestedMissionSequencerID!MainMissionID ->
+  initializeRet.MainMissionID  ->
+ MissionPhase(MainMissionID, {NestedMissionSequencerID})
+)
+else if mission == NestedMissionID then
+(
+initializeCall.NestedMissionID  ->
+register!NestedOSEHID!NestedMissionID ->
+
+initializeRet.NestedMissionID ->
+MissionPhase(NestedMissionID, {NestedOSEHID})
+)
+else SKIP
+
+APPCleanupMission(mission) =
+  if mission == MainMissionID then
+  (
+  cleanupMissionCall.MainMissionID  ->
+  cleanupMissionRet.MainMissionID?false ->
+  SKIP
+  )
+  else if mission == NestedMissionID then
+  (
+  cleanupMissionCall.NestedMissionID ->
+  cleanupMissionRet.NestedMissionID!true ->
+ 	SKIP
+  )
+  else SKIP
+
+
+--NESTED MISSION SEQUENCER
+
+
+
+NestedMissionSequencerApp =
+(
+  Methods_nms
+    [|MissionSequencerAppStateSync|]
+    DoneController_nms(False)
+) \MissionSequencerAppStateSync
+/\ (end_sequencer_app.NestedMissionSequencerID -> SKIP)
+
+
+DoneController_nms(doneVar) =
+(
+	get_sequencer_done.NestedMissionSequencerID!doneVar ->
+	DoneController_nms(doneVar)
+)
+[]
+(
+	set_sequencer_done.NestedMissionSequencerID?newDone ->
+	DoneController_nms(newDone)
+)
+
+GetNextMission_nms =
+  getNextMissionCall.NestedMissionSequencerID ->
+	get_sequencer_done.NestedMissionSequencerID?doneVar ->
+	if doneVar == False then
+  (
+		set_sequencer_done.NestedMissionSequencerID!True ->
+		getNextMissionRet.NestedMissionSequencerID!NestedMissionID ->
+		SKIP
+	)
+	else
+	(
+		getNextMissionRet.NestedMissionSequencerID!nullMissionId ->
+		SKIP
+	)
+
+Methods_nms =
+(
+	GetNextMission_nms
+) ; Methods_nms
+
+
+
+
+-- NESTED MISSION: Nested Mission
+
+
+NestedMissionAp =
+(
+	(
+	--	Methods_nm
+	--	/\
+		(end_mission_app.NestedMissionID -> SKIP )
+	)
+)
+
+-- Nested one shot
+
+channel one_shot_release : SchedulableID
+
+NestedOneShotEventHandlerApp =
+(
+  Methods_noseh
+)
+/\ (end_oneshotEventHandler_app.NestedOSEHID -> SKIP)
+
+Methods_noseh =
+  handlerAsyncEvent_noseh ; Methods_noseh
+
+handlerAsyncEvent_noseh =
+  handleAsyncEventCall.NestedOSEHID ->
+  one_shot_release.NestedOSEHID ->
+  requestTerminationCall.NestedMissionID.NestedOSEHID ->
+  requestTerminationRet.NestedMissionID.NestedOSEHID?_ ->
+  handleAsyncEventRet.NestedOSEHID ->
+  SKIP
+
+------------------------------------------------------------------------------
+Tier0App =
+(
+	sbdia( MissionFW(MainMissionID) [| MissionAppSync |] MainMissionApp)
+	 [|MissionSync|]
+  sbdia( SchedulableMissionSequencerFW(NestedMissionSequencerID) [| MissionSequencerAppSync |] NestedMissionSequencerApp )
+
+)
+
+Tier1App =
+(
+	sbdia( MissionFW(NestedMissionID) [| MissionAppSync |] NestedMissionAp)
+		[|MissionSync|]
+ sbdia( OneShotEventHandlerFW(NestedOSEHID, 2, 0, nullSchedulableId) [| OSEHAppSync |] NestedOneShotEventHandlerApp )
+)
+
+Program2 =
+(
+    (
+      (
+        (
+          sbdia(SafeletFW [| SafeltAppSync |] MySafelet)
+            [|SafeletTierSync|]
+          sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainMissionSequencerApp)
+        )
+          [|TierSync|]
+        Tier0App
+        )
+          [|Tier0Sync|]
+        Tier1App
+    )
+    [| GSRSync |]
+  GlobalSchedulableRegulator
+)
+
+
+assert Tier0App ; Loop :[ deadlock free [FD] ]
+
+assert Tier1App ; Loop :[ deadlock free [FD] ]
+
+assert Program2 ; Loop :[ deadlock free [FD] ]
+
+
+assert SKIP [F= Program2 \ Events
+assert Program2 :[ divergence free ]
+assert Program2 :[ deterministic  [FD] ]
