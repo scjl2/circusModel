@@ -187,10 +187,6 @@ NestedTiers(nestedTierIDs) =
 
 nametype TierSync = {| start_mission.Tier0MissionId, done_mission.Tier0MissionId, done_safeletFW, done_toplevel_sequencer |}
 
-nametype Tier1Sync = {| start_mission.Tier1MissionAId, done_mission.Tier1MissionAId,
-                        start_mission.Tier1MissionBId, done_mission.Tier1MissionBId,
-                        done_safeletFW, done_toplevel_sequencer |}
-
 nametype NestedTeirSync = {| start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
 
 

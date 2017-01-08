@@ -24,8 +24,7 @@ SchedulableMissionSequencerFW(sequencer)  =
   SchedulableMissionSequencerState(sequencer, nullMissionId, True, True)
     [| SMSStateSync |]
   SchedulableMissionSequencerBehaviour(sequencer)
-)--\SMSStateSync
-
+)\SMSStateSync
 
 SchedulableMissionSequencerState(sequencer, currentMission, continueAbove, continueBelow) =
 (

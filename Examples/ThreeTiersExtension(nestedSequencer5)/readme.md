@@ -9,6 +9,7 @@ Matt Luckcuck <ml881@york.ac.uk> 2014
 ### Features:
 	* Three tiers
 	* Multiple schedulable objects at each tier
+	* Sequential `Mission`s
 	* `requestTermination` method
 	* Use of all types of schedulable object
 

@@ -15,3 +15,12 @@ nametype OSEHAppSync = {| descheduleCall, descheduleRet, scheduleNextRelease, ge
 nametype PEHAppSync = {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |}
 
 nametype MTAppSync = {| runCall, runRet,  end_managedThread_app, isAlive  |}
+
+nametype Tier0Sync =
+  {| start_mission.Tier1MissionAId, done_mission.Tier1MissionAId,
+     initializeRet.Tier1MissionAId, requestTerminationCall.Tier1MissionAId.Tier0SequencerId ,
+      requestTerminationRet.Tier1MissionAId.Tier0SequencerId ,
+     start_mission.Tier1MissionBId, done_mission.Tier1MissionBId,
+     initializeRet.Tier1MissionBId, requestTerminationCall.Tier1MissionBId.Tier0SequencerId ,
+      requestTerminationRet.Tier1MissionBId.Tier0SequencerId ,
+     done_safeletFW, done_toplevel_sequencer |}

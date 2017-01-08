@@ -146,12 +146,6 @@ SKIP
 
 
 
-
-
-
-
-
-
 --NESTED MISSION SEQUENCER
 
 channel get_sequencer_releases : SchedulableID.num
@@ -334,13 +328,13 @@ Program2 =
       (
             (
               sbdia(SafeletFW [| SafeltAppSync |] MyApp)
-                  [|SafeletTierSync|]
-                sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
-              )
-                [|TierSync|]
+                [|SafeletTierSync|]
+              sbdia(TopLevelMissionSequencers({TopLevelSequencerId}) [|MissionSequencerAppSync|] MainSequencerApp)
+            )
+              [|TierSync|]
             (
 						 Tier0App
-              [|Tier1Sync|]
+              [|Tier0Sync|]
             Tier1App
 						)
           )

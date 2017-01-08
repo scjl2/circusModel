@@ -138,10 +138,10 @@ PeriodicClock \circdef \\
 Release \circdef \circval index : \nat \circspot \\
 \t1 \circif missedReleases = 0 \circthen \\
 \t2 \circblockopen
-	release~.~schedulable \then \\
-	handleAsyncEventCall~.~schedulable \then \\
-	\Skip
-    \circblockclose
+	  release~.~schedulable \then \\
+	  handleAsyncEventCall~.~schedulable \then \\
+	  \Skip
+  \circblockclose
 \t1 \circelse missedReleases \neq 0 \circthen \\
 \t2 \circblockopen
 	handleAsyncEventCall~.~schedulable \then \\
@@ -222,11 +222,11 @@ DeadlineClock \circdef \circval index : \nat \circspot \\
 \begin{circusaction}
 SignalTermination \circdef \\
 \t1	signalTerminationCall~.~schedulable\then\\
-\t1 	set\_periodicTerminating~.~schedulable~!~\true \then \\
+\t1 set\_periodicTerminating~.~schedulable~!~\true \then \\
 \t1	end\_releases~.~schedulable \then\\
 \t1	signalTerminationRet~.~schedulable \then\\
 \t1	done\_schedulable~.~schedulable \then\\
-\t1	\Skip\\
+\t1	\Skip \\
 \end{circusaction}
 %
 \begin{circusaction}

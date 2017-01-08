@@ -41,24 +41,24 @@ Start \circdef\\
 \t1  \circblockopen
 	done\_toplevel\_sequencer \then \\
 	applicationTerminating := \true \\
-      \circblockclose 
+      \circblockclose
 \end{circusaction}
 %
 
 \begin{circusaction}
 Register \circdef\\
   register~.~schedulable~?~mID \then\\
-  controllingMission := mID  
+  controllingMission := mID
 \end{circusaction}
 %
 \begin{circusaction}
 Activate \circdef\\
-  activate\_schedulables~.~controllingMission \then\\  
+  activate\_schedulables~.~controllingMission \then\\
   \Skip
 \end{circusaction}
-% 
+%
 \begin{circusaction}
-   Execute ~ \circdef ~ Run  \lpar \emptyset | \lchanset runRet \rchanset | \emptyset \rpar Methods
+   Execute ~ \circdef ~ Run  \lpar \emptyset | \lchanset done\_schedulable \rchanset | \emptyset \rpar Methods
 \end{circusaction}
 %
 \begin{circusaction}
@@ -71,7 +71,7 @@ Run \circdef\\
 %
 \begin{circusaction}
 Methods \circdef \\
-	\circblockopen SignalTerminationMeth \circseq Methods\circblockclose  \extchoice runRet~.~schedulable \then \Skip  
+	\circblockopen SignalTerminationMeth \circseq Methods\circblockclose  \extchoice done\_schedulable~.~schedulable \then \Skip  
 
 \end{circusaction}
 %
@@ -79,7 +79,7 @@ Methods \circdef \\
 SignalTerminationMeth \circdef \\
   \t1 signalTerminationCall~.~schedulable \then \\
   \t1 signalTerminationRet~.~schedulable \then \Skip
-\end{circusaction}  
+\end{circusaction}
 %
 \begin{circusaction}
 Cleanup \circdef \\
@@ -88,17 +88,17 @@ Cleanup \circdef \\
 \end{circusaction}
 %
 \begin{circusaction}
-  \circspot \circblockopen \circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\ 
+  \circspot \circblockopen \circmu X \circspot \lschexpract Init \rschexpract \circseq Start \circseq\\
   		\circblockopen\circif applicationTerminating = \false \circthen \\
-  		\t2 \circblockopen Execute \circseq Cleanup \circseq X \circblockclose \\ 
+  		\t2 \circblockopen Execute \circseq Cleanup \circseq X \circblockclose \\
   		\circelse applicationTerminating = \true \circthen \\
   		\t2 \circblockopen
   			end\_managedThread\_app~.~schedulable \then\\
   			\Skip
-  		\circblockclose 
-  		\circfi \circblockclose \circblockclose 
+  		\circblockclose
+  		\circfi \circblockclose \circblockclose
 \end{circusaction}
-%  
+%
 \begin{circus}
   \circend
 \end{circus}

@@ -9,6 +9,7 @@ Matt Luckcuck <ml881@york.ac.uk> 2014
 
 ### Features:
 	* Three tiers
+	* Nested `MissionSequencer`s
 	* Multiple schedulable objects at each tier
 	* Use of `ManagedThread`
 
