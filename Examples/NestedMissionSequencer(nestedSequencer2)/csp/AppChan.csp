@@ -5,14 +5,39 @@ nametype SafeltAppSync =
 
 nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
-
 nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet
 							getSequencer, terminationPendingCall, terminationPendingRet, setCeilingPriority, end_mission_app |}
 
 nametype APEHAppSync = {| handleAsyncEventCall, handleAsyncEventRet,  end_aperiodicEventHandler_app|}
 
-nametype OSEHAppSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet, end_oneshotEventHandler_app |}
+nametype OSEHAppSync = {| handleAsyncEventCall, handleAsyncEventRet, descheduleCall, descheduleRet,
+                            scheduleNextRelease, getNextReleaseTimeCall,
+                            getNextReleaseTimeRet, end_oneshotEventHandler_app |}
 
 nametype PEHAppSync = {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |}
 
 nametype MTAppSync = {| runCall, runRet,  end_managedThread_app, isAlive  |}
+
+nametype TierSync = {|start_mission.TopMission1ID, done_mission.TopMission1ID,
+   done_safeletFW, done_toplevel_sequencer|}
+
+nametype Tier0Sync =
+  {|  start_mission.MyMission1ID, done_mission.MyMission1ID,
+     initializeRet.MyMission1ID,
+
+     requestTerminationCall.MyMission1ID.FirstMissionSequencerID ,
+      requestTerminationRet.MyMission1ID.FirstMissionSequencerID ,
+
+      start_mission.MyMission2ID, done_mission.MyMission2ID,
+         initializeRet.MyMission2ID,
+
+      requestTerminationCall.MyMission2ID.SecondMissionSequencerID ,
+      requestTerminationRet.MyMission2ID.SecondMissionSequencerID ,
+
+      start_mission.MyMission3ID, done_mission.MyMission3ID,
+      initializeRet.MyMission3ID,
+
+      requestTerminationCall.MyMission3ID.ThirdMissionSequencerID ,
+      requestTerminationRet.MyMission3ID.ThirdMissionSequencerID ,
+
+     done_safeletFW, done_toplevel_sequencer |}

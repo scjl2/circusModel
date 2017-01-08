@@ -7,9 +7,9 @@ channel nested_done_mission : MissionID.Bool
 
 
 TopLevelMissionSequencers(toplevelSequencerIDs) =
-([|{| done_safeletFW, done_toplevel_sequencer |}|] ms : toplevelSequencerIDs @ TopLevelMissionSequencerFW(ms)) 
+([|{| done_safeletFW, done_toplevel_sequencer |}|] ms : toplevelSequencerIDs @ TopLevelMissionSequencerFW(ms))
 
- 
+
 
 Missions(missions) = ([|{| done_safeletFW, done_toplevel_sequencer |}|] m : missions @ MissionFW(m))
 
@@ -23,7 +23,7 @@ CatchBroadcasts =
 SchedulableSequencerFWs(schedulableSequencers) =
 if schedulableSequencers != {} then
 (
-   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] sms : schedulableSequencers @ SchedulableMissionSequencerFW(sms) 
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] sms : schedulableSequencers @ SchedulableMissionSequencerFW(sms)
 )
 else
 (
@@ -33,7 +33,7 @@ else
 AperiodicEventHandlerFWs(aperiodicEventHanders) =
 if aperiodicEventHanders != {} then
 (
-   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (apeh, type, start, missHandler) : aperiodicEventHanders @ AperiodicEventHandlerFW(apeh, type, start, missHandler) 
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (apeh, type, start, missHandler) : aperiodicEventHanders @ AperiodicEventHandlerFW(apeh, type, start, missHandler)
 )
 else
 (
@@ -43,7 +43,7 @@ else
 OneShotEventHandlerFWs(oneShotEventHandlers)=
 if oneShotEventHandlers != {} then
   (
-   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (oseh, start, deadline, missHandler) : oneShotEventHandlers @ OneShotEventHandlerFW(oseh, start, deadline, missHandler ) 
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (oseh, start, deadline, missHandler) : oneShotEventHandlers @ OneShotEventHandlerFW(oseh, start, deadline, missHandler )
 )
 else
 (
@@ -53,7 +53,7 @@ else
 PeriodicEventHandlerFWs(periodicEventHandlers) =
 if periodicEventHandlers != {} then
   (
-   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (peh, period, start, deadline, missHandler) : periodicEventHandlers @ PeriodicEventHandlerFW(peh, period, start, deadline, missHandler) 
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] (peh, period, start, deadline, missHandler) : periodicEventHandlers @ PeriodicEventHandlerFW(peh, period, start, deadline, missHandler)
 )
 else
 (
@@ -63,17 +63,17 @@ else
 ManagedThreadFWs(managedThreads) =
 if managedThreads != {} then
   (
-   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] mt : managedThreads @ ManagedThreadFW(mt) 
+   [|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|] mt : managedThreads @ ManagedThreadFW(mt)
 )
 else
 (
-  CatchBroadcasts 
+  CatchBroadcasts
 )
 
 Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)=
 (
   (
-    ( 
+    (
       (
         (
           SchedulableSequencerFWs(schedulableSequencers)
@@ -93,13 +93,13 @@ Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,
 
 
 
-nametype SafeltSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, register, deregister, checkSchedulable|}
+nametype SafeltSync = {| done_safeletFW, start_toplevel_sequencer, done_toplevel_sequencer, register, deregister|}
 
 nametype TopLevelMissionSequencerSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  
-                   signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable, 
-                   cleanupSchedulableCall, cleanupSchedulableRet, register |} 
+nametype MissionSync = {| done_safeletFW, done_toplevel_sequencer,  register,
+                   signalTerminationCall, signalTerminationRet, activate_schedulables, done_schedulable,
+                   cleanupSchedulableCall, cleanupSchedulableRet, setCeilingPriority, requestTerminationCall, requestTerminationRet |}
 
 
 
@@ -119,7 +119,7 @@ SafeletTier(topLevelMissionSequencerIDs) =
   SafeletFW
   [|SafeletTierSync|]
   TopLevelMissionSequencers(topLevelMissionSequencerIDs)
-)  
+)
 
 
 
@@ -135,7 +135,7 @@ Tier(missionIDs,  (schedulableSequencers, aperiodicEventHanders, oneShotEventHan
 Tier0(missionIDs, managedSchedulableIDs  )=
 (
 Tier(missionIDs, managedSchedulableIDs )
---[| RouterSync |]  
+--[| RouterSync |]
 --Router(missionIDs)
 )
 --(apeh, type, start, missHandler) : aperiodicEventHanders
@@ -144,28 +144,16 @@ Tier(missionIDs, managedSchedulableIDs )
 
 
 nametype TierCommonChan = {|done_toplevel_sequencer, done_safeletFW|}
-nametype TierSpecificChan = {|start_mission, done_mission, initializeRet, requestTermination |}
+nametype TierSpecificChan = {|start_mission, done_mission, initializeRet, requestTerminationCall, requestTerminationRet |}
 
 --datatype TierInterface = TierSpecificChan.MissionID
 
 nametype MissionAndSchedulableChans = Union({MissionFWCHanSet, SchedulableMissionSequencerFWChanSet, MTFWChanSet, APEHFWChanSet, PEHFWChanSet, OSEHFWChanSet})
 
-nametype SchedulableEndApps =  {| end_managedThread_app, end_sequencer_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app, 
-                                  end_oneshotEventHandler_app  |} 
-
-NestedTiers(nestedTierIDs) =
-(
-  || (missionIDs, managedSchedulableIDs) : nestedTierIDs @ 
-      [ Union({ SchedulableEndApps,
-        diff(MissionAndSchedulableChans, {|start_mission, done_mission, initializeRet, requestTermination|} ),
-        {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x, register.s.x | s <-SchedulableID, x <- MissionID , member(x, missionIDs) |} }) 
-      ] 
-        Tier(missionIDs, managedSchedulableIDs)
-)
+nametype SchedulableEndApps =  {| end_managedThread_app, end_sequencer_app, end_periodicEventHandler_app, end_aperiodicEventHandler_app,
+                                  end_oneshotEventHandler_app  |}
 
 
-
- nametype TierSync = {|start_mission.TopMission1ID, done_mission.TopMission1ID, register, deregister, checkSchedulable, done_safeletFW, done_toplevel_sequencer|}
 
 nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_start_mission, nested_done_mission |}
 
@@ -178,55 +166,40 @@ nametype NestedTeirSync = {|start_mission, done_mission, initializeRet, nested_s
 
 
 --nametype NestedTeirChan = union(diff(TierChanSet, {|start_mission, done_mission|}), {|start_mission.missionB.FirstMissionSequencerID, done_mission.missionA.True, done_mission.missionA.False |})
- 
+
 
 --makeTierInterface(MIds) = TierSpecificChan.MIds
 
 p(nestedTierIDs) = {m | (missionIDs, managedSchedulableIDs) <-nestedTierIDs, m <- MissionID, member(m, missionIDs ) }
 
 
-TieredFramework(topLevelSequencerIDs, tier0MissionIDs, tier0SchedulableIDS, nestedTierIDs) =
-(  
-  SafeletTier(topLevelSequencerIDs)
-    [|TierSync|]
-  (
-    Tier0(tier0MissionIDs,tier0SchedulableIDS) 
-      [| union(
-                  TierCommonChan, 
-                  {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, p(nestedTierIDs) ) |}
-               )  
-      |]
-    NestedTiers( nestedTierIDs )
-  )
-)
+
 --{| start_mission.missionB, done_mission.missionB, initializeRet.missionB, done_toplevel_sequencer, done_safeletFW, requestTermination.missionB  |}
 
 --Tier0Chan || NestedTeirChan
                   --{}, {(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}
--- SimpleTieredFramework = 
+-- SimpleTieredFramework =
 --   TieredFramework({TopLevelSequencerId},
---                   {missionA}, 
+--                   {missionA},
 --                   ({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}),
 --                   {({missionB}, ({}, {}, {},  {}, {schedulableC}))}
 --                   )
 
 
- JustNestedTier = 
-   NestedTiers({({MyMission1ID}, ({}, {}, {},  {(MyPEH1Id, 1,1,0, nullSchedulableId)}, {}))}) 
-
+ 
 -- JustTier =
 --   Tier({missionA}, ({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}))
 
--- assert sbisim(diamond(JustNestedTier)) [T= STOP 
+-- assert sbisim(diamond(JustNestedTier)) [T= STOP
 
--- JustTiers =  
---  Tier0({missionA},({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB})) 
+-- JustTiers =
+--  Tier0({missionA},({FirstMissionSequencerID},{(schedulableA, aperiodic, 2, nullSchedulableId)}, {},  {}, {schedulableB}))
  --      [| union(
-  --                 TierCommonChan, 
+  --                 TierCommonChan,
      --              {| start_mission.x, done_mission.x, initializeRet.x, requestTermination.x  | x <- MissionID , member(x, p({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) ) |}
-        --        )  
+        --        )
       -- |]
- -- NestedTiers({({missionB}, ({}, {}, {},  {}, {schedulableC}))}) 
+ -- NestedTiers({({missionB}, ({}, {}, {},  {}, {schedulableC}))})
 
 -- assert sbisim(diamond(SimpleTieredFramework)) ; Loop :[ deadlock free [FD] ]
 -- assert sbisim(diamond(SimpleTieredFramework)) :[ divergence free ]
