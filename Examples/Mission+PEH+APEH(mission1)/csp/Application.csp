@@ -47,7 +47,7 @@ MainSequencerApp =
 (
   Methods_tlms
     [|MissionSequencerAppStateSync|]
-  DoneController_tlms(False)
+  DoneController_tlms(false)
 )\ MissionSequencerAppStateSync
 /\ (end_sequencer_app.TopLevelSequencerId -> SKIP)
 
@@ -65,21 +65,21 @@ DoneController_tlms(done) =
 
 
 GetNextMission_tlms =
-    getNextMissionCall.TopLevelSequencerId ->
+  getNextMissionCall.TopLevelSequencerId ->
 	get_sequencer_done.TopLevelSequencerId?done ->
 	(
-	  if done == False then
+	  if done == false then
 	  (
-		set_sequencer_done.TopLevelSequencerId!True ->
-		getNextMissionRet.TopLevelSequencerId!Tier0MissionId  ->
-		SKIP
-      )
+			set_sequencer_done.TopLevelSequencerId!true ->
+			getNextMissionRet.TopLevelSequencerId!Tier0MissionId  ->
+			SKIP
+    )
 	  else
 	  (
 			getNextMissionRet.TopLevelSequencerId!nullMissionId ->
-		    SKIP
+		  SKIP
 	  )
-    )
+  )
 
 Methods_tlms =
  (
@@ -160,18 +160,19 @@ handleAsyncEvent_t0peh =
 	handleAsyncEventCall.Tier0PEHId ->
 	(
 		(
-			get_released.Tier0PEHId?released:({False}) ->
+			get_released.Tier0PEHId?false ->
+			set_released.Tier0PEHId!true ->
 			release.Tier0APEHId ->
 			SKIP
 		)
 		[]
 		(
-			get_released.Tier0PEHId?released:({True}) ->
+			get_released.Tier0PEHId?true ->
 			SKIP
 		)
 	);
-    handleAsyncEventRet.Tier0PEHId ->
-    SKIP
+  handleAsyncEventRet.Tier0PEHId ->
+  SKIP
 
 
 
@@ -190,41 +191,19 @@ handlerAsyncEvent_t0apeh =
 	handleAsyncEventCall.Tier0APEHId ->
 	requestTerminationCall.Tier0MissionId.Tier0APEHId ->
 	requestTerminationRet.Tier0MissionId.Tier0APEHId?b ->
-    handleAsyncEventRet.Tier0APEHId ->
-    SKIP
+  handleAsyncEventRet.Tier0APEHId ->
+  SKIP
 
 
 
-
-
---nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
 
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-Mission_PEH_APEH =
-(
-	MyApp
-	|||
-	MainSequencerApp
-	|||
-	MainMissionApp
-	|||
-	Tier0OPEHApp
-	|||
-	Tier0APEHApp
-)
-
-
-Program(topLevelSequencerIDs, tier0) =
-
-(
-	ClustereAndTieredFramework(topLevelSequencerIDs, tier0)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync,  APEHAppSync,
-		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app,
-		 	end_periodicEventHandler_app, end_aperiodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
-	Mission_PEH_APEH
-)
+SchedulableProg =
+	sbdia(AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] Tier0APEHApp)
+		[|{| release.Tier0APEHId , activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+	sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| PEHAppSync |] Tier0OPEHApp)
 
 Program2 =
 (
@@ -238,18 +217,12 @@ Program2 =
     (
       sbdia( MissionFW(Tier0MissionId) [| MissionAppSync |] MainMissionApp)
         [|MissionSync|]
-   -- Schedulables(schedulableSequencers, aperiodicEventHanders, oneShotEventHandlers,periodicEventHandlers,managedThreads)
-      (
-        sbdia(AperiodicEventHandlerFW(Tier0APEHId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] Tier0APEHApp)
-          [|{| release.Tier0APEHId , activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
-        sbdia(PeriodicEventHandlerFW(Tier0PEHId, 1,0,0,nullSchedulableId) [| PEHAppSync |] Tier0OPEHApp)
-      )
+     SchedulableProg
     )
   )
     [| GSRSync |]
 GlobalSchedulableRegulator
 )
-
 
 
 assert Program2 ; Loop :[ deadlock free [FD] ]
