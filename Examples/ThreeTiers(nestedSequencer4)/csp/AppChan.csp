@@ -1,0 +1,46 @@
+-- AppChan
+
+nametype SafeltAppSync =
+    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
+
+nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
+
+nametype MissionAppSync = {| --initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet
+							getSequencer, terminationPendingCall, terminationPendingRet, setCeilingPriority, end_mission_app |}
+
+nametype APEHAppSync = {| handleAsyncEventCall, handleAsyncEventRet,  end_aperiodicEventHandler_app|}
+
+nametype OSEHAppSync = {| handleAsyncEventCall, handleAsyncEventRet, descheduleCall, descheduleRet,
+                            scheduleNextRelease, getNextReleaseTimeCall,
+                            getNextReleaseTimeRet, end_oneshotEventHandler_app |}
+
+nametype PEHAppSync = {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |}
+
+nametype MTAppSync = {| runCall, runRet,  end_managedThread_app, isAlive  |}
+
+nametype TierSync = {|start_mission.TopMissionId, done_mission.TopMissionId,
+   done_safeletFW, done_toplevel_sequencer|}
+
+nametype Tier0Sync =
+  {|  start_mission.MidMissionId, done_mission.MidMissionId,
+     initializeRet.MidMissionId,
+
+     requestTerminationCall.MidMissionId.MidMissionSequencerId ,
+      requestTerminationRet.MidMissionId.MidMissionSequencerId ,
+
+     done_safeletFW, done_toplevel_sequencer |}
+
+nametype Tier1Sync =
+            {| start_mission.BottomMissionAId, done_mission.BottomMissionAId,
+               initializeRet.BottomMissionAId,
+
+               requestTerminationCall.BottomMissionAId.BottomMissionSequencerAId ,
+               requestTerminationRet.BottomMissionAId.BottomMissionSequencerAId ,
+
+               start_mission.BottomMissionBId, done_mission.BottomMissionBId,
+               initializeRet.BottomMissionBId,
+
+               requestTerminationCall.BottomMissionBId.BottomMissionSequencerBId ,
+               requestTerminationRet.BottomMissionBId.BottomMissionSequencerBId ,
+
+               done_safeletFW, done_toplevel_sequencer |}
