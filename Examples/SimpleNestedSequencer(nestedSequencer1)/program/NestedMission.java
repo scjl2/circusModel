@@ -1,6 +1,6 @@
 /** Simple Nested Sequencer
- * 
- *   
+ *
+ *
  *   @author Matt Luckcuck <ml881@york.ac.uk>
  */
 package nestedSequencer1;
@@ -14,17 +14,15 @@ import devices.Console;
 
 public class NestedMission extends Mission
 {
-
 	@Override
 	protected void initialize()
 	{
 		Console.println("Launch Mission: Init ");
 
-		// Initially false because the conditions haven't been checked yet
 		NestedOneShotEventHandler nestedOneShot = new NestedOneShotEventHandler(
 				new PriorityParameters(5), new RelativeTime(5, 0),
 				new AperiodicParameters(),
-				MySafelet.storageParameters_Schedulable);
+				MySafelet.storageParameters_Schedulable, this);
 
 		nestedOneShot.register();
 
