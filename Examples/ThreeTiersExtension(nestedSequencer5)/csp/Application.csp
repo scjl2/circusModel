@@ -448,18 +448,50 @@ BotomMissionBApp =
 
 -- Tier 2 PEH APP
 
+channel get_released : SchedulableID.Bool
+channel set_released : SchedulableID.Bool
+
+nametype Tier2PEHAppStateSync = {|get_released,  set_released |}
+
+
 Tier2PEHApp =
 (
 	Methods_t2peh
-)
+  [| Tier2PEHAppStateSync |]
+Tier2PEHAppState(false)
+)\Tier2PEHAppStateSync
 /\ (end_periodicEventHandler_app.Tier2PEHId -> SKIP)
+
+
+Tier2PEHAppState(released) =
+(
+	get_released.Tier2PEHId!released ->
+	Tier2PEHAppState(released)
+)
+[]
+(
+	set_released.Tier2PEHId?newReleased ->
+	Tier2PEHAppState(newReleased)
+)
 
 Methods_t2peh =
 	handlerAsyncEvent_t2peh ; Methods_t2peh
 
 handlerAsyncEvent_t2peh =
 	handleAsyncEventCall.Tier2PEHId ->
-	release.Tier2APEHId ->
+  (
+		(
+			get_released.Tier2PEHId?false ->
+			set_released.Tier2PEHId!true ->
+			release.Tier2APEHId ->
+			SKIP
+		)
+		[]
+		(
+			get_released.Tier2PEHId?true ->
+			SKIP
+		)
+	);
   handleAsyncEventRet.Tier2PEHId ->
   SKIP
 
