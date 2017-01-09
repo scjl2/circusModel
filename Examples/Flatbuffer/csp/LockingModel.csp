@@ -24,6 +24,3 @@ include "ThreadFW.csp"
 include "JTime.csp"
 
 
-nametype LockingModelSync = 
-		{| waitRet, waitForObjectRet, 
-		interrupt,isInterrupted, interrupted |}

@@ -13,7 +13,7 @@ channel  end_sequencer_app:MissionSequencerIDs
 channel  end_methods : MissionSequencerIDs
 channel  end_terminations : MissionSequencerIDs
 
-nametype MissionSequencerFWSharedChanSet = 
+nametype MissionSequencerFWSharedChanSet =
   {| get_currentMission, set_currentMission, get_continue, get_controllingMission,set_controllingMission,
-      getNextMissionCall, getNextMissionRet,  
+      getNextMissionCall, getNextMissionRet,
        end_sequencer_app, end_methods, end_terminations |}

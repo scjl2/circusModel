@@ -3,26 +3,27 @@ transparent sbisim, diamond
 
 sbdia(P) = sbisim(diamond(P))
 
-datatype SchedulableID = nullSequencerId|nullSchedulableId| FlatBufferSequencerId 
+datatype SchedulableID = nullSequencerId|nullSchedulableId| FlatBufferSequencerId
                           | WriterId | ReaderId
 
+datatype MissionID = nullMissionId
+                    | FlatBufferMissionId
+
+
 TopLevelSequencerIDs = {FlatBufferSequencerId}
-MissionSequencerIDs = {FlatBufferSequencerId  }
+MissionSequencerIDs = {FlatBufferSequencerId }
 MissionSequencerIDs_null = union(MissionSequencerIDs, {nullSequencerId})
 SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId}, TopLevelSequencerIDs))
 
 
-datatype MissionID = nullMissionId
-                    | FlatBufferMissionId     
-
 MissionIDs = diff(MissionID, {nullMissionId})
 
 
-datatype ExceptionType = interruptedException | 
-                          illegalMonitorStateException | 
-                          illegalArgumentException | 
-                          illegalThreadStateException | 
-                          illegalStateException | 
+datatype ExceptionType = interruptedException |
+                          illegalMonitorStateException |
+                          illegalArgumentException |
+                          illegalThreadStateException |
+                          illegalStateException |
                           ceilingViolationException
 
 
@@ -36,3 +37,8 @@ Threads = diff(ThreadID, {nullThreadId})
 
 maxNum = 2
 nametype num = {0..maxNum}
+
+MaxPriority = 2
+MinPriority = 0
+
+nametype PriorityLevel = {MinPriority..MaxPriority}

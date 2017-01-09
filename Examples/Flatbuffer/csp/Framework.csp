@@ -7,11 +7,11 @@ channel a
 Loop = a-> Loop
 
 channel circwait : num
-channel  throw : ExceptionType 
+channel  throw : ExceptionType
 channel apiError
 
 
---include "APP_MISSION.csp"
+include "GlobalSchedulables.csp"
 
 include "SafeletFW.csp"
 
@@ -33,12 +33,16 @@ include "OneShotEventHandlerFW.csp"
 
 include "PeriodicEventHandlerFW.csp"
 
-include "ManagedThreadFW.csp" 
+include "ManagedThreadFW.csp"
 
-include "LockingModel.csp"
-
-include "GlobalSchedulables.csp"
-
---include "ThreadObject.csp"
+include "priqueue.csp"
 
 --include "PriorityQueue_FDR.csp"
+
+include "ThreadObject.csp"
+
+include "JTime.csp"
+
+
+
+--include "LockingModel.csp"
