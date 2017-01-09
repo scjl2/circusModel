@@ -33,9 +33,6 @@ APPCleanupMission(mission) =
 
 -- SAFELET: MY APP
 
-nametype SafeltAppSync =
-    {| getSequencerCall, getSequencerRet,initializeApplicationCall, initializeApplicationRet, end_safelet_app |}
-
 
 ACSafelet  =
 (
@@ -67,8 +64,6 @@ channel get_returnedMission : SchedulableID.Bool
 channel set_returnedMission : SchedulableID.Bool
 
 nametype MissionSequencerAppStateSync = {| get_returnedMission, set_returnedMission |}
-
-nametype MissionSequencerAppSync = {|getNextMissionCall, getNextMissionRet,end_sequencer_app|}
 
 MainMissionSequencerApp =
 (
@@ -115,53 +110,53 @@ Methods_mms  =
 
 --TOP LEVEL MISSION: TOP MISSION 1
 
-MissionAppSync = {|initializeCall,register, initializeRet,cleanupMissionCall, cleanupMissionRet, end_mission_app   |}
+
 MissionAppMethSync = {| getCabinPressureCall, getCabinPressureRet, setCabinPressure, getFuelRemainingCall, getFuelRemainingRet,
 						setFuelRemaining, getAltitudeCall, getAltitudeRet, setAltitude, getAirSpeedCall, getAirSpeedRet, setAirSpeed,
 						getEmergencyOxygenCall, getEmergencyOxygenRet, setEmergencyOxygen, getHeadingCall, getHeadingRet, setHeading  |}
 
 channel getCabinPressureCall : MissionID
-channel getCabinPressureRet : MissionID.{0..3}
-channel setCabinPressure : MissionID.{0..3}
+channel getCabinPressureRet : MissionID.num
+channel setCabinPressure : MissionID.num
 
 channel getEmergencyOxygenCall : MissionID
-channel getEmergencyOxygenRet : MissionID.{0..3}
-channel setEmergencyOxygen : MissionID.{0..3}
+channel getEmergencyOxygenRet : MissionID.num
+channel setEmergencyOxygen : MissionID.num
 
 channel getFuelRemainingCall : MissionID
-channel getFuelRemainingRet : MissionID.{0..3}
-channel setFuelRemaining : MissionID.{0..3}
+channel getFuelRemainingRet : MissionID.num
+channel setFuelRemaining : MissionID.num
 
 channel getAltitudeCall : SchedulableID.MissionID
-channel getAltitudeRet : SchedulableID.MissionID.{0..3}
-channel setAltitude : SchedulableID.MissionID.{0..3}
+channel getAltitudeRet : SchedulableID.MissionID.num
+channel setAltitude : SchedulableID.MissionID.num
 
 channel getAirSpeedCall : MissionID
-channel getAirSpeedRet : MissionID.{0..3}
-channel setAirSpeed : MissionID.{0..3}
+channel getAirSpeedRet : MissionID.num
+channel setAirSpeed : MissionID.num
 
 channel getHeadingCall : MissionID
-channel getHeadingRet : MissionID.{0..3}
-channel setHeading : MissionID.{0..3}
+channel getHeadingRet : MissionID.num
+channel setHeading : MissionID.num
 
 -- State Channels
-channel get_cabinPressure : {MainMissionId}.{0..3}
-channel set_cabinPressure : {MainMissionId}.{0..3}
+channel get_cabinPressure : MissionIDs.num
+channel set_cabinPressure : MissionIDs.num
 
-channel get_emergencyOxygen : {MainMissionId}.{0..3}
-channel set_emergencyOxygen : {MainMissionId}.{0..3}
+channel get_emergencyOxygen : MissionIDs.num
+channel set_emergencyOxygen : MissionIDs.num
 
-channel get_fuelRemaining : {MainMissionId}.{0..3}
-channel set_fuelRemaining : {MainMissionId}.{0..3}
+channel get_fuelRemaining : MissionIDs.num
+channel set_fuelRemaining : MissionIDs.num
 
-channel get_altitude : {MainMissionId}.{0..3}
-channel set_altitude : {MainMissionId}.{0..3}
+channel get_altitude : MissionIDs.num
+channel set_altitude : MissionIDs.num
 
-channel get_airSpeed : {MainMissionId}.{0..3}
-channel set_airSpeed : {MainMissionId}.{0..3}
+channel get_airSpeed : MissionIDs.num
+channel set_airSpeed : MissionIDs.num
 
-channel get_heading : {MainMissionId}.{0..3}
-channel set_heading : {MainMissionId}.{0..3}
+channel get_heading : MissionIDs.num
+channel set_heading : MissionIDs.num
 
 nametype MainMissionStateSync =
 	{|	get_cabinPressure, set_cabinPressure, get_emergencyOxygen, set_emergencyOxygen, get_fuelRemaining, set_fuelRemaining,
@@ -174,7 +169,6 @@ MainMissionApp =
 	MainMissionState(0, 0, 0, 0, 0, 0)
 )\MainMissionStateSync
 /\ (end_mission_app.MainMissionId -> SKIP )
-
 
 MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading) =
 (
@@ -1009,10 +1003,6 @@ handlerAsyncEvent_slh(threshold) =
 
 
 
-
-nametype MTAppSync = {| runCall, runRet,  end_managedThread_app |}
-
-
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
 Aircraft =
@@ -1052,7 +1042,8 @@ Aircraft =
 				TakeOffFailureHandlerApp(0)
 			)
 		)
-		[|{| getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet, getAltitudeCall.NavigationMonitorId, getAltitudeRet.NavigationMonitorId |}|]
+		[|{| getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
+    getAltitudeCall.NavigationMonitorId, getAltitudeRet.NavigationMonitorId |}|]
 		NavigationMonitorApp
 		|||
 		(
@@ -1061,7 +1052,8 @@ Aircraft =
 			BeginLandingHandlerApp
 		)
 	)
-	[|{|getAltitudeCall.SafeLandingHandlerId, getAltitudeRet.SafeLandingHandlerId, getAltitudeCall.GroundDistanceMonitorId,getAltitudeRet.GroundDistanceMonitorId  |}|]
+	[|{|getAltitudeCall.SafeLandingHandlerId, getAltitudeRet.SafeLandingHandlerId,
+  getAltitudeCall.GroundDistanceMonitorId,getAltitudeRet.GroundDistanceMonitorId  |}|]
 	(
 		(
 			SafeLandingHandlerApp(0)
@@ -1084,31 +1076,54 @@ Aircraft =
 AircraftControlTier =
 	sbdia(SafeletFW [| SafeltAppSync |] ACSafelet)
 		[|SafeletTierSync|]
-   	sbdia(TopLevelMissionSequencers({MainMissionSequencerId}) [|MissionSequencerAppSync|] MainMissionSequencerApp)
-
+  sbdia(TopLevelMissionSequencers({MainMissionSequencerId}) [|MissionSequencerAppSync|] MainMissionSequencerApp)
 
 AircraftTier0 =
 	sbdia(MissionFW(MainMissionId) [| MissionAppSync |]  MainMissionApp)
-		[| union(MissionSync, {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall, getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
+		[| union(MissionSync, {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall,
+    getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
 								getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
 							 setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining|}) |]
 	(
 		(
-			sbdia(PeriodicEventHandlerFW(FlightSensorsMonitorId, 1, 0, 0, nullSchedulableId)  [| PEHSync |]  FlightSensorsMonitorApp)
-				|||
-			sbdia(PeriodicEventHandlerFW(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId) [| PEHSync |] EnvironmentMonitorApp)
-		)
-			|||
-		sbdia(SchedulableMissionSequencerFW(ACModeChangerId)  [|MissionSequencerAppSync|] ACModeChangerApp)
-			|||
-		sbdia(AperiodicEventHandlerFW(ControlHandlerId, aperiodic, 0, nullSchedulableId) [| APEHSync |] ControlHandlerApp)
-			|||
-		sbdia(AperiodicEventHandlerFW(CommunicationsHandlerId, aperiodic, 0, nullSchedulableId) [| APEHSync |] CommunicationsHandlerApp)
+  			sbdia(PeriodicEventHandlerFW(FlightSensorsMonitorId, 1, 0, 0, nullSchedulableId)  [| PEHAppSync |]  FlightSensorsMonitorApp)
+  					[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+      (
+  			sbdia(PeriodicEventHandlerFW(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |] EnvironmentMonitorApp)
+  				[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+        (
+          sbdia(SchedulableMissionSequencerFW(ACModeChangerId)  [|MissionSequencerAppSync|] ACModeChangerApp)
+      				[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+          (
+            sbdia(AperiodicEventHandlerFW(ControlHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] ControlHandlerApp)
+        				[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+        		sbdia(AperiodicEventHandlerFW(CommunicationsHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] CommunicationsHandlerApp)
+          )
+        )
+      )
+    )
 	)
-		--|||
 
---		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, end_aperiodicEventHandler_app,
---		 end_periodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
+assert sbdia(MissionFW(MainMissionId) [| MissionAppSync |]  MainMissionApp) ; Loop :[ deadlock free [FD] ]
+
+
+assert AircraftTier0 ; Loop :[ deadlock free [FD] ]
+assert AircraftTier0 :[ divergence free ]
+assert AircraftTier0 :[ deterministic  [FD] ]
+{-
+Tier0App =
+(
+	sbdia( MissionFW(TopMissionId) [| MissionAppSync |] TopMissionApp)
+	 [|MissionSync|]
+   (
+      sbdia( SchedulableMissionSequencerFW(MidMissionSequencerId) [| MissionSequencerAppSync |] MidMissionSequencerApp )
+      	[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+      sbdia( ManagedThreadFW(ManagedThread1Id ) [| MTAppSync |] ManagedThread1App )
+   )
+)
+
+
+-}
 
 
 AircraftTier1 =
@@ -1123,12 +1138,12 @@ T1Cluster0 =
 	[|  Union({ TakeOffMissionMethSync, MissionSync ,{| requestTerminationCall, requestTerminationRet|} }) |]
 (
 	(
-		sbdia(	PeriodicEventHandlerFW(TakeOffMonitorId, 1, 0, 0, nullSchedulableId)   [| PEHSync |] TakeOffMonitorApp(0, LandingGearHandler1Id))
+		sbdia(	PeriodicEventHandlerFW(TakeOffMonitorId, 1, 0, 0, nullSchedulableId)   [| PEHAppSync |] TakeOffMonitorApp(0, LandingGearHandler1Id))
 			[|  {| stowLandingGear, deployLandingGear|} |]
-		sbdia(AperiodicEventHandlerFW(LandingGearHandler1Id, aperiodic, 0, nullSchedulableId) [| APEHSync |] LandingGearHandlerApp1)
+		sbdia(AperiodicEventHandlerFW(LandingGearHandler1Id, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] LandingGearHandlerApp1)
 	)
 		[|  {| abort, requestTerminationCall, requestTerminationRet|} |]
-	sbdia(AperiodicEventHandlerFW(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId)  [| APEHSync |]   TakeOffFailureHandlerApp(0))
+	sbdia(AperiodicEventHandlerFW(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]   TakeOffFailureHandlerApp(0))
 )
 
 
@@ -1136,28 +1151,26 @@ T1Cluster1 =
 (
 				sbdia(MissionFW(CruiseModeId) [| MissionAppSync |] CruiseMissionApp	)
 				 [|{| requestTerminationCall, requestTerminationRet |}|]
-				sbdia(AperiodicEventHandlerFW(BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)	[| APEHSync |]   BeginLandingHandlerApp)
+				sbdia(AperiodicEventHandlerFW(BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)	[| APEHAppSync |]   BeginLandingHandlerApp)
 )
 |||
-sbdia(PeriodicEventHandlerFW(NavigationMonitorId, 1, 0, 0, nullSchedulableId) [| PEHSync |]  NavigationMonitorApp)
-		--		[|{| getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet, getAltitudeCall.NavigationMonitorId, getAltitudeRet.NavigationMonitorId |}|]
-
+sbdia(PeriodicEventHandlerFW(NavigationMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  NavigationMonitorApp)
 
 
 T1Cluster2 =
 (
 	sbdia(MissionFW(LandModeId) [| MissionAppSync |] LandMissionApp)
 		[|{| stowLandingGear, deployLandingGear|}|]
-	sbdia(AperiodicEventHandlerFW(LandingGearHandler2Id, aperiodic, 0, nullSchedulableId)  [| APEHSync |]  LandingGearHandlerApp2)
+	sbdia(AperiodicEventHandlerFW(LandingGearHandler2Id, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]  LandingGearHandlerApp2)
 )
 [|{|requestTerminationCall, requestTerminationRet|}|]
 (
-	sbdia(AperiodicEventHandlerFW(SafeLandingHandlerId, aperiodic, 0, nullSchedulableId) [| APEHSync |] SafeLandingHandlerApp(0))
+	sbdia(AperiodicEventHandlerFW(SafeLandingHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] SafeLandingHandlerApp(0))
 		|||
-	sbdia(PeriodicEventHandlerFW(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId) [| PEHSync |]  GroundDistanceMonitorApp(0))
+	sbdia(PeriodicEventHandlerFW(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  GroundDistanceMonitorApp(0))
 )
 	|||
-sbdia(PeriodicEventHandlerFW(InstrumentLandingSystemMonitorId, 1, 0, 0, nullSchedulableId)[| PEHSync |]  InstrumentLandingSystemMonitorApp	)
+sbdia(PeriodicEventHandlerFW(InstrumentLandingSystemMonitorId, 1, 0, 0, nullSchedulableId)[| PEHAppSync |]  InstrumentLandingSystemMonitorApp	)
 
 Aircraft2 =
 (
@@ -1166,7 +1179,8 @@ Aircraft2 =
 	[|TierSync|]
 	(
 		AircraftTier0
-			[| {|start_mission.m, done_mission.m, register.s.m ,done_safeletFW, done_toplevel_sequencer | m <- {TakeOffModeId, CruiseModeId, LandModeId} , s<-SchedulableIDs |} |]
+			[| {|start_mission.m, done_mission.m, register.s.m ,done_safeletFW, done_toplevel_sequencer
+        | m <- {TakeOffModeId, CruiseModeId, LandModeId} , s<-SchedulableIDs |} |]
 		AircraftTier1
 	)
 )
@@ -1175,73 +1189,6 @@ GlobalSchedulableRegulator
 )
 
 
-
-
-APEHSync = {| release, handleAsyncEventCall, handleAsyncEventRet, end_aperiodicEventHandler_app |}
-OSEHSync = {| descheduleCall, descheduleRet, scheduleNextRelease, getNextReleaseTimeCall, getNextReleaseTimeRet |}
-PEHSync = {| getRequestedStartTime , handleAsyncEventCall, handleAsyncEventRet, end_periodicEventHandler_app |}
-
-Program(topLevelSequencerIDs, tier0, tier1IDs) =
-(
-	ClustereAndTieredFramework(topLevelSequencerIDs, tier0, tier1IDs)
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync,
-		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, end_periodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
-	Aircraft
-)
-
-TestProgram =
-	Program(
-				{MainMissionSequencerId},
-
-				{ (MainMissionId , ({ACModeChangerId},{(ControlHandlerId, aperiodic, 0, nullSchedulableId), (CommunicationsHandlerId, aperiodic, 0, nullSchedulableId) }, {},  {(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId), (FlightSensorsMonitorId, 1, 0, 0, nullSchedulableId)}, {} )  )   },
-
-				{ (TakeOffModeId, ({}, {(LandingGearHandler1Id, aperiodic, 0, nullSchedulableId),(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId) }, {},  { (TakeOffMonitorId, 1, 0, 0, nullSchedulableId)}, {})  )
-				,		(CruiseModeId, ({},{(BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)},  {},  {(NavigationMonitorId, 1, 0, 0, nullSchedulableId)}, {})  ),
-							(LandModeId, ({},{(LandingGearHandler2Id, aperiodic, 0, nullSchedulableId), (SafeLandingHandlerId, aperiodic, 0, nullSchedulableId)},  {},  {(InstrumentLandingSystemMonitorId, 1, 0, 0, nullSchedulableId), (GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId)}, {})  )
-				}
-            )
-
-
-OneTierFramework(topLevelSequencerIDs, tier0IDS) =
-(
-  SafeletTier(topLevelSequencerIDs)
-    [|TierSync|]
-  Tier0(tier0IDS)
-)
-
-
-TakeOffCluster =
-	ACSafelet
-	|||
-	MainMissionSequencerApp
-	|||
-	(
-	(
-	(
-		TakeOffMissionApp
-		[|  {| requestTerminationCall, requestTerminationRet|} |]
-		TakeOffMonitorApp(0, LandingGearHandler1Id)
-	)
-		[|  {| stowLandingGear.LandingGearHandler1Id, deployLandingGear.LandingGearHandler1Id|} |]
-		LandingGearHandlerApp1
-	)
-		[|  {| abort, requestTerminationCall, requestTerminationRet|} |]
-	TakeOffFailureHandlerApp(0)
-	)
-
-TestTakeOffMission =
-(
-	OneTierFramework({MainMissionSequencerId}, { (TakeOffModeId, ({}, {(LandingGearHandler1Id, aperiodic, 0, nullSchedulableId),(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId) }, {},  { (TakeOffMonitorId, 1, 0, 0, nullSchedulableId)}, {})  )})
-		[| Union({SafeltAppSync, MissionSequencerAppSync, MissionAppSync, MTAppSync, OSEHSync , APEHSync,
-		 {|end_mission_app, setCeilingPriority, requestTerminationCall, requestTerminationRet, end_oneshotEventHandler_app, end_aperiodicEventHandler_app, end_periodicEventHandler_app, handleAsyncEventCall, handleAsyncEventRet|}})  |]
-	TakeOffCluster
-
-)
-
 assert Aircraft2 ; Loop :[ deadlock free [FD] ]
 assert Aircraft2 :[ divergence free ]
 assert Aircraft2 :[ deterministic  [FD] ]
-
-
-
-	

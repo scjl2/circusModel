@@ -210,7 +210,7 @@ Execute_Object(object,  ceilingPriority ) =
 	PriorityQueues  
 )  
 
-
+assert Execute_Object(WriterObjectId,  0 ) ; Loop :[ deadlock free [FD] ]
 
 Monitor(object) = 
 	MonitorUnlocked(object)
@@ -289,6 +289,12 @@ MonitorLocked(object, lockedBy)=
 
 
 
+assert Monitor(WriterObjectId) ; Loop :[ deadlock free [FD] ]
+assert Monitor(WriterObjectId) :[ divergence free ]
+assert Monitor(WriterObjectId) :[ deterministic  [FD] ]
+
+
+
 nametype WaitSync = {|cancel_wait_timer, waitRet, waitForObjectRet  |}
 
 nametype InterruptSync = {| remove_from_wait |}
@@ -338,12 +344,28 @@ PriorityQueues =
 WaitActions(object) = 
 	(Wait(object) ||| TimedWait(object)) ||| WaitForObject(object) 
 
+assert Wait(WriterObjectId) ; Loop :[ deadlock free [FD] ]
+assert Wait(WriterObjectId) :[ divergence free ]
+assert Wait(WriterObjectId) :[ deterministic  [FD] ]
 
+assert TimedWait(WriterObjectId) ; Loop :[ deadlock free [FD] ]
+assert TimedWait(WriterObjectId) :[ divergence free ]
+assert TimedWait(WriterObjectId) :[ deterministic  [FD] ]
+
+assert WaitForObject(WriterObjectId) ; Loop :[ deadlock free [FD] ]
+assert WaitForObject(WriterObjectId) :[ divergence free ]
+assert WaitForObject(WriterObjectId) :[ deterministic  [FD] ]
 
 NotifyActions(object) = 
 	Notify(object) ||| NotifyAll(object)
 
+--assert Notify(WriterObjectId, AddToPriorityQueue(EmptyPriorityQueue, WriterThreadID, 1)) ; Loop :[ deadlock free [FD] ]
+--assert Notify(WriterObjectId, AddToPriorityQueue(EmptyPriorityQueue, WriterThreadID, 1)) :[ divergence free ]
+--assert Notify(WriterObjectId, AddToPriorityQueue(EmptyPriorityQueue, WriterThreadID, 1)) :[ deterministic  [FD] ]
 
+assert NotifyAll(WriterObjectId) ; Loop :[ deadlock free [FD] ]
+assert NotifyAll(WriterObjectId) :[ divergence free ]
+assert NotifyAll(WriterObjectId) :[ deterministic  [FD] ]
 
 
 Wait(object) = 
@@ -689,6 +711,10 @@ interrupt?waitingThread ->
 	)
 )
 
+assert Interrupt_Object(WriterObjectId) ; Loop :[ deadlock free [FD] ]
+assert Interrupt_Object(WriterObjectId) :[ divergence free ]
+assert Interrupt_Object(WriterObjectId) :[ deterministic  [FD] ]
+
 
 CeilingPriorityController(object,ceilingPriority) = 
 (
@@ -706,4 +732,8 @@ GetCeilingPriority(object, ceilingPriority) =
 	get_ceilingPriority.object!ceilingPriority -> 
 	GetCeilingPriority(object, ceilingPriority)
 
+
+assert ObjectFW(WriterObjectId) ; Loop :[ deadlock free [FD] ]
+assert ObjectFW(WriterObjectId) :[ divergence free ]
+assert ObjectFW(WriterObjectId) :[ deterministic  [FD] ] 
 

@@ -48,20 +48,20 @@ Execute(thread, basePriority, priorityStack, activePriority, interruptedVar) =
 (  
 	(PStack(thread, basePriority)
 			[| {|raise_thread_priority, lower_thread_priority, get_priorityLevel|} |]
-		Priority (thread, basePriority) 
+		Priority (thread) 
 	)
 	|||
 	Interrupts(thread, interruptedVar) 	
 )																																																																																																																																																																																																																																																																																																																																																																																																																													
 
-Priority(thread, basePriority)= 
+Priority(thread)= 
 
 (
-	IncreasePriority(thread, basePriority) 
+	IncreasePriority(thread) 
 	[]
-	DecreasePriority(thread, basePriority) 
+	DecreasePriority(thread) 
 	[]
-	GetPriorityLevel(thread, basePriority) 
+	GetPriorityLevel(thread) 
 	
 ) 
  
@@ -104,17 +104,17 @@ PStack(thread, basePriority) =
 [[ pStack_top.id <- get_priorityLevel.thread.o | id <- pStackId, o <- ObjectID ]]
 ) \ {| pStack_resume|}
 
-IncreasePriority(thread, basePriority)= 
+IncreasePriority(thread)= 
 	raise_thread_priority.thread?ceilingPriority ->
-	Priority(thread, basePriority)
+	Priority(thread)
 
-DecreasePriority(thread, basePriority)= 
+DecreasePriority(thread)= 
 	lower_thread_priority.thread -> 
-	Priority(thread, basePriority)
+	Priority(thread)
 
-GetPriorityLevel(thread, basePriority) =
+GetPriorityLevel(thread) =
  	get_priorityLevel.thread?object?_ -> 
-	Priority(thread, basePriority)
+	Priority(thread)
 
 
 assert Priority(WriterThreadID, 0); Loop :[ deadlock free [FD] ]
@@ -148,4 +148,12 @@ Interrupted(thread, interruptedV) =
 	Interrupts(thread, False)
 
 
- 
+assert Interrupts(WriterThreadID, False); Loop :[ deadlock free [FD] ]
+assert Interrupts(WriterThreadID, False) :[ divergence free ]
+assert Interrupts(WriterThreadID, False) :[ deterministic  [FD] ]  
+
+
+
+assert ThreadFW(WriterThreadID, 0); Loop :[ deadlock free [FD] ]
+assert ThreadFW(WriterThreadID, 0) :[ divergence free ]
+assert ThreadFW(WriterThreadID, 0) :[ deterministic  [FD] ]  

@@ -301,7 +301,3 @@ Cleanup_APEH(schedulable) =
   cleanupSchedulableRet.schedulable ->
   SKIP
 )
-
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB); Loop :[ deadlock free [FD] ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ divergence free ]
-assert AperiodicEventHandlerFW(schedulableA, aperiodic, 2, schedulableB) :[ deterministic  [FD] ]

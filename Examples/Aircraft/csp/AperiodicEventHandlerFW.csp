@@ -12,12 +12,14 @@ channel set_data : SchedulableID . num
 channel get_data : SchedulableID . num
 channel end_aperiodicEventHandlerState : SchedulableID
 channel end_aperiodicEventHandler_app : SchedulableID
+
+
 channel releaseLong : SchedulableID . num
 
 channel handleAsyncLongEventCall : SchedulableID . num
 channel handleAsyncLongEventRet : SchedulableID
 
-channel x 
+
 channel scheduleNextRelease : SchedulableID.num
 
 nametype APEHFWChanSet = union(
@@ -128,6 +130,7 @@ if deadlineMissHandler != nullSchedulableId then
    		/\
 	    (
 	        end_releases.schedulable ->
+          release_complete.schedulable ->
 	        SKIP
 	    )
     )
@@ -177,6 +180,7 @@ Ready_APEH(schedulable) =
   (
 		(
 	   	end_releases.schedulable ->
+      release_complete.schedulable ->
 	   	SKIP
 	  )
 	  []
@@ -189,6 +193,7 @@ Ready_APEH(schedulable) =
 []
 (
   end_releases.schedulable ->
+  release_complete.schedulable ->
   SKIP
 )
 

@@ -353,17 +353,3 @@ Finish_M(mission, continueSequencer) =
    done_mission.mission!continueSequencer ->
    SKIP
 )
-
-
-assert MissionFW(missionA) ; Loop :[ deadlock free [FD] ]
-assert MissionFW(missionA)  :[ divergence free ]
-assert MissionFW(missionA) :[ deterministic  [FD] ]
-
-assert STOP [T= MissionFW(missionA);Loop \ diff(Events, {|throw|})
-
-MissionTest =
-  MissionFW(missionA)
-    [|{|register, done_schedulable ,end_mission_app|}|]
-  (register.schedulableB.missionA ->  done_schedulable.schedulableB -> end_mission_app.missionA -> SKIP ) [] (end_mission_app.missionA -> SKIP)
-
-assert MissionTest ; Loop :[ deadlock free [FD] ]

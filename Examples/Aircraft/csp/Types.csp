@@ -3,11 +3,11 @@ transparent sbisim, diamond
 
 sbdia(P) = sbisim(diamond(P))
 
-datatype SchedulableID = nullSequencerId|nullSchedulableId| MainMissionSequencerId 
+datatype SchedulableID = nullSequencerId|nullSchedulableId| MainMissionSequencerId
                           | ACModeChangerId | EnvironmentMonitorId | ControlHandlerId | FlightSensorsMonitorId | CommunicationsHandlerId
                           | TakeOffMonitorId | TakeOffFailureHandlerId | LandingGearHandler1Id
-                          | NavigationMonitorId | BeginLandingHandlerId 
-                          | GroundDistanceMonitorId | LandingGearHandler2Id | SafeLandingHandlerId | InstrumentLandingSystemMonitorId 
+                          | NavigationMonitorId | BeginLandingHandlerId
+                          | GroundDistanceMonitorId | LandingGearHandler2Id | SafeLandingHandlerId | InstrumentLandingSystemMonitorId
 
 datatype MissionID = nullMissionId
                     | MainMissionId | TakeOffModeId | CruiseModeId |  LandModeId
@@ -22,11 +22,11 @@ SchedulableIDs = diff(SchedulableID, union({nullSequencerId, nullSchedulableId},
 MissionIDs = diff(MissionID, {nullMissionId})
 
 
-datatype ExceptionType = interruptedException | 
-                          illegalMonitorStateException | 
-                          illegalArgumentException | 
-                          illegalThreadStateException | 
-                          illegalStateException | 
+datatype ExceptionType = interruptedException |
+                          illegalMonitorStateException |
+                          illegalArgumentException |
+                          illegalThreadStateException |
+                          illegalStateException |
                           ceilingViolationException
 
 nametype ApplicationMissionIds = {TakeOffModeId, CruiseModeId, LandModeId}
@@ -35,4 +35,3 @@ nametype Bit = {0,1}
 datatype ObjectID = objectA | objectB
 maxNum = 2
 nametype num = {0..maxNum}
-
