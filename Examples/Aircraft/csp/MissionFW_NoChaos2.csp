@@ -33,8 +33,8 @@ channel stop_schedulables : MissionID
 channel schedulables_stopped : MissionID
 
 
-channel requestTerminationCall : MissionID.SchedulableID
-channel requestTerminationRet : MissionID.SchedulableID.Bool
+channel requestTerminationCall : MissionID.SchedulableIDs
+channel requestTerminationRet : MissionID.SchedulableIDs.Bool
 
 channel cleanupSchedulableCall : SchedulableIDs
 channel cleanupSchedulableRet : SchedulableIDs
@@ -178,15 +178,17 @@ Execute_M(mission, registeredSchedulables) =
   )
 )
 
+
 DoneSchedulables(mission, registeredSchedulables) =
  ( (
        [|{| done_schedulables.mission,
             requestTerminationCall.mission,
             requestTerminationRet.mission |}|] s : registeredSchedulables @ Pending(mission, s)
    )
-     [| {|signalTerminationCall,  signalTerminationNotCall, done_schedulables, deregister |}  |]
+     [| {|signalTerminationCall,  signalTerminationNotCall, done_schedulables |}  |]
    Regulator(mission, seq(registeredSchedulables))
 ) \ {|signalTerminationNotCall |}
+
 
 Pending(mission, s) =
   (
@@ -196,12 +198,12 @@ Pending(mission, s) =
   )
   []
   (
-    requestTerminationCall.mission?_ ->
+    requestTerminationCall.mission?a' ->
     signalTerminationCall.s ->
     signalTerminationRet.s ->
-    done_schedulable.s->
+    done_schedulable.s ->
     deregister.s ->
-    requestTerminationRet.mission?_!False ->
+    requestTerminationRet.mission.a'!False ->
     done_schedulables.mission ->
     SKIP
   )
@@ -214,9 +216,9 @@ Finished(mission, s) =
 )
 []
 (
-  requestTerminationCall.mission?_ ->
+  requestTerminationCall.mission?a' ->
   signalTerminationNotCall.s ->
-  requestTerminationRet.mission.s.False ->
+  requestTerminationRet.mission.a'!False ->
   done_schedulables.mission ->
   SKIP
 )
@@ -232,7 +234,7 @@ Regulator(mission, <>) =
 Regulator(mission, <x>^y) =
 (
   signalTerminationCall.x ->
-  deregister.x ->
+ -- deregister.x ->
   Regulator(mission, y)
 )
 []

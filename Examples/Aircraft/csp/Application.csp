@@ -163,75 +163,211 @@ nametype MainMissionStateSync =
 		get_altitude, set_altitude, get_airSpeed, set_airSpeed, get_heading, set_heading |}
 
 MainMissionApp =
-(
+{-(
 	Methods_mm
-		[| MainMissionStateSync |]
+	[| MainMissionStateSync |]
 	MainMissionState(0, 0, 0, 0, 0, 0)
-)\MainMissionStateSync
-/\ (end_mission_app.MainMissionId -> SKIP )
+) \MainMissionStateSync
+/\-}
+(end_mission_app.MainMissionId -> SKIP )
+
+assert MainMissionState(0, 0, 0, 0, 0, 0) ; Loop :[ deadlock free [FD] ]
+assert MainMissionApp ; Loop :[ deadlock free [FD] ]
+{-	CabinState(cabinPressure)
+	|||
+  OxyState(emergencyOxygen)
+	|||
+	FuelState(fuelRemaining)
+	|||
+  AltitudeState(altitude)
+  |||
+  AirSpeedState(airSpeed)
+  |||
+  HeadingState(heading)-}
 
 MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading) =
 (
-	(
-		get_cabinPressure.MainMissionId!cabinPressure ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		set_cabinPressure.MainMissionId?newCabinPressure ->
-		MainMissionState(newCabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		get_emergencyOxygen.MainMissionId!emergencyOxygen ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		set_emergencyOxygen.MainMissionId?newEmergencyOxygen ->
-		MainMissionState(cabinPressure, newEmergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		get_fuelRemaining.MainMissionId!fuelRemaining ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		set_fuelRemaining.MainMissionId?newFuelRemaining ->
-		MainMissionState(cabinPressure, emergencyOxygen, newFuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		get_altitude.MainMissionId!altitude ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		set_altitude.MainMissionId?newAltitude ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, newAltitude, airSpeed, heading)
-	)
-	[]
-	(
-		get_airSpeed.MainMissionId!airSpeed ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		set_airSpeed.MainMissionId?newAirSpeed->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, newAirSpeed, heading)
-	)
-	[]
-	(
-		get_heading.MainMissionId!heading ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, heading)
-	)
-	[]
-	(
-		set_heading.MainMissionId?newHeading ->
-		MainMissionState(cabinPressure, emergencyOxygen, fuelRemaining, altitude, airSpeed, newHeading)
-	)
+
+CabinState2
+|||
+OxyState2
+|||
+FuelState2
+|||
+AltitudeState2
+|||
+AirSpeedState2
+|||
+HeadingState2
+
 )
+
+{-
+CabinState(cabinPressure) =
+(
+  get_cabinPressure.MainMissionId!cabinPressure ->
+  CabinState(cabinPressure)
+)
+[]
+(
+  set_cabinPressure.MainMissionId?newCabinPressure ->
+  CabinState(newCabinPressure)
+)
+
+OxyState(emergencyOxygen) =
+(
+		get_emergencyOxygen.MainMissionId!emergencyOxygen ->
+		OxyState(emergencyOxygen)
+)
+[]
+(
+		set_emergencyOxygen.MainMissionId?newEmergencyOxygen ->
+		OxyState(newEmergencyOxygen)
+)
+
+FuelState(fuelRemaining) =
+(
+  get_fuelRemaining.MainMissionId!fuelRemaining ->
+  FuelState(fuelRemaining)
+)
+[]
+(
+  set_fuelRemaining.MainMissionId?newFuelRemaining ->
+  FuelState(newFuelRemaining)
+)
+
+AltitudeState(altitude) =
+(
+  get_altitude.MainMissionId!altitude ->
+  AltitudeState(altitude)
+)
+[]
+(
+  set_altitude.MainMissionId?newAltitude ->
+  AltitudeState(newAltitude)
+)
+
+AirSpeedState(airSpeed) =
+(
+  get_airSpeed.MainMissionId!airSpeed ->
+  AirSpeedState(airSpeed)
+)
+[]
+(
+  set_airSpeed.MainMissionId?newAirSpeed->
+  AirSpeedState(newAirSpeed)
+)
+
+HeadingState(heading) =
+  (
+    get_heading.MainMissionId!heading ->
+    HeadingState(heading)
+  )
+  []
+  (
+    set_heading.MainMissionId?newHeading ->
+    HeadingState(newHeading)
+  )
+-}
+
+CabinState2 =
+	([| {|set_cabinPressure|} |] x : {1..maxNum} @   Cabin_IsNot(x))
+		[| {|set_cabinPressure|} |] Cabin_Is(0)
+
+Cabin_Is(x)=
+	get_cabinPressure.MainMissionId.x -> Cabin_Is(x)
+	[]
+ 	set_cabinPressure.MainMissionId?y:diff(num,{x}) -> Cabin_IsNot(x)
+	[]
+	set_cabinPressure.MainMissionId.x -> Cabin_Is(x)
+
+Cabin_IsNot(x) =
+	set_cabinPressure.MainMissionId.x -> Cabin_Is(x)
+	[]
+	set_cabinPressure.MainMissionId?y:diff(num,{x}) -> Cabin_IsNot(x)
+
+OxyState2 =
+	([| {|set_emergencyOxygen|} |] x : {1..maxNum} @   Oxy_IsNot(x))
+		[| {|set_emergencyOxygen|} |] Oxy_Is(0)
+
+	Oxy_Is(x)=
+	get_emergencyOxygen.MainMissionId.x -> Oxy_Is(x)
+	[]
+	set_emergencyOxygen.MainMissionId?y:diff(num,{x}) -> Oxy_IsNot(x)
+	[]
+	set_emergencyOxygen.MainMissionId.x -> Oxy_Is(x)
+
+	Oxy_IsNot(x) =
+	set_emergencyOxygen.MainMissionId.x -> Oxy_Is(x)
+	[]
+	set_emergencyOxygen.MainMissionId?y:diff(num,{x}) -> Oxy_IsNot(x)
+
+FuelState2=
+	([| {|set_fuelRemaining|} |] x : {1..maxNum} @   Fuel_IsNot(x))
+		[| {|set_fuelRemaining|} |] Fuel_Is(0)
+
+	Fuel_Is(x)=
+	get_fuelRemaining.MainMissionId.x -> Fuel_Is(x)
+	[]
+	set_fuelRemaining.MainMissionId?y:diff(num,{x}) -> Fuel_IsNot(x)
+	[]
+	set_fuelRemaining.MainMissionId.x -> Fuel_Is(x)
+
+	Fuel_IsNot(x) =
+	set_fuelRemaining.MainMissionId.x -> Fuel_Is(x)
+	[]
+	set_fuelRemaining.MainMissionId?y:diff(num,{x}) -> Fuel_IsNot(x)
+
+AltitudeState2 =
+	([| {|set_altitude|} |] x : {1..maxNum} @   Alt_IsNot(x))
+		[| {|set_altitude|} |] Alt_Is(0)
+
+	Alt_Is(x)=
+	get_altitude.MainMissionId.x -> Alt_Is(x)
+	[]
+	set_altitude.MainMissionId?y:diff(num,{x}) -> Alt_IsNot(x)
+	[]
+	set_altitude.MainMissionId.x -> Alt_Is(x)
+
+	Alt_IsNot(x) =
+	set_altitude.MainMissionId.x -> Alt_Is(x)
+	[]
+	set_altitude.MainMissionId?y:diff(num,{x}) -> Alt_IsNot(x)
+
+
+AirSpeedState2=
+	([| {|set_airSpeed|} |] x : {1..maxNum} @   Air_IsNot(x))
+		[| {|set_airSpeed|} |] Air_Is(0)
+
+	Air_Is(x)=
+	get_airSpeed.MainMissionId.x -> Air_Is(x)
+	[]
+	set_airSpeed.MainMissionId?y:diff(num,{x}) -> Air_IsNot(x)
+	[]
+	set_airSpeed.MainMissionId.x -> Air_Is(x)
+
+	Air_IsNot(x) =
+	set_airSpeed.MainMissionId.x -> Air_Is(x)
+	[]
+	set_airSpeed.MainMissionId?y:diff(num,{x}) -> Air_IsNot(x)
+
+
+HeadingState2 =
+	([| {|set_heading|} |] x : {1..maxNum} @   Heading_IsNot(x))
+		[| {|set_heading|} |] Heading_Is(0)
+
+	Heading_Is(x)=
+	get_heading.MainMissionId.x -> Heading_Is(x)
+	[]
+	set_heading.MainMissionId?y:diff(num,{x}) -> Heading_IsNot(x)
+	[]
+	set_heading.MainMissionId.x -> Heading_Is(x)
+
+	Heading_IsNot(x) =
+	set_heading.MainMissionId.x -> Heading_Is(x)
+	[]
+	set_heading.MainMissionId?y:diff(num,{x}) -> Heading_IsNot(x)
+
 
 --APPInitializePhase(MainMissionId) =
 InitializePhase_mm =
@@ -251,7 +387,6 @@ CleanupPhase_mm =
  cleanupMissionCall.MainMissionId  ->
  cleanupMissionRet.MainMissionId?false ->
  SKIP
-
 
 GetCabinPressure_mm =
 	getCabinPressureCall.MainMissionId ->
@@ -319,7 +454,6 @@ SetHeading_mm =
 	set_heading.MainMissionId!newHeading ->
 	SKIP
 
-
 Methods_mm =
 (
 --	InitializePhase_mm
@@ -385,6 +519,7 @@ ModeChangerState_mc(modesLeft, currentMode) =
 	set_modesLeft.ACModeChangerId?newModesLeft ->
 	ModeChangerState_mc(newModesLeft, currentMode)
 )
+{-
 []
 (
 	get_currentMode.ACModeChangerId!currentMode ->
@@ -395,50 +530,49 @@ ModeChangerState_mc(modesLeft, currentMode) =
 	set_currentMode.ACModeChangerId?newCurrentMode ->
 	ModeChangerState_mc(modesLeft, newCurrentMode)
 )
+-}
 
 GetNextMission_mc =
     getNextMissionCall.ACModeChangerId ->
-    get_currentMode.ACModeChangerId?currentMode ->
-	getNextMissionRet.ACModeChangerId!currentMode ->
-	SKIP
 
-AdvanceMode_mc =
-	get_modesLeft.ACModeChangerId?modesLeft ->
-	if modesLeft == 3 then
-  (
-		set_modesLeft.ACModeChangerId!2 ->
-		set_currentMode.ACModeChangerId!TakeOffModeId ->
-		SKIP
-	)
-  else
-  (
-    if modesLeft == 2 then
-	  (
-			set_modesLeft.ACModeChangerId!1 ->
-			set_currentMode.ACModeChangerId!CruiseModeId ->
-			SKIP
-		)
-	  else
-		(
-			if modesLeft == 1 then
-			(
-				set_modesLeft.ACModeChangerId!0 ->
-				set_currentMode.ACModeChangerId!LandModeId ->
-				SKIP
-			)
-			else
-			(
-				set_currentMode.ACModeChangerId!nullMissionId ->
-				SKIP
-			)
-		)
-  )
+    get_modesLeft.ACModeChangerId?modesLeft ->
+    if modesLeft == 3 then
+    (
+      set_modesLeft.ACModeChangerId!2 ->
+
+    getNextMissionRet.ACModeChangerId!TakeOffModeId ->
+      SKIP
+    )
+    else
+    (
+      if modesLeft == 2 then
+      (
+        set_modesLeft.ACModeChangerId!1 ->
+
+      getNextMissionRet.ACModeChangerId!CruiseModeId ->
+        SKIP
+      )
+      else
+      (
+        if modesLeft == 1 then
+        (
+          set_modesLeft.ACModeChangerId!0 ->
+
+        getNextMissionRet.ACModeChangerId!LandModeId ->
+          SKIP
+        )
+        else
+        (
+
+        getNextMissionRet.ACModeChangerId!nullMissionId ->
+          SKIP
+        )
+      )
+    )
 
 Methods_mc =
 (
 	GetNextMission_mc
-	[]
-	AdvanceMode_mc
 ) ; Methods_mc
 
 --- Environment Monitor
@@ -816,10 +950,8 @@ handlerAsyncEvent_blh =
 	handleAsyncEventCall.BeginLandingHandlerId ->
 	requestTerminationCall.CruiseModeId.BeginLandingHandlerId ->
 	requestTerminationRet.CruiseModeId.BeginLandingHandlerId?_ ->
-    handleAsyncEventRet.BeginLandingHandlerId ->
-    SKIP
-
-
+  handleAsyncEventRet.BeginLandingHandlerId ->
+  SKIP
 
 
 
@@ -1005,71 +1137,7 @@ handlerAsyncEvent_slh(threshold) =
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-Aircraft =
-(
-	ACSafelet
-	|||
-	MainMissionSequencerApp
-	|||
-	((
-			(
-				(
-					MainMissionApp
-						[|{|setAirSpeed, setAltitude, setHeading|}|]
-					FlightSensorsMonitorApp
-				)
-				[|{|setCabinPressure, setEmergencyOxygen, setFuelRemaining|}|]
-				EnvironmentMonitorApp
-			)
-			|||
-			ACModeChangerApp
-			|||
-			ControlHandlerApp
-			|||
-			CommunicationsHandlerApp
-			|||
-			(
-				(
-					(
-						TakeOffMissionApp
-						[|  {| requestTerminationCall, requestTerminationRet|} |]
-						TakeOffMonitorApp(0, LandingGearHandler1Id)
-					)
-					[|  {| stowLandingGear.LandingGearHandler1Id, deployLandingGear.LandingGearHandler1Id|} |]
-					LandingGearHandlerApp1
-				)
-				[|  {| abort, requestTerminationCall, requestTerminationRet|} |]
-				TakeOffFailureHandlerApp(0)
-			)
-		)
-		[|{| getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
-    getAltitudeCall.NavigationMonitorId, getAltitudeRet.NavigationMonitorId |}|]
-		NavigationMonitorApp
-		|||
-		(
-			CruiseMissionApp
-			 [|{| requestTerminationCall, requestTerminationRet |}|]
-			BeginLandingHandlerApp
-		)
-	)
-	[|{|getAltitudeCall.SafeLandingHandlerId, getAltitudeRet.SafeLandingHandlerId,
-  getAltitudeCall.GroundDistanceMonitorId,getAltitudeRet.GroundDistanceMonitorId  |}|]
-	(
-		(
-			SafeLandingHandlerApp(0)
-			|||
-			GroundDistanceMonitorApp(0)
-		)
-			[|{|requestTerminationCall, requestTerminationRet|}|]
-		(
-			LandMissionApp
-				[|{| stowLandingGear.LandingGearHandler2Id, deployLandingGear.LandingGearHandler2Id|}|]
-			LandingGearHandlerApp2
-		)
-	)
-	|||
-	InstrumentLandingSystemMonitorApp
-)
+
 
 
 
@@ -1078,34 +1146,39 @@ AircraftControlTier =
 		[|SafeletTierSync|]
   sbdia(TopLevelMissionSequencers({MainMissionSequencerId}) [|MissionSequencerAppSync|] MainMissionSequencerApp)
 
+assert AircraftControlTier ; Loop :[ deadlock free [FD] ]
+assert AircraftControlTier :[ divergence free ]
+assert AircraftControlTier :[ deterministic  [FD] ]
+
 AircraftTier0 =
-	sbdia(MissionFW(MainMissionId) [| MissionAppSync |]  MainMissionApp)
-		[| union(MissionSync, {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall,
-    getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
-								getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
-							 setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining|}) |]
-	(
+	sbdia( MissionFW(MainMissionId) [| MissionAppSync |] MainMissionApp )
+
+    [| union (MissionSync, {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall,
+      getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
+                  getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
+                 setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining|} ) |]
+
 		(
   			sbdia(PeriodicEventHandlerFW(FlightSensorsMonitorId, 1, 0, 0, nullSchedulableId)  [| PEHAppSync |]  FlightSensorsMonitorApp)
-  					[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+  					[| SchedSync |]
       (
   			sbdia(PeriodicEventHandlerFW(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |] EnvironmentMonitorApp)
-  				[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+  				[| SchedSync |]
         (
           sbdia(SchedulableMissionSequencerFW(ACModeChangerId)  [|MissionSequencerAppSync|] ACModeChangerApp)
-      				[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+      				[| SchedSync |]
           (
             sbdia(AperiodicEventHandlerFW(ControlHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] ControlHandlerApp)
-        				[|{| activate_schedulables, done_safeletFW, done_toplevel_sequencer |}|]
+        				[| SchedSync |]
         		sbdia(AperiodicEventHandlerFW(CommunicationsHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] CommunicationsHandlerApp)
           )
         )
       )
     )
-	)
 
-assert sbdia(MissionFW(MainMissionId) [| MissionAppSync |]  MainMissionApp) ; Loop :[ deadlock free [FD] ]
 
+assert MissionFW(MainMissionId) ; Loop :[ deadlock free [FD] ]
+assert MissionFW(MainMissionId) [| MissionAppSync |] MainMissionApp ; Loop :[ deadlock free [FD] ]
 
 assert AircraftTier0 ; Loop :[ deadlock free [FD] ]
 assert AircraftTier0 :[ divergence free ]
@@ -1135,60 +1208,78 @@ AircraftTier1 =
 
 T1Cluster0 =
 	sbdia(MissionFW(TakeOffModeId) [| MissionAppSync |] TakeOffMissionApp)
-	[|  Union({ TakeOffMissionMethSync, MissionSync ,{| requestTerminationCall, requestTerminationRet|} }) |]
+	[|  Union({ TakeOffMissionMethSync, MissionSync , {| requestTerminationCall, requestTerminationRet|} }) |]
 (
 	(
 		sbdia(	PeriodicEventHandlerFW(TakeOffMonitorId, 1, 0, 0, nullSchedulableId)   [| PEHAppSync |] TakeOffMonitorApp(0, LandingGearHandler1Id))
-			[|  {| stowLandingGear, deployLandingGear|} |]
+			[| union(SchedSync, {| stowLandingGear, deployLandingGear|} ) |]
 		sbdia(AperiodicEventHandlerFW(LandingGearHandler1Id, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] LandingGearHandlerApp1)
 	)
-		[|  {| abort, requestTerminationCall, requestTerminationRet|} |]
+		[| union (SchedSync ,  {| abort, requestTerminationCall, requestTerminationRet|} ) |]
 	sbdia(AperiodicEventHandlerFW(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]   TakeOffFailureHandlerApp(0))
 )
 
+assert MissionFW(TakeOffModeId) [| MissionAppSync |] TakeOffMissionApp ; Loop :[ deadlock free [FD] ]
 
 T1Cluster1 =
 (
-				sbdia(MissionFW(CruiseModeId) [| MissionAppSync |] CruiseMissionApp	)
-				 [|{| requestTerminationCall, requestTerminationRet |}|]
-				sbdia(AperiodicEventHandlerFW(BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)	[| APEHAppSync |]   BeginLandingHandlerApp)
+	sbdia(MissionFW(CruiseModeId) [| MissionAppSync |] CruiseMissionApp	)
+		 [| MissionSync |]
+	(
+    sbdia(AperiodicEventHandlerFW(BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)	[| APEHAppSync |]   BeginLandingHandlerApp)
+      [| SchedSync |]
+    sbdia(PeriodicEventHandlerFW(NavigationMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  NavigationMonitorApp)
+  )
 )
-|||
-sbdia(PeriodicEventHandlerFW(NavigationMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  NavigationMonitorApp)
-
 
 T1Cluster2 =
 (
 	sbdia(MissionFW(LandModeId) [| MissionAppSync |] LandMissionApp)
-		[|{| stowLandingGear, deployLandingGear|}|]
-	sbdia(AperiodicEventHandlerFW(LandingGearHandler2Id, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]  LandingGearHandlerApp2)
+		[| union(MissionSync,  {| stowLandingGear, deployLandingGear|} ) |]
+  (
+    (sbdia(AperiodicEventHandlerFW(LandingGearHandler2Id, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]  LandingGearHandlerApp2)
+      [| SchedSync |]
+    (sbdia(AperiodicEventHandlerFW(SafeLandingHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] SafeLandingHandlerApp(0))
+      [| SchedSync |]
+    (
+      sbdia(PeriodicEventHandlerFW(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  GroundDistanceMonitorApp(0))
+        [| SchedSync |]
+      sbdia(PeriodicEventHandlerFW(InstrumentLandingSystemMonitorId, 1, 0, 0, nullSchedulableId)[| PEHAppSync |]  InstrumentLandingSystemMonitorApp	)
+    )
+    )
+    )
+  )
 )
-[|{|requestTerminationCall, requestTerminationRet|}|]
-(
-	sbdia(AperiodicEventHandlerFW(SafeLandingHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] SafeLandingHandlerApp(0))
-		|||
-	sbdia(PeriodicEventHandlerFW(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  GroundDistanceMonitorApp(0))
-)
-	|||
-sbdia(PeriodicEventHandlerFW(InstrumentLandingSystemMonitorId, 1, 0, 0, nullSchedulableId)[| PEHAppSync |]  InstrumentLandingSystemMonitorApp	)
+
+
+
 
 Aircraft2 =
+(
 (
 (
 	AircraftControlTier
 	[|TierSync|]
 	(
 		AircraftTier0
-			[| {|start_mission.m, done_mission.m, register.s.m ,done_safeletFW, done_toplevel_sequencer
-        | m <- {TakeOffModeId, CruiseModeId, LandModeId} , s<-SchedulableIDs |} |]
+			[|  Tier0Sync |]
 		AircraftTier1
 	)
+)
+      [| {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall,
+    getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
+                getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
+               setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining|}  |]
+    sbdia (Methods_mm
+    		[| MainMissionStateSync |]
+    	MainMissionState(0, 0, 0, 0, 0, 0)
+    )
 )
  [| GSRSync |]
 GlobalSchedulableRegulator
 )
 
 
-assert Aircraft2 ; Loop :[ deadlock free [FD] ]
+assert Aircraft2 ; Loop :[ deadlock free [F] ]
 assert Aircraft2 :[ divergence free ]
-assert Aircraft2 :[ deterministic  [FD] ]
+assert Aircraft2 :[ deterministic  [F] ]

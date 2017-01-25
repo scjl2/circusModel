@@ -355,13 +355,13 @@ Program2 =
   (
     ( (
         (MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp)
-      --  [| union( ThreadObjectSync , {| end_mission_app |}) |]
-      --      (ThreadObjectSystem(MissionObjectId) /\ (end_mission_app.FlatBufferMissionId -> SKIP) )
+        [| union( ThreadObjectSync , {| end_mission_app |}) |]
+            (ThreadObjectSystem(MissionObjectId) /\ (end_mission_app.FlatBufferMissionId -> SKIP) )
     	) )
        [| union(MissionSync, FlatBufferMissionAppSync) |]
     (
         sbdia( ManagedThreadFW(WriterId) [| MTAppSync |] WriterApp )
-        [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+          [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
         sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp )
     )
   )
