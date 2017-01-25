@@ -29,6 +29,7 @@ channel signalTerminationNotCall : SchedulableID
 channel setCeilingPriority : MissionID.ObjectID.Bit
 channel done_schedulables : MissionID
 channel activate_schedulables : MissionID
+channel schedulables : {SchedulableID}
 channel stop_schedulables : MissionID
 channel schedulables_stopped : MissionID
 
@@ -183,22 +184,22 @@ DoneSchedulables(mission, registeredSchedulables) =
  ( (
        [|{| done_schedulables.mission,
             requestTerminationCall.mission,
-            requestTerminationRet.mission |}|] s : registeredSchedulables @ Pending(mission, s)
+            requestTerminationRet.mission |}|] s : registeredSchedulables @ Pending(mission, s, registeredSchedulables)
    )
      [| {|signalTerminationCall,  signalTerminationNotCall, done_schedulables |}  |]
    Regulator(mission, seq(registeredSchedulables))
-) \ {|signalTerminationNotCall |}
+) \ {| signalTerminationNotCall |}
 
 
-Pending(mission, s) =
+Pending(mission, s, regSched) =
   (
     done_schedulable.s ->
     deregister.s ->
-    Finished(mission, s)
+    Finished(mission, s, regSched)
   )
   []
   (
-    requestTerminationCall.mission?a' ->
+    requestTerminationCall.mission?a':regSched ->
     signalTerminationCall.s ->
     signalTerminationRet.s ->
     done_schedulable.s ->
@@ -209,14 +210,14 @@ Pending(mission, s) =
   )
 
 
-Finished(mission, s) =
+Finished(mission, s, regSched) =
 (
   done_schedulables.mission ->
   SKIP
 )
 []
 (
-  requestTerminationCall.mission?a' ->
+  requestTerminationCall.mission?a':regSched ->
   signalTerminationNotCall.s ->
   requestTerminationRet.mission.a'!False ->
   done_schedulables.mission ->

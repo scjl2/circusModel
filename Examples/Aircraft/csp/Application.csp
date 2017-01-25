@@ -677,7 +677,7 @@ TakeOffMissionStateSync = {| get_abort, set_abort, get_landingGearDeployed, set_
 TakeOffMissionMethSync = {|abort, stowLandingGear, isLandingGearDeployedCall, isLandingGearDeployedRet, deployLandingGear |}
 
 TakeOffMissionApp =
-(
+sbdia(
 	Methods_tom
 	[| TakeOffMissionStateSync |]
 	TakeOffMissionState(false,true)
@@ -1137,14 +1137,11 @@ handlerAsyncEvent_slh(threshold) =
 
 nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, done_mission, done_toplevel_sequencer|}
 
-
-
-
-
 AircraftControlTier =
-	sbdia(SafeletFW [| SafeltAppSync |] ACSafelet)
+	sbdia(
+  (SafeletFW [| SafeltAppSync |] ACSafelet)
 		[|SafeletTierSync|]
-  sbdia(TopLevelMissionSequencers({MainMissionSequencerId}) [|MissionSequencerAppSync|] MainMissionSequencerApp)
+  sbdia(TopLevelMissionSequencers({MainMissionSequencerId}) [|MissionSequencerAppSync|] MainMissionSequencerApp))
 
 --assert AircraftControlTier ; Loop :[ deadlock free [FD] ]
 --assert AircraftControlTier :[ divergence free ]
@@ -1167,7 +1164,7 @@ AircraftTier0 =
         (
           sbdia(SchedulableMissionSequencerFW(ACModeChangerId)  [|MissionSequencerAppSync|] ACModeChangerApp)
       				[| SchedSync |]
-          (
+        sbdia  (
             sbdia(AperiodicEventHandlerFW(ControlHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] ControlHandlerApp)
         				[| SchedSync |]
         		sbdia(AperiodicEventHandlerFW(CommunicationsHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] CommunicationsHandlerApp)
@@ -1207,6 +1204,7 @@ AircraftTier1 =
 	T1Cluster2
 
 T1Cluster0 =
+(
 	sbdia(MissionFW(TakeOffModeId) [| MissionAppSync |] TakeOffMissionApp)
 	[|  Union({ TakeOffMissionMethSync, MissionSync , {| requestTerminationCall, requestTerminationRet|} }) |]
 (
@@ -1217,6 +1215,7 @@ T1Cluster0 =
 	)
 		[| union (SchedSync ,  {| abort, requestTerminationCall, requestTerminationRet|} ) |]
 	sbdia(AperiodicEventHandlerFW(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]   TakeOffFailureHandlerApp(0))
+)
 )
 
 --assert MissionFW(TakeOffModeId) [| MissionAppSync |] TakeOffMissionApp ; Loop :[ deadlock free [FD] ]
