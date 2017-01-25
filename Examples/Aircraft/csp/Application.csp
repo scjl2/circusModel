@@ -171,8 +171,8 @@ MainMissionApp =
 /\-}
 (end_mission_app.MainMissionId -> SKIP )
 
-assert MainMissionState(0, 0, 0, 0, 0, 0) ; Loop :[ deadlock free [FD] ]
-assert MainMissionApp ; Loop :[ deadlock free [FD] ]
+--assert MainMissionState(0, 0, 0, 0, 0, 0) ; Loop :[ deadlock free [FD] ]
+--assert MainMissionApp ; Loop :[ deadlock free [FD] ]
 {-	CabinState(cabinPressure)
 	|||
   OxyState(emergencyOxygen)
@@ -1146,9 +1146,9 @@ AircraftControlTier =
 		[|SafeletTierSync|]
   sbdia(TopLevelMissionSequencers({MainMissionSequencerId}) [|MissionSequencerAppSync|] MainMissionSequencerApp)
 
-assert AircraftControlTier ; Loop :[ deadlock free [FD] ]
-assert AircraftControlTier :[ divergence free ]
-assert AircraftControlTier :[ deterministic  [FD] ]
+--assert AircraftControlTier ; Loop :[ deadlock free [FD] ]
+--assert AircraftControlTier :[ divergence free ]
+--assert AircraftControlTier :[ deterministic  [FD] ]
 
 AircraftTier0 =
 	sbdia( MissionFW(MainMissionId) [| MissionAppSync |] MainMissionApp )
@@ -1177,12 +1177,12 @@ AircraftTier0 =
     )
 
 
-assert MissionFW(MainMissionId) ; Loop :[ deadlock free [FD] ]
-assert MissionFW(MainMissionId) [| MissionAppSync |] MainMissionApp ; Loop :[ deadlock free [FD] ]
+--assert MissionFW(MainMissionId) ; Loop :[ deadlock free [FD] ]
+--assert MissionFW(MainMissionId) [| MissionAppSync |] MainMissionApp ; Loop :[ deadlock free [FD] ]
 
-assert AircraftTier0 ; Loop :[ deadlock free [FD] ]
-assert AircraftTier0 :[ divergence free ]
-assert AircraftTier0 :[ deterministic  [FD] ]
+--assert AircraftTier0 ; Loop :[ deadlock free [FD] ]
+--assert AircraftTier0 :[ divergence free ]
+--assert AircraftTier0 :[ deterministic  [FD] ]
 {-
 Tier0App =
 (
@@ -1219,7 +1219,7 @@ T1Cluster0 =
 	sbdia(AperiodicEventHandlerFW(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]   TakeOffFailureHandlerApp(0))
 )
 
-assert MissionFW(TakeOffModeId) [| MissionAppSync |] TakeOffMissionApp ; Loop :[ deadlock free [FD] ]
+--assert MissionFW(TakeOffModeId) [| MissionAppSync |] TakeOffMissionApp ; Loop :[ deadlock free [FD] ]
 
 T1Cluster1 =
 (
@@ -1281,5 +1281,5 @@ GlobalSchedulableRegulator
 
 
 assert Aircraft2 ; Loop :[ deadlock free [F] ]
-assert Aircraft2 :[ divergence free ]
-assert Aircraft2 :[ deterministic  [F] ]
+--assert Aircraft2 :[ divergence free ]
+--assert Aircraft2 :[ deterministic  [F] ]
