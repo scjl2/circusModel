@@ -168,7 +168,7 @@ MainMissionApp =
 	[| MainMissionStateSync |]
 	MainMissionState(0, 0, 0, 0, 0, 0)
 ) \MainMissionStateSync
-/\-}
+/\ -}
 (end_mission_app.MainMissionId -> SKIP )
 
 --assert MainMissionState(0, 0, 0, 0, 0, 0) ; Loop :[ deadlock free [FD] ]
@@ -379,8 +379,8 @@ InitializePhase_mm =
   register!ControlHandlerId!MainMissionId  ->
   initializeRet.MainMissionId  ->
  --SKIP
- MissionPhase(MainMissionId, {ACModeChangerId, EnvironmentMonitorId, FlightSensorsMonitorId, CommunicationsHandlerId, ControlHandlerId})
-
+ MissionPhase(MainMissionId, {  FlightSensorsMonitorId, CommunicationsHandlerId, ControlHandlerId, EnvironmentMonitorId, ACModeChangerId})
+--
 
 --APPCleanupMission(MainMissionId) =CleanupPhase_mm
 CleanupPhase_mm =
@@ -558,13 +558,18 @@ GetNextMission_mc =
         (
           set_modesLeft.ACModeChangerId!0 ->
 
-        getNextMissionRet.ACModeChangerId!LandModeId ->
+          getNextMissionRet.ACModeChangerId!LandModeId ->
+          --done_mission.LandModeId?_ ->
+
           SKIP
         )
         else
         (
 
         getNextMissionRet.ACModeChangerId!nullMissionId ->
+
+
+
           SKIP
         )
       )
@@ -578,6 +583,7 @@ Methods_mc =
 --- Environment Monitor
 
 channel checkEnvironment : SchedulableID.Bool
+
 
 EnvironmentMonitorApp =
 (
@@ -593,6 +599,8 @@ handleAsyncEvent_em =
 	setCabinPressure.MainMissionId!0 ->
 	setEmergencyOxygen.MainMissionId!0 ->
 	setFuelRemaining.MainMissionId!0 ->
+
+
   handleAsyncEventRet.EnvironmentMonitorId ->
   SKIP
 
@@ -650,6 +658,8 @@ handlerAsyncEvent_fsm =
 	setAirSpeed.MainMissionId!2 ->
 	setAltitude.FlightSensorsMonitorId.MainMissionId!2 ->
 	setHeading.MainMissionId!2 ->
+  requestTerminationCall.MainMissionId.FlightSensorsMonitorId ->
+  requestTerminationRet.MainMissionId.FlightSensorsMonitorId?_ ->
   handleAsyncEventRet.FlightSensorsMonitorId ->
   SKIP
 
@@ -675,6 +685,8 @@ channel binder_deployLandingGear : SchedulableID.MissionID
 
 TakeOffMissionStateSync = {| get_abort, set_abort, get_landingGearDeployed, set_landingGearDeployed  |}
 TakeOffMissionMethSync = {|abort, stowLandingGear, isLandingGearDeployedCall, isLandingGearDeployedRet, deployLandingGear |}
+
+
 
 TakeOffMissionApp =
 sbdia(
@@ -717,14 +729,21 @@ InitializePhase_tom =
 
   initializeRet.TakeOffModeId ->
   --SKIP
- MissionPhase(TakeOffModeId, {TakeOffMonitorId, TakeOffFailureHandlerId, LandingGearHandler1Id})
+ MissionPhase(TakeOffModeId, {TakeOffMonitorId, LandingGearHandler1Id ,TakeOffFailureHandlerId })
 
 --APPCleanupMission(TakeOffModeId) =
 CleanupPhase_tom =
  cleanupMissionCall.TakeOffModeId ->
- get_abort.TakeOffModeId?abortVar ->
- cleanupMissionRet.TakeOffModeId!abortVar ->
-	SKIP
+(
+ get_abort.TakeOffModeId?false ->
+ cleanupMissionRet.TakeOffModeId!true -> SKIP
+)
+[]
+(
+  get_abort.TakeOffModeId?false ->
+  cleanupMissionRet.TakeOffModeId!true ->
+  SKIP
+)
 
 Abort_tom =
 	abort.TakeOffModeId ->
@@ -778,12 +797,11 @@ Methods_tomon(takeOffAltitude, landingGearHandler) =
 handlerAsyncEvent_tomon(takeOffAltitude, landingGearHandler) =
 	handleAsyncEventCall.TakeOffMonitorId ->
 	getAltitudeCall.TakeOffMonitorId.MainMissionId ->
-	getAltitudeRet.TakeOffMonitorId.MainMissionId?altitude ->
+	getAltitudeRet.TakeOffMonitorId.MainMissionId?altitude:{1,2} ->
 	(
 		if altitude > takeOffAltitude then
 		(
-
-			release.landingGearHandler ->
+    	release.landingGearHandler ->
 			requestTerminationCall.TakeOffModeId.TakeOffMonitorId ->
 			requestTerminationRet.TakeOffModeId.TakeOffMonitorId?_ ->
 			SKIP
@@ -833,8 +851,6 @@ handlerAsyncEvent_tofh(threshold) =
 
 -- LandingGearHandler1
 
-
-
 LandingGearHandlerApp1 =
 (
 	Methods_lgh1
@@ -861,10 +877,8 @@ handlerAsyncEvent_lgh1 =
 		)
 	)
 	;
-	requestTerminationCall.LandModeId.LandingGearHandler1Id  ->
-	requestTerminationRet.LandModeId.LandingGearHandler1Id?_ ->
-    handleAsyncEventRet.LandingGearHandler1Id ->
-    SKIP
+  handleAsyncEventRet.LandingGearHandler1Id ->
+  SKIP
 
 
 -- CruiseMission
@@ -931,22 +945,21 @@ handlerAsyncEvent_nm =
 
 
 
---BeginLandingHandler
+--BeginLandingHandler + LandSim Smushed
 
-channel beginLanding : SchedulableID
+
 
 BeginLandingHandlerApp =
 (
 	Methods_blh
 )
-/\ (end_aperiodicEventHandler_app.BeginLandingHandlerId -> SKIP)
+/\ (end_periodicEventHandler_app.BeginLandingHandlerId -> SKIP)
 
 Methods_blh =
 	handlerAsyncEvent_blh ; Methods_blh
 
 handlerAsyncEvent_blh =
-	beginLanding.BeginLandingHandlerId ->
-	release.BeginLandingHandlerId ->
+
 	handleAsyncEventCall.BeginLandingHandlerId ->
 	requestTerminationCall.CruiseModeId.BeginLandingHandlerId ->
 	requestTerminationRet.CruiseModeId.BeginLandingHandlerId?_ ->
@@ -971,36 +984,34 @@ InitializePhase_lam =
 
   register!GroundDistanceMonitorId!LandModeId ->
   register!LandingGearHandler2Id!LandModeId ->
-  register!SafeLandingHandlerId!LandModeId ->
-  register!InstrumentLandingSystemMonitorId!LandModeId ->
+--  register!SafeLandingHandlerId!LandModeId ->
+  --register!InstrumentLandingSystemMonitorId!LandModeId ->
 
   initializeRet.LandModeId ->
 --  SKIP
-  MissionPhase(LandModeId, {GroundDistanceMonitorId, LandingGearHandler2Id, SafeLandingHandlerId, InstrumentLandingSystemMonitorId})
+  MissionPhase(LandModeId, {GroundDistanceMonitorId, LandingGearHandler2Id})-- , SafeLandingHandlerId}) --, InstrumentLandingSystemMonitorId})
 
 --APPCleanupMission(LandModeId) =
 CleanupPhase_lam =
  cleanupMissionCall.LandModeId ->
- cleanupMissionRet.LandModeId!True ->
+ cleanupMissionRet.LandModeId!false ->
  SKIP
 
 StowLandingGear_lam =
-	stowLandingGear?schedulable!TakeOffModeId ->
-	set_landingGearDeployed.TakeOffModeId!false ->
+	stowLandingGear?schedulable!LandModeId ->
+	set_landingGearDeployed.LandModeId!false ->
 	SKIP
 
 IsLandingGearDeployed_lam =
-	isLandingGearDeployedCall?schedulable!TakeOffModeId ->
-	get_landingGearDeployed.TakeOffModeId?landingGearDeployed ->
-	isLandingGearDeployedRet.schedulable.TakeOffModeId!landingGearDeployed ->
+	isLandingGearDeployedCall?schedulable!LandModeId ->
+	get_landingGearDeployed.LandModeId?landingGearDeployed ->
+	isLandingGearDeployedRet.schedulable.LandModeId!landingGearDeployed ->
 	SKIP
 
 DeployLandingGear_lam =
-	deployLandingGear?schedulable!TakeOffModeId ->
-	set_landingGearDeployed.TakeOffModeId!true ->
+	deployLandingGear?schedulable!LandModeId ->
+	set_landingGearDeployed.LandModeId!true ->
 	SKIP
-
-
 
 Methods_lam =
 (
@@ -1018,32 +1029,43 @@ Methods_lam =
 
 --GroundDistanceMonitor
 
-GroundDistanceMonitorApp(readingOnGround) =
+GroundDistanceMonitorApp(readingOnGround, landingGear) =
 (
-	Methods_gdm(readingOnGround)
+	Methods_gdm(readingOnGround, landingGear)
 )
 /\ (end_periodicEventHandler_app.GroundDistanceMonitorId -> SKIP)
 
-Methods_gdm(readingOnGround) =
-	handlerAsyncEvent_gdm(readingOnGround) ; Methods_gdm(readingOnGround)
+Methods_gdm(readingOnGround, landingGear) =
+	handlerAsyncEvent_gdm(readingOnGround, landingGear) ;
+  Methods_gdm(readingOnGround, landingGear)
 
-handlerAsyncEvent_gdm(readingOnGround) =
+handlerAsyncEvent_gdm(readingOnGround, landingGear) =
 	handleAsyncEventCall.GroundDistanceMonitorId ->
 	getAltitudeCall.GroundDistanceMonitorId.MainMissionId ->
-	getAltitudeRet.GroundDistanceMonitorId.MainMissionId?distance ->
+	getAltitudeRet.GroundDistanceMonitorId.MainMissionId?distance:{0,1} ->
 	(
-		if distance == readingOnGround then
-		(
-			requestTerminationCall.LandModeId.GroundDistanceMonitorId ->
-			requestTerminationRet.LandModeId.GroundDistanceMonitorId?_ ->
-			SKIP
-		)
-		else
-			SKIP
+    if distance == 1 then
+    (
+      release.landingGear ->
+      requestTerminationCall.LandModeId.GroundDistanceMonitorId ->
+      requestTerminationRet.LandModeId.GroundDistanceMonitorId?_ ->
+      SKIP
+    )
+    else
+    (
+  		if distance == readingOnGround then
+  		(
+  			requestTerminationCall.LandModeId.GroundDistanceMonitorId ->
+  			requestTerminationRet.LandModeId.GroundDistanceMonitorId?_ ->
+  			SKIP
+  		)
+  		else
+  			SKIP
+    )
 	)
 	;
-    handleAsyncEventRet.GroundDistanceMonitorId ->
-    SKIP
+  handleAsyncEventRet.GroundDistanceMonitorId ->
+  SKIP
 
 
 -- LandingGearHandler2
@@ -1074,10 +1096,10 @@ handlerAsyncEvent_lgh2 =
 		)
 	)
 	;
-	requestTerminationCall.LandModeId.LandingGearHandler2Id  ->
-	requestTerminationRet.LandModeId.LandingGearHandler2Id?_  ->
-    handleAsyncEventRet.LandingGearHandler2Id ->
-    SKIP
+	--requestTerminationCall.LandModeId.LandingGearHandler2Id  ->
+	--requestTerminationRet.LandModeId.LandingGearHandler2Id?_  ->
+  handleAsyncEventRet.LandingGearHandler2Id ->
+  SKIP
 
 -- InstrumentLandingSystemMonitor
 channel checkILS : {InstrumentLandingSystemMonitorId}
@@ -1094,8 +1116,8 @@ Methods_tlsm =
 handlerAsyncEvent_tlsm =
 	handleAsyncEventCall.InstrumentLandingSystemMonitorId ->
 	checkILS.InstrumentLandingSystemMonitorId ->
-    handleAsyncEventRet.InstrumentLandingSystemMonitorId ->
-    SKIP
+  handleAsyncEventRet.InstrumentLandingSystemMonitorId ->
+  SKIP
 
 
 
@@ -1129,8 +1151,8 @@ handlerAsyncEvent_slh(threshold) =
 			SKIP
 		)
 	) ;
-    handleAsyncEventRet.SafeLandingHandlerId ->
-    SKIP
+  handleAsyncEventRet.SafeLandingHandlerId ->
+  SKIP
 
 
 
@@ -1150,20 +1172,24 @@ AircraftControlTier =
 AircraftTier0 =
 	sbdia( MissionFW(MainMissionId) [| MissionAppSync |] MainMissionApp )
 
-    [| union (MissionSync, {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall,
+    [| union( MissionSync, {|requestTerminationCall.MainMissionId , requestTerminationRet.MainMissionId,
+                                release.ControlHandlerId, release.CommunicationsHandlerId  |})
+    {-, {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall,
       getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
                   getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
-                 setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining|} ) |]
+                 setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining
+                  |} )  -}
+                 |]
 
 		(
   			sbdia(PeriodicEventHandlerFW(FlightSensorsMonitorId, 1, 0, 0, nullSchedulableId)  [| PEHAppSync |]  FlightSensorsMonitorApp)
-  					[| SchedSync |]
+      			[| SchedSync |]
       (
   			sbdia(PeriodicEventHandlerFW(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |] EnvironmentMonitorApp)
   				[| SchedSync |]
-        (
-          sbdia(SchedulableMissionSequencerFW(ACModeChangerId)  [|MissionSequencerAppSync|] ACModeChangerApp)
-      				[| SchedSync |]
+      (
+        sbdia(SchedulableMissionSequencerFW(ACModeChangerId) [| MissionSequencerAppSync|] ACModeChangerApp)
+    				[| SchedSync |]
         sbdia  (
             sbdia(AperiodicEventHandlerFW(ControlHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] ControlHandlerApp)
         				[| SchedSync |]
@@ -1173,11 +1199,10 @@ AircraftTier0 =
       )
     )
 
+assert sbdia(PeriodicEventHandlerFW(EnvironmentMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |] EnvironmentMonitorApp) ; Loop :[ deadlock free [FD] ]
+assert sbdia(SchedulableMissionSequencerFW(ACModeChangerId) [| MissionSequencerAppSync |] ACModeChangerApp) ; Loop :[ deadlock free [FD] ]
 
---assert MissionFW(MainMissionId) ; Loop :[ deadlock free [FD] ]
---assert MissionFW(MainMissionId) [| MissionAppSync |] MainMissionApp ; Loop :[ deadlock free [FD] ]
-
---assert AircraftTier0 ; Loop :[ deadlock free [FD] ]
+assert AircraftTier0 ; Loop :[ deadlock free [FD] ]
 --assert AircraftTier0 :[ divergence free ]
 --assert AircraftTier0 :[ deterministic  [FD] ]
 {-
@@ -1191,8 +1216,6 @@ Tier0App =
       sbdia( ManagedThreadFW(ManagedThread1Id ) [| MTAppSync |] ManagedThread1App )
    )
 )
-
-
 -}
 
 
@@ -1206,14 +1229,16 @@ AircraftTier1 =
 T1Cluster0 =
 (
 	sbdia(MissionFW(TakeOffModeId) [| MissionAppSync |] TakeOffMissionApp)
-	[|  Union({ TakeOffMissionMethSync, MissionSync , {| requestTerminationCall, requestTerminationRet|} }) |]
+	[|  Union({ TakeOffMissionMethSync, MissionSync , {| requestTerminationCall.TakeOffModeId, requestTerminationRet.TakeOffModeId,
+                                                            stowLandingGear, deployLandingGear |} }) |]
 (
 	(
 		sbdia(	PeriodicEventHandlerFW(TakeOffMonitorId, 1, 0, 0, nullSchedulableId)   [| PEHAppSync |] TakeOffMonitorApp(0, LandingGearHandler1Id))
-			[| union(SchedSync, {| stowLandingGear, deployLandingGear|} ) |]
+			[| union(SchedSync, {|release.LandingGearHandler1Id|} ) |]
 		sbdia(AperiodicEventHandlerFW(LandingGearHandler1Id, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] LandingGearHandlerApp1)
 	)
-		[| union (SchedSync ,  {| abort, requestTerminationCall, requestTerminationRet|} ) |]
+		[| union (SchedSync ,  {| release.TakeOffFailureHandlerId, abort, requestTerminationCall.TakeOffModeId.TakeOffFailureHandlerId,
+                            requestTerminationRet.TakeOffModeId.TakeOffFailureHandlerId |} ) |]
 	sbdia(AperiodicEventHandlerFW(TakeOffFailureHandlerId, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]   TakeOffFailureHandlerApp(0))
 )
 )
@@ -1224,8 +1249,8 @@ T1Cluster1 =
 (
 	sbdia(MissionFW(CruiseModeId) [| MissionAppSync |] CruiseMissionApp	)
 		 [| MissionSync |]
-	(
-    sbdia(AperiodicEventHandlerFW(BeginLandingHandlerId, aperiodic, 0, nullSchedulableId)	[| APEHAppSync |]   BeginLandingHandlerApp)
+	( -- Making this a Periodic so that it actually triggers termination
+    sbdia(PeriodicEventHandlerFW(BeginLandingHandlerId, 2,0, 0, nullSchedulableId)	[| PEHAppSync |] BeginLandingHandlerApp)
       [| SchedSync |]
     sbdia(PeriodicEventHandlerFW(NavigationMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  NavigationMonitorApp)
   )
@@ -1234,23 +1259,33 @@ T1Cluster1 =
 T1Cluster2 =
 (
 	sbdia(MissionFW(LandModeId) [| MissionAppSync |] LandMissionApp)
-		[| union(MissionSync,  {| stowLandingGear, deployLandingGear|} ) |]
+		[| union(MissionSync, {| requestTerminationCall.LandModeId, requestTerminationRet.LandModeId,
+                              deployLandingGear, isLandingGearDeployedCall, isLandingGearDeployedRet
+                               , stowLandingGear |} ) |]
   (
-    (sbdia(AperiodicEventHandlerFW(LandingGearHandler2Id, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]  LandingGearHandlerApp2)
-      [| SchedSync |]
-    (sbdia(AperiodicEventHandlerFW(SafeLandingHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] SafeLandingHandlerApp(0))
-      [| SchedSync |]
-    (
-      sbdia(PeriodicEventHandlerFW(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  GroundDistanceMonitorApp(0))
-        [| SchedSync |]
-      sbdia(PeriodicEventHandlerFW(InstrumentLandingSystemMonitorId, 1, 0, 0, nullSchedulableId)[| PEHAppSync |]  InstrumentLandingSystemMonitorApp	)
+  -- Removed form applicatino in Appendix
+  --  (sbdia(AperiodicEventHandlerFW(SafeLandingHandlerId, aperiodic, 0, nullSchedulableId) [| APEHAppSync |] SafeLandingHandlerApp(0))
+  --    [| union(SchedSync, {|release.SafeLandingHandlerId|} ) |]
+  --  (sbdia(PeriodicEventHandlerFW(InstrumentLandingSystemMonitorId, 1, 0, 0, nullSchedulableId)[| PEHAppSync |]  InstrumentLandingSystemMonitorApp	)
+    --  [| SchedSync |]
+    ( sbdia(PeriodicEventHandlerFW(GroundDistanceMonitorId, 1, 0, 0, nullSchedulableId) [| PEHAppSync |]  GroundDistanceMonitorApp(0, LandingGearHandler2Id))
+        [| union(SchedSync, {|release.LandingGearHandler2Id|} ) |]
+      sbdia(AperiodicEventHandlerFW(LandingGearHandler2Id, aperiodic, 0, nullSchedulableId)  [| APEHAppSync |]  LandingGearHandlerApp2)
     )
-    )
-    )
+    --)
+  --  )
   )
 )
 
+--Requires getAltitudeRet to be restricted to {1,2} or similar
+assert T1Cluster0 ; Loop :[ deadlock free [FD] ]
 
+assert T1Cluster1 ; Loop :[ deadlock free [FD] ]
+
+--Requires getAltitudeRet to be restricted to {0,1} and the removal of ILS...
+assert T1Cluster2 ; Loop :[ deadlock free [FD] ]
+
+assert AircraftTier1 ; Loop :[ deadlock free [F] ]
 
 
 Aircraft2 =
@@ -1265,20 +1300,58 @@ Aircraft2 =
 		AircraftTier1
 	)
 )
-      [| {|getAltitudeCall, getAltitudeRet, getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall,
-    getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
+  [| {|  getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
                 getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
-               setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining|}  |]
+               setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining, end_mission_app|}  |]
     sbdia (Methods_mm
     		[| MainMissionStateSync |]
     	MainMissionState(0, 0, 0, 0, 0, 0)
-    )
+    )/\ (end_mission_app.MainMissionId -> SKIP)
+
 )
  [| GSRSync |]
 GlobalSchedulableRegulator
 )
 
 
-assert Aircraft2 ; Loop :[ deadlock free [F] ]
+
+Tier0ModWithState =
+( AircraftTier0
+{-    [| {| start_mission.m, done_mission.m, initializeRet.m | m <- {TakeOffModeId, CruiseModeId, LandModeId}  |}|]
+  start_mission.TakeOffModeId.ACModeChangerId -> initializeRet.TakeOffModeId -> done_mission.TakeOffModeId.true ->
+  start_mission.CruiseModeId.ACModeChangerId -> initializeRet.CruiseModeId -> done_mission.CruiseModeId.true ->
+  start_mission.LandModeId.ACModeChangerId -> initializeRet.LandModeId -> done_mission.LandModeId.false ->
+--  requestTerminationCall.MainMissionId.GroundDistanceMonitorId -> requestTerminationRet.MainMissionId.GroundDistanceMonitorId?_ ->
+  SKIP-}
+)
+[| {|  getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet, getAltitudeCall, getAltitudeRet,
+        getCabinPressureCall, getCabinPressureRet, getEmergencyOxygenCall, getEmergencyOxygenRet,
+              getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
+             setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining, end_mission_app.MainMissionId|}  |]
+(
+  sbdia (Methods_mm
+      [| MainMissionStateSync |]
+    MainMissionState(0, 0, 0, 0, 0, 0)
+  )/\ (end_mission_app.MainMissionId -> SKIP)
+)
+
+-- THIS STILL DEADLOCKS
+assert Tier0ModWithState ; Loop :[ deadlock free ]
+
+Tier1WithState =
+AircraftTier1
+[| {|  getEmergencyOxygenRet, getFuelRemainingCall, getFuelRemainingRet,
+              getHeadingCall, getHeadingRet, getAirSpeedCall, getAirSpeedRet,
+             setAirSpeed, setAltitude, setHeading, setCabinPressure, setEmergencyOxygen, setFuelRemaining, done_mission.LandModeId |}  |]
+  sbdia (Methods_mm
+      [| MainMissionStateSync |]
+    MainMissionState(0, 0, 0, 0, 0, 0)
+  )/\(done_mission.LandModeId?_ -> SKIP)
+
+--This seems to work, COMPOSITIONAL? Have to be...
+assert Tier1WithState ; Loop :[ deadlock free ]
+
+
+assert Aircraft2 ; Loop :[ deadlock free ]
 --assert Aircraft2 :[ divergence free ]
 --assert Aircraft2 :[ deterministic  [F] ]

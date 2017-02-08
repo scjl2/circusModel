@@ -138,7 +138,7 @@ circwait_startTime.startTime ->
       []
       (
         end_releases.schedulable ->
-        done_schedulable.schedulable ->
+      --  done_schedulable.schedulable ->
   --  stop_period.schedulable ->
         SKIP
       )

@@ -1,7 +1,7 @@
 /** Aircraft - Mode Change Example
-* 
-* 	This mission handles events when the Aircraft is landing 
-* 
+*
+* 	This mission handles events when the Aircraft is landing
+*
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
 package aircraft;
@@ -17,15 +17,15 @@ import javax.scj.util.Const;
 public class LandMission extends ModeMission implements LandingGearUser
 {
 	private final MainMission controllingMission;
-	
+
 	final double SAFE_LANDING_ALTITUDE = 10.00;
-	
+
 	private boolean abort = false;
-	
+
 	public LandMission(MainMission controllingMission)
 	{
 		this.controllingMission = controllingMission;
-	}	
+	}
 
 	/**
 	 * Is the landing gear deployed?
@@ -38,24 +38,25 @@ public class LandMission extends ModeMission implements LandingGearUser
 	@Override
 	protected void initialize()
 	{
-		
+
 		StorageParameters storageParametersSchedulable= new StorageParameters(Const.PRIVATE_MEM_SIZE-30*1000, new long[] { Const.HANDLER_STACK_SIZE },
 				 Const.PRIVATE_MEM_SIZE-30*1000, Const.IMMORTAL_MEM_SIZE-50*1000, Const.MISSION_MEM_SIZE-100*1000);
-		
+
 /* ***Start this mission's handlers */
-		GroundDistanceMonitor groundDistanceMonitor = new GroundDistanceMonitor(
-				new PriorityParameters(5),
-				new PeriodicParameters(new RelativeTime(0, 0), new RelativeTime(10, 0)),
-				storageParametersSchedulable,
-				 this);
-		groundDistanceMonitor.register();
-		
-		
+
+
+
 		LandingGearHandler landingHandler = new LandingGearHandler(new PriorityParameters(5),
 				new AperiodicParameters(), storageParametersSchedulable, "Landing Handler", this);
 
 		landingHandler.register();
-		
+
+		GroundDistanceMonitor groundDistanceMonitor = new GroundDistanceMonitor(
+				new PriorityParameters(5),
+				new PeriodicParameters(new RelativeTime(0, 0), new RelativeTime(10, 0)),
+				storageParametersSchedulable, landingHandler,
+				 controllingMission);
+		groundDistanceMonitor.register();
 
 		InstrumentLandingSystemMonitor ilsMonitor = new InstrumentLandingSystemMonitor(
 				new PriorityParameters(5),
@@ -64,20 +65,20 @@ public class LandMission extends ModeMission implements LandingGearUser
 				"ILS Monitor",
 				 this);
 		ilsMonitor.register();
-		
+
 		SafeLandingHandler safeLandingHandler = new SafeLandingHandler(
 		new PriorityParameters(5),
 		new AperiodicParameters(),
-		storageParametersSchedulable, 
+		storageParametersSchedulable,
 		"Safe Landing Handler",
 		this,
 		SAFE_LANDING_ALTITUDE);
-		
+
 		safeLandingHandler.register();
 	}
 
 	/**
-	 * Returns the size of this mission's memory 
+	 * Returns the size of this mission's memory
 	 */
 	@Override
 	public long missionMemorySize()
@@ -92,18 +93,18 @@ public class LandMission extends ModeMission implements LandingGearUser
 	public synchronized void deployLandingGear()
 	{
 		landingGearDeployed = true;
-		
+
 	}
 
 	@Override
-	public void stowLandingGear() 
+	public void stowLandingGear()
 	{
-		landingGearDeployed = false;		
+		landingGearDeployed = false;
 	}
 
 	@Override
-	public boolean isLandingGearDeployed() 
-	{		
+	public boolean isLandingGearDeployed()
+	{
 		return landingGearDeployed;
 	}
 
@@ -111,11 +112,11 @@ public class LandMission extends ModeMission implements LandingGearUser
 		return controllingMission;
 	}
 
-	public void abort() 
+	public void abort()
 	{
-		abort = true;		
+		abort = true;
 	}
-	
+
 	@Override
 	public boolean cleanUp()
 	{

@@ -179,7 +179,6 @@ Execute_M(mission, registeredSchedulables) =
   )
 )
 
-
 DoneSchedulables(mission, registeredSchedulables) =
  ( (
        [|{| done_schedulables.mission,
@@ -189,7 +188,6 @@ DoneSchedulables(mission, registeredSchedulables) =
      [| {|signalTerminationCall,  signalTerminationNotCall, done_schedulables |}  |]
    Regulator(mission, seq(registeredSchedulables))
 ) \ {| signalTerminationNotCall |}
-
 
 Pending(mission, s) =
   (
@@ -208,7 +206,6 @@ Pending(mission, s) =
     done_schedulables.mission ->
     SKIP
   )
-
 
 Finished(mission, s) =
 (

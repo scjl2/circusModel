@@ -1,7 +1,7 @@
 /** Aircraft - Mode Change Example
-* 
+*
 *  Monitors the Aircraft's distance from the ground
-* 
+*
 *   @author Matt Luckcuck <ml881@york.ac.uk>
 */
 package aircraft;
@@ -17,11 +17,13 @@ public class GroundDistanceMonitor extends PeriodicEventHandler
 {
 	/**
 	* The controlling mission of this handler
-	*/	
+	*/
 	private final LandMission mission;
-	
+
 	private final double readingOnGround;
-	
+
+	private final AperiodicEventHandler landingGear;
+
 	 /**
     * Class Constructor
     * @param	priorityParameters	the priority parameters for this handler
@@ -31,11 +33,12 @@ public class GroundDistanceMonitor extends PeriodicEventHandler
 	 *@param landMission the controlling mission of this mission
 	 */
 	public GroundDistanceMonitor(PriorityParameters priority, PeriodicParameters periodic,
-			StorageParameters storage, LandMission landMission)
+			StorageParameters storage, AperiodicEventHandler landingGear, LandMission landMission)
 	{
 		super(priority, periodic, storage);
-		
+
 		mission = landMission;
+		this.landingGear = landingGear;
 		this.readingOnGround = landMission.getControllingMission().ALTITUDE_READING_ON_GROUND;
 	}
 
@@ -47,10 +50,13 @@ public class GroundDistanceMonitor extends PeriodicEventHandler
 	{
 		System.out.println("Checking Ground Distance");
 		//read this value from sensors
-		double distance =mission.getControllingMission().getAltitude();		
-		
-		
-		if(distance == readingOnGround)
+		double distance =mission.getControllingMission().getAltitude();
+
+		if(distance == 1.0)
+		{
+				landingGear.release();
+		}
+		else if(distance == readingOnGround)
 		{
 			System.out.println("Aircraft Landed, Terminating Mission");
 			mission.requestTermination();

@@ -138,7 +138,7 @@ circwait_startTime.startTime ->
       []
       (
         end_releases.schedulable ->
-        done_schedulable.schedulable ->
+      --  done_schedulable.schedulable ->
   --  stop_period.schedulable ->
         SKIP
       )
@@ -328,8 +328,8 @@ DeadlineClock_PEH(schedulable, index, deadline, period, deadlineMissHandler) =
 
 SignalTermination_PEH(schedulable) =
 SigTermHandler(schedulable)
-  [|{|signalTerminationCall |}|]
-EndReleasesHandler(schedulable)
+--  [|{|signalTerminationCall |}|]
+--EndReleasesHandler(schedulable)
 
 SigTermHandler(schedulable) =
   (
@@ -337,6 +337,7 @@ SigTermHandler(schedulable) =
     set_periodicTerminating.schedulable!True ->
 
     --stop_period.schedulable ->
+  end_releases.schedulable ->
     signalTerminationRet.schedulable ->
     done_schedulable.schedulable ->
     SKIP
