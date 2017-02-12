@@ -150,11 +150,11 @@ FlatBufferMissionState(bufferContents) =
 APPInitializePhase(mission) =
 	initializeCall.FlatBufferMissionId   ->
 
-	register!ReaderId!FlatBufferMissionId  ->
+--	register!ReaderId!FlatBufferMissionId  ->
 	register!WriterId!FlatBufferMissionId  ->
 
 	initializeRet.FlatBufferMissionId  ->
-  MissionPhase(mission, {ReaderId, WriterId})
+  MissionPhase(mission, { WriterId}) --ReaderId
 
 
 APPCleanupMission(mission) =
@@ -221,7 +221,7 @@ Read_While(thread) =
   get_bufferEmpty.FlatBufferMissionId?false ->
   SKIP
 
-waitOnMissionMeth=
+waitOnMissionMeth =
 	waitOnMissionCall.FlatBufferMissionId?thread ->
 	startSyncMeth.MissionObjectId.thread ->
 	lockAcquired.MissionObjectId.thread ->
@@ -286,9 +286,9 @@ WhileOuter_w(i) =
   )
   );
 
-  if i+1 == 1 then
+  if i+1 == maxNum then
     requestTerminationCall.FlatBufferMissionId.WriterId ->
-    requestTerminationRet.FlatBufferMissionId.WriterId?_ ->
+  --  requestTerminationRet.FlatBufferMissionId.WriterId?_ ->
     SKIP
   else
     WhileOuter_w(i+1)
@@ -344,7 +344,6 @@ nametype TopLevelMissionSequencerProgramSync = {|done_safeletFW, start_mission, 
 
 Program2 =
 (
-
 (
  (
  	sbdia(SafeletFW [| SafeltAppSync |] FlatBufferApp)
@@ -355,14 +354,14 @@ Program2 =
   (
     ( (
         (MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp)
-        [| union( ThreadObjectSync , {| end_mission_app |}) |]
-            (ThreadObjectSystem(MissionObjectId) /\ (end_mission_app.FlatBufferMissionId -> SKIP) )
+          [| union( ThreadObjectSync , {| end_mission_app |}) |]
+        (ThreadObjectSystem(MissionObjectId) /\ (end_mission_app.FlatBufferMissionId -> SKIP) )
     	) )
        [| union(MissionSync, FlatBufferMissionAppSync) |]
     (
         sbdia( ManagedThreadFW(WriterId) [| MTAppSync |] WriterApp )
-          [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
-        sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp )
+      --    [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+    --    sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp )
     )
   )
 )
@@ -371,9 +370,32 @@ GlobalSchedulableRegulator
 )
 
 
-assert Program2 ; Loop :[ deadlock free [FD] ]
-assert Program2 :[ divergence free ]
-assert Program2 :[ deterministic  [FD] ]
+assert MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp ; Loop :[deadlock free [FD]]
+
+assert (
+    (MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp)
+      [| union( ThreadObjectSync , {| end_mission_app |}) |]
+    (ThreadObjectSystem(MissionObjectId) /\ (end_mission_app.FlatBufferMissionId -> SKIP) )
+  ); Loop :[deadlock free [FD]]
+
+
+assert (
+  ( (
+      (MissionFW(FlatBufferMissionId) [| MissionAppSync |]  FlatBufferMissionApp)
+        [| union( ThreadObjectSync , {| end_mission_app |}) |]
+      (ThreadObjectSystem(MissionObjectId) /\ (end_mission_app.FlatBufferMissionId -> SKIP) )
+    ) )
+     [| union(MissionSync, FlatBufferMissionAppSync) |]
+  (
+      sbdia( ManagedThreadFW(WriterId) [| MTAppSync |] WriterApp )
+        [|{| activate_schedulables,done_safeletFW, done_toplevel_sequencer |}|]
+      sbdia( ManagedThreadFW(ReaderId) [| MTAppSync |] ReaderApp )
+  )
+) ; Loop :[deadlock free [FD]]
+
+assert Program2 ; Loop :[deadlock free [FD]]
+assert Program2 :[divergence free]
+assert Program2 :[deterministic [FD]]
 
 
 --assert STOP [T= (Program2 \ diff(Events, {|throw|}))

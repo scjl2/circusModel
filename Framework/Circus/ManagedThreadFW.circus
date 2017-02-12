@@ -71,7 +71,7 @@ Run \circdef\\
 %
 \begin{circusaction}
 Methods \circdef \\
-	\circblockopen SignalTerminationMeth \circseq Methods\circblockclose  \extchoice done\_schedulable~.~schedulable \then \Skip  
+	\circblockopen SignalTerminationMeth \circseq Methods\circblockclose  \extchoice done\_schedulable~.~schedulable \then \Skip
 
 \end{circusaction}
 %
